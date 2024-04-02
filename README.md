@@ -13,3 +13,7 @@ IntelliJ Idea
 `./gradlew test` to run the tests
 
 `./gradlew clean build publishToMavenLocal` to publish the jars to the local maven repo
+
+## examples
+
+there is a test which shows the full complexity for Kotlin named NoMagicTest

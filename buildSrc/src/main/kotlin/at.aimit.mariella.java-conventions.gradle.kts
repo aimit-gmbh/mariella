@@ -1,7 +1,6 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import java.net.URI
 
 plugins {
     `java-library`
@@ -61,23 +60,6 @@ tasks.named<DependencyUpdatesTask>("dependencyUpdates") {
     reportfileName = "report"
 }
 
-publishing {
-    repositories {
-        maven {
-            name = "githubPackages"
-            url = URI("https://maven.pkg.github.com/bitkid/mariella")
-            // username and password (a personal Github access token) should be specified as
-            // `githubPackagesUsername` and `githubPackagesPassword` Gradle properties or alternatively
-            // as `ORG_GRADLE_PROJECT_githubPackagesUsername` and `ORG_GRADLE_PROJECT_githubPackagesPassword`
-            // environment variables
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
-}
-
 @Suppress("UnstableApiUsage")
 mavenPublishing {
     coordinates("at.aimit.mariella", project.name, System.getenv("MARIELLA_RELEASE_NAME") ?: "1.0-SNAPSHOT")
@@ -85,7 +67,7 @@ mavenPublishing {
     pom {
         name = "Mariella ${project.name}"
         description = "JPA compliant ORM for Java and data class mapper for Kotlin"
-        url = "https://github.com/bitkid/mariella/"
+        url = "https://github.com/aimit-gmbh/mariella"
         licenses {
             license {
                 name = "MIT license"
@@ -94,13 +76,13 @@ mavenPublishing {
         }
         developers {
             developer {
-                id = "bitkid"
+                id = "ssadat-guscheh-aimit"
                 name = "Sascha Sadat-Guscheh"
                 email = "sascha.sadat-guscheh@scinteco.com"
             }
         }
         scm {
-            url = "https://github.com/bitkid/mariella"
+            url = "https://github.com/aimit-gmbh/mariella"
         }
     }
 }

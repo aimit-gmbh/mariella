@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0" xmlns="http://java.sun.com/xml/ns/persistence"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
+    <persistence-unit name="sample/h2">
+        <properties>
+            <property name="org.mariella.persistence.persistenceBuilder"
+                      value="org.mariella.persistence.h2.H2PersistenceBuilder"/>
+            <property
+                    name="org.mariella.persistence.mapping_builder.DatabaseMetaDataDatabaseInfoProvider.ignoreSchema"
+                    value="true"/>
+            <property
+                    name="org.mariella.persistence.mapping_builder.DatabaseMetaDataDatabaseInfoProvider.ignoreCatalog"
+                    value="true"/>
+            <!--			<property name="org.mariella.persistence.defaultBatchStrategy" value="at.rufus.persistence.api.BatchStrategy"/> -->
+            <property name="org.mariella.persistence.db.uppercase" value="true"/>
+            <property name="org.mariella.persistence.parameter_style" value="indexed"/>>
+            <property name="org.mariella.persistence.packages" value="org.mariella.test.model"/>
+            <property name="org.mariella.persistence.jdbcdriver" value="org.h2.Driver"/>
+            <property name="org.mariella.persistence.connectstring" value="jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"/>
+            <property name="org.mariella.persistence.dbuser" value="sa"/>
+            <property name="org.mariella.persistence.dbpassword" value=""/>
+        </properties>
+    </persistence-unit>
+    <persistence-unit name="sample/postgres">
+        <properties>
+            <property name="org.mariella.persistence.persistenceBuilder"
+                      value="org.mariella.persistence.postgres.PostgresPersistenceBuilder"/>
+            <property
+                    name="org.mariella.persistence.mapping_builder.DatabaseMetaDataDatabaseInfoProvider.ignoreSchema"
+                    value="true"/>
+            <property
+                    name="org.mariella.persistence.mapping_builder.DatabaseMetaDataDatabaseInfoProvider.ignoreCatalog"
+                    value="true"/>
+            <!--			<property name="org.mariella.persistence.defaultBatchStrategy" value="at.rufus.persistence.api.BatchStrategy"/> -->
+            <property name="org.mariella.persistence.db.uppercase" value="false"/>
+            <property name="org.mariella.persistence.parameter_style" value="jdbc"/>>
+            <property name="org.mariella.persistence.packages" value="org.mariella.test.model"/>
+
+            <property name="org.mariella.persistence.jdbcdriver" value="org.postgresql.Driver"/>
+            <property name="org.mariella.persistence.connectstring" value="jdbc:postgresql://localhost:5432/postgres"/>
+            <property name="org.mariella.persistence.dbuser" value="postgres"/>
+            <property name="org.mariella.persistence.dbpassword" value="postgres"/>
+        </properties>
+    </persistence-unit>
+
+</persistence>

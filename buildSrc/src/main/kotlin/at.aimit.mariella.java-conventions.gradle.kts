@@ -1,0 +1,106 @@
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+import java.net.URI
+
+plugins {
+    `java-library`
+    id("com.vanniktech.maven.publish")
+    id("com.github.ben-manes.versions")
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api("javax.persistence:javax.persistence-api:2.2")
+    implementation("org.slf4j:slf4j-api:2.0.12")
+}
+
+tasks.withType(JavaCompile::class) {
+    sourceCompatibility = "18"
+    targetCompatibility = "18"
+}
+
+testing {
+    suites {
+        // Configure the built-in test suite
+        @Suppress("UnstableApiUsage") val test by getting(JvmTestSuite::class) {
+            // Use JUnit Jupiter test framework
+            useJUnitJupiter("5.9.2")
+        }
+    }
+}
+
+tasks.withType(Test::class) {
+    minHeapSize = "512m"
+    maxHeapSize = "1024m"
+    failFast = true
+
+    testLogging {
+        events(TestLogEvent.FAILED)
+        exceptionFormat = TestExceptionFormat.FULL
+    }
+}
+
+fun isNonStable(version: String): Boolean {
+    val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
+    val regex = "^[0-9,.v-]+(-r)?$".toRegex()
+    val isStable = stableKeyword || regex.matches(version)
+    return isStable.not()
+}
+
+tasks.named<DependencyUpdatesTask>("dependencyUpdates") {
+    rejectVersionIf {
+        isNonStable(candidate.version)
+    }
+    gradleReleaseChannel = "current"
+    outputFormatter = "json"
+    outputDir = "build/dependencyUpdates"
+    reportfileName = "report"
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "githubPackages"
+            url = URI("https://maven.pkg.github.com/bitkid/mariella")
+            // username and password (a personal Github access token) should be specified as
+            // `githubPackagesUsername` and `githubPackagesPassword` Gradle properties or alternatively
+            // as `ORG_GRADLE_PROJECT_githubPackagesUsername` and `ORG_GRADLE_PROJECT_githubPackagesPassword`
+            // environment variables
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+}
+
+@Suppress("UnstableApiUsage")
+mavenPublishing {
+    coordinates("at.aimit.mariella", project.name, System.getenv("MARIELLA_RELEASE_NAME") ?: "1.0-SNAPSHOT")
+    signAllPublications()
+    pom {
+        name = "Mariella ${project.name}"
+        description = "JPA compliant ORM for Java and data class mapper for Kotlin"
+        url = "https://github.com/bitkid/mariella/"
+        licenses {
+            license {
+                name = "MIT license"
+                url = "https://opensource.org/license/mit"
+            }
+        }
+        developers {
+            developer {
+                id = "bitkid"
+                name = "Sascha Sadat-Guscheh"
+                email = "sascha.sadat-guscheh@scinteco.com"
+            }
+        }
+        scm {
+            url = "https://github.com/bitkid/mariella"
+        }
+    }
+}

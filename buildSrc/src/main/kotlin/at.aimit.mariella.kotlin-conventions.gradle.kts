@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -6,7 +7,7 @@ plugins {
     id("at.aimit.mariella.java-conventions")
 }
 
-val coroutinesVersion = "1.8.0"
+val coroutinesVersion = "1.8.1"
 
 dependencies {
     // Align versions of all Kotlin components
@@ -22,8 +23,8 @@ dependencies {
 }
 
 tasks.withType(KotlinCompile::class) {
-    kotlinOptions {
-        jvmTarget = "18"
-        freeCompilerArgs = listOf("-Xjsr305=strict")
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_18)
+        freeCompilerArgs.add("-Xjsr305=strict")
     }
 }

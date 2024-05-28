@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
     api("javax.persistence:javax.persistence-api:2.2")
-    implementation("org.slf4j:slf4j-api:2.0.12")
+    implementation("org.slf4j:slf4j-api:2.0.13")
 }
 
 tasks.withType(JavaCompile::class) {
@@ -60,7 +60,6 @@ tasks.named<DependencyUpdatesTask>("dependencyUpdates") {
     reportfileName = "report"
 }
 
-@Suppress("UnstableApiUsage")
 mavenPublishing {
     coordinates("at.aimit.mariella", project.name, System.getenv("MARIELLA_RELEASE_NAME") ?: "1.0-SNAPSHOT")
     signAllPublications()

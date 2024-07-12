@@ -276,6 +276,7 @@ class MapperTest : AbstractDatabaseTest() {
             database.read {
                 val listOfUUIDs = mapper.selectPrimitive<ResourceId>(sql)
                 expectThat(listOfUUIDs).isA<List<UUID>>()
+                expectThat(listOfUUIDs).isA<List<ResourceId>>()
                 expectThat(listOfUUIDs).hasSize(3)
             }
         }

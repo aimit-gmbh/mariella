@@ -15,6 +15,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
@@ -75,15 +76,26 @@ public class ClassLoaderPersistenceUnitParser implements PersistenceUnitParser {
 
     @Override
     public void parsePersistenceUnits() throws Exception {
-        URL url = getPersistenceXmlUrl();
-        InputStream persistenceXmlIs = createPersistencUnitInputStream(url);
+    	InputStream is = createPersistencUnitInputStream();
+    	if(is != null) {
+    		parsePersistenceXml(null, is);
+    	} else {
+	    	Enumeration<URL> e = classLoader.getResources("META-INF/persistence.xml");
+	    	while(e.hasMoreElements()) {
+		        URL url = e.nextElement();
+		        is = createPersistencUnitInputStream(url);
+		        parsePersistenceXml(url, is);
+	    	}
+    	}
+    }
 
+    private void parsePersistenceXml(URL url, InputStream is) throws Exception {
         PersistenceXmlHandler handler = new PersistenceXmlHandler();
         URL rootUrl = getRootUrl(url);
 
         @SuppressWarnings("deprecation") XMLReader reader = XMLReaderFactory.createXMLReader();
         reader.setContentHandler(handler);
-        reader.parse(new InputSource(persistenceXmlIs));
+        reader.parse(new InputSource(is));
 
         List<UnitInfo> infos = handler.getUnitInfos();
         for (UnitInfo unitInfo : infos) {
@@ -92,7 +104,12 @@ public class ClassLoaderPersistenceUnitParser implements PersistenceUnitParser {
 
         this.unitInfos.addAll(infos);
     }
+    
 
+    protected InputStream createPersistencUnitInputStream() throws Exception {
+    	return null;
+    }
+    
     protected InputStream createPersistencUnitInputStream(URL url) throws Exception {
         InputStream persistenceXmlIs = url.openStream();
         if (persistenceXmlIs == null) {
@@ -113,20 +130,6 @@ public class ClassLoaderPersistenceUnitParser implements PersistenceUnitParser {
         return rootUrl;
     }
 
-
-    protected URL getPersistenceXmlUrl() throws Exception {
-        String arg = System.getProperty("persistence.xml");
-        if (arg != null) {
-            File persistenceLocation = new File(arg);
-            return persistenceLocation.toURI().toURL();
-        }
-
-        URL url = classLoader.getResource("META-INF/persistence.xml");
-        if (url == null) {
-            throw new Exception("No persistence.xml found.");
-        }
-        return url;
-    }
 
     @Override
     public List<UnitInfo> getUnitInfos() {

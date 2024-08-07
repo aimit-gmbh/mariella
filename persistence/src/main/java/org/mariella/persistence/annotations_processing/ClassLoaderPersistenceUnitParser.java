@@ -76,17 +76,17 @@ public class ClassLoaderPersistenceUnitParser implements PersistenceUnitParser {
 
     @Override
     public void parsePersistenceUnits() throws Exception {
-    	InputStream is = createPersistencUnitInputStream();
-    	if(is != null) {
-    		parsePersistenceXml(null, is);
-    	} else {
-	    	Enumeration<URL> e = classLoader.getResources("META-INF/persistence.xml");
-	    	while(e.hasMoreElements()) {
-		        URL url = e.nextElement();
-		        is = createPersistencUnitInputStream(url);
-		        parsePersistenceXml(url, is);
-	    	}
-    	}
+        InputStream is = createPersistencUnitInputStream();
+        if (is != null) {
+            parsePersistenceXml(null, is);
+        } else {
+            Enumeration<URL> e = classLoader.getResources("META-INF/persistence.xml");
+            while (e.hasMoreElements()) {
+                URL url = e.nextElement();
+                is = createPersistencUnitInputStream(url);
+                parsePersistenceXml(url, is);
+            }
+        }
     }
 
     private void parsePersistenceXml(URL url, InputStream is) throws Exception {
@@ -104,12 +104,12 @@ public class ClassLoaderPersistenceUnitParser implements PersistenceUnitParser {
 
         this.unitInfos.addAll(infos);
     }
-    
+
 
     protected InputStream createPersistencUnitInputStream() throws Exception {
-    	return null;
+        return null;
     }
-    
+
     protected InputStream createPersistencUnitInputStream(URL url) throws Exception {
         InputStream persistenceXmlIs = url.openStream();
         if (persistenceXmlIs == null) {

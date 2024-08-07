@@ -31,5 +31,5 @@ dependencies {
     testImplementation("org.flywaydb:flyway-core:$flywayVersion")
     testImplementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
 
-    testImplementation("io.strikt:strikt-core:0.34.1")
+    testImplementation("io.strikt:strikt-core:0.35.1")
 }

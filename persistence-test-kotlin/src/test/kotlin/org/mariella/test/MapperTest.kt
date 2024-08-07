@@ -21,11 +21,17 @@ import java.time.Instant
 import java.util.*
 
 class MapperTest : AbstractDatabaseTest() {
+
     data class ClassWithStandardMappings(
         val id: UUID,
         val description: String?,
         val lockDate: Instant?
     )
+
+    @JvmInline
+    value class ResourceId(val uuid: UUID)
+
+    data class ResourceWithId(val id: ResourceId, val description: String?)
 
     enum class TestEnum { A, B }
 
@@ -62,6 +68,32 @@ class MapperTest : AbstractDatabaseTest() {
                 listOfNodes.forEach {
                     expectThat(it.description).isEqualTo("hello")
                 }
+            }
+        }
+    }
+
+    @Test
+    fun `can map value classes`() {
+        val sql = "select id, 'hello' as description from resource_node"
+
+        runTest {
+            createFiles(3)
+            database.read {
+                val listOfNodes = mapper.select<ResourceWithId>(sql)
+                expectThat(listOfNodes).hasSize(3)
+            }
+        }
+    }
+
+    @Test
+    fun `can pass value classes as parameter`() {
+        val sql = "select id, 'hello' as description from resource_node where id = $1"
+
+        runTest {
+            val id = createFiles(1).single().resource!!.id
+            database.read {
+                val listOfNodes = mapper.select<ResourceWithId>(sql, ResourceId(id))
+                expectThat(listOfNodes).hasSize(1)
             }
         }
     }
@@ -229,6 +261,22 @@ class MapperTest : AbstractDatabaseTest() {
             database.read {
                 val listOfUUIDs = mapper.selectPrimitive<UUID>(sql)
                 expectThat(listOfUUIDs).isA<List<UUID>>()
+                expectThat(listOfUUIDs).hasSize(3)
+            }
+        }
+    }
+
+    @Test
+    fun `can map value classes when selecting primitives`() {
+        val sql = "select id from resource_node"
+
+        runTest {
+            createFiles(3)
+
+            database.read {
+                val listOfUUIDs = mapper.selectPrimitive<ResourceId>(sql)
+                expectThat(listOfUUIDs).isA<List<UUID>>()
+                expectThat(listOfUUIDs).isA<List<ResourceId>>()
                 expectThat(listOfUUIDs).hasSize(3)
             }
         }

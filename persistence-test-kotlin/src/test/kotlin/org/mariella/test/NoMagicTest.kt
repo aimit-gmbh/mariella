@@ -5,12 +5,19 @@ import com.zaxxer.hikari.HikariDataSource
 import io.vertx.core.Vertx
 import io.vertx.jdbcclient.JDBCPool
 import io.vertx.kotlin.coroutines.coAwait
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.mariella.persistence.kotlin.Database
 import org.mariella.persistence.kotlin.MariellaFactory
 import org.mariella.persistence.kotlin.TrackingSupport
+import org.mariella.test.simple.OtherSimpleEntity
+import org.mariella.test.util.read
+import org.mariella.test.util.write
 import strikt.api.expectThat
 import strikt.assertions.hasSize
+import strikt.assertions.isEqualTo
 import java.util.*
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -18,6 +25,11 @@ import javax.persistence.Id
 import javax.persistence.Table
 
 class NoMagicTest {
+
+    private val vertx = Vertx.vertx()
+
+    @AfterEach
+    fun closeVertx() = runBlocking<Unit> { vertx.close().coAwait() }
 
     @Table(name = "simple")
     @Entity
@@ -36,41 +48,7 @@ class NoMagicTest {
     @Test
     fun `plain h2 example without test helper classes`() {
         runTest {
-            val databaseUrl = "jdbc:h2:mem:${UUID.randomUUID()};MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1"
-            val databaseUser = "sa"
-
-            // setup code (create pool and create db structure)
-            val vertx = Vertx.vertx()
-            val poolConfig = HikariConfig()
-            poolConfig.jdbcUrl = databaseUrl
-            poolConfig.username = databaseUser
-            poolConfig.password = ""
-            poolConfig.maximumPoolSize = 10
-            poolConfig.isAutoCommit = false
-            poolConfig.transactionIsolation = "TRANSACTION_READ_COMMITTED"
-            poolConfig.validate()
-
-            val pool = JDBCPool.pool(vertx, HikariDataSource(poolConfig))
-
-            val connection = pool.connection.coAwait()
-            connection.preparedQuery(
-                """
-                create table simple (id uuid not null, name varchar, age int, constraint simple_pk primary key (id))
-            """.trimIndent()
-            ).execute().coAwait()
-            connection.close().coAwait()
-            // end setup code
-
-            // reads metadata from the database and the jpa annotations
-            // the mapping can be cached as long as the database does not change
-            val mapping = MariellaFactory.createMariellaMapping(
-                jdbcUrl = databaseUrl,
-                entityPackages = listOf("org.mariella.test"),
-                user = databaseUser,
-                password = ""
-            )
-            // immutable and thread safe
-            val database = MariellaFactory.createDatabase(mapping, pool)
+            val database = createDatabase("org.mariella.test")
 
             // typical interaction 1 - insert data
             // all modifications done within a session are not thread safe
@@ -123,8 +101,80 @@ class NoMagicTest {
             }
             context3.flush()
             connectionWithTransaction3.commitAndClose()
-
-            vertx.close()
         }
+    }
+
+    @Test
+    fun `can connect to 2 different databases with different mappings`() {
+        runTest {
+            val database = createDatabase("org.mariella.test")
+            val database1 = createDatabase("org.mariella.test.simple")
+
+            database.write {
+                val modify = modify()
+                modify.create<SimpleEntity> {
+                    it.name = "Bob"
+                    it.age = 42
+                }
+                modify.flush()
+            }
+
+            database1.write {
+                val modify = modify()
+                modify.create<OtherSimpleEntity> {
+                    it.name = "Alice"
+                    it.age = 42
+                }
+                modify.flush()
+            }
+
+            database.read {
+                val count = mapper.selectOneExistingPrimitive<Int>("select count(*) from simple")
+                expectThat(count).isEqualTo(1)
+            }
+
+            database1.read {
+                val count = mapper.selectOneExistingPrimitive<Int>("select count(*) from simple")
+                expectThat(count).isEqualTo(1)
+            }
+        }
+    }
+
+    private suspend fun createDatabase(packageName: String): Database {
+        val databaseUrl = "jdbc:h2:mem:${UUID.randomUUID()};MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1"
+        val databaseUser = "sa"
+
+        // setup code (create pool and create db structure)
+        val poolConfig = HikariConfig()
+        poolConfig.jdbcUrl = databaseUrl
+        poolConfig.username = databaseUser
+        poolConfig.password = ""
+        poolConfig.maximumPoolSize = 10
+        poolConfig.isAutoCommit = false
+        poolConfig.transactionIsolation = "TRANSACTION_READ_COMMITTED"
+        poolConfig.validate()
+
+        val pool = JDBCPool.pool(vertx, HikariDataSource(poolConfig))
+
+        val connection = pool.connection.coAwait()
+        connection.preparedQuery(
+            """
+                    create table simple (id uuid not null, name varchar, age int, constraint simple_pk primary key (id))
+                """.trimIndent()
+        ).execute().coAwait()
+        connection.close().coAwait()
+        // end setup code
+
+        // reads metadata from the database and the jpa annotations
+        // the mapping can be cached as long as the database does not change
+        val mapping = MariellaFactory.createMariellaMapping(
+            jdbcUrl = databaseUrl,
+            entityPackages = listOf(packageName),
+            user = databaseUser,
+            password = ""
+        )
+        // immutable and thread safe
+        val database = MariellaFactory.createDatabase(mapping, pool)
+        return database
     }
 }

@@ -10,11 +10,7 @@ import java.nio.charset.StandardCharsets
 
 internal class VertxPersistenceUnitParser(classLoader: ClassLoader, private val persistenceXml: String) :
     ClassLoaderPersistenceUnitParser(classLoader) {
-    override fun getPersistenceXmlUrl(): URL? {
-        return null
-    }
-
-    override fun createPersistencUnitInputStream(url: URL?): InputStream {
+    override fun createPersistencUnitInputStream(): InputStream {
         return ByteArrayInputStream(persistenceXml.toByteArray(StandardCharsets.UTF_8))
     }
 

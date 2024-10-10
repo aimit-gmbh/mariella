@@ -7,11 +7,11 @@ plugins {
     id("at.aimit.mariella.java-conventions")
 }
 
-val coroutinesVersion = "1.8.1"
+val coroutinesVersion = "1.9.0"
 
 dependencies {
     // Align versions of all Kotlin components
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.20"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.21"))
 
     // Use the Kotlin JDK 8 standard library
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")

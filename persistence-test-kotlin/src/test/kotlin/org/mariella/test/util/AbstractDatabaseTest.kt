@@ -6,9 +6,9 @@ import io.vertx.core.Vertx
 import io.vertx.jdbcclient.JDBCPool
 import io.vertx.kotlin.coroutines.coAwait
 import io.vertx.pgclient.PgBuilder
+import io.vertx.pgclient.PgConnectOptions
 import io.vertx.sqlclient.Pool
 import io.vertx.sqlclient.PoolOptions
-import io.vertx.sqlclient.SqlConnectOptions
 import kotlinx.coroutines.runBlocking
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.AfterEach
@@ -80,12 +80,13 @@ private fun createJdbcPool(vertx: Vertx, databaseConfig: DatabaseConfig, autoCom
 
     return JDBCPool.pool(
         vertx,
-        HikariDataSource(poolConfig)
+        HikariDataSource(poolConfig),
+        PoolOptions().setMaxSize(databaseConfig.poolSize)
     )
 }
 
 private fun createPostgresPool(vertx: Vertx, databaseConfig: DatabaseConfig): Pool {
-    val connectOptions = SqlConnectOptions()
+    val connectOptions = PgConnectOptions()
         .setPort(databaseConfig.port)
         .setHost(databaseConfig.host)
         .setDatabase(databaseConfig.database)
@@ -189,7 +190,7 @@ val PROTOTYPE_POSTGRES_DB: String by lazy {
         try {
             runStatementWithoutTransaction("create database ${prototypeConfig.database}", prototypeConfig, it.vertx)
         } catch (e: Exception) {
-            error("postgres not running! start with 'docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres'")
+            throw RuntimeException("postgres probably not running! start with 'docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres'", e)
         }
     }
     migrateDb(prototypeConfig, "db")

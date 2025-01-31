@@ -24,6 +24,7 @@ create table person
 create table company
 (
     id   uuid primary key,
+    boss_id uuid,
     name varchar(32),
     foreign key (id) references partner (id)
 );

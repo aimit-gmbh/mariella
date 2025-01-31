@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource
 import io.vertx.core.Vertx
 import io.vertx.jdbcclient.JDBCPool
 import io.vertx.kotlin.coroutines.coAwait
+import io.vertx.sqlclient.PoolOptions
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
@@ -154,14 +155,10 @@ class NoMagicTest {
         poolConfig.transactionIsolation = "TRANSACTION_READ_COMMITTED"
         poolConfig.validate()
 
-        val pool = JDBCPool.pool(vertx, HikariDataSource(poolConfig))
+        val pool = JDBCPool.pool(vertx, HikariDataSource(poolConfig), PoolOptions().setMaxSize(10))
 
         val connection = pool.connection.coAwait()
-        connection.preparedQuery(
-            """
-                    create table simple (id uuid not null, name varchar, age int, constraint simple_pk primary key (id))
-                """.trimIndent()
-        ).execute().coAwait()
+        connection.preparedQuery("create table simple (id uuid not null, name varchar, age int, constraint simple_pk primary key (id))").execute().coAwait()
         connection.close().coAwait()
         // end setup code
 

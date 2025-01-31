@@ -24,7 +24,7 @@ dependencies {
 
     // postgres
     testImplementation("org.postgresql:postgresql:$postgresVersion")
-    testImplementation("com.ongres.scram:client:$scramClientVersion")
+    testImplementation("com.ongres.scram:scram-client:$scramClientVersion")
     testImplementation("io.vertx:vertx-pg-client:$vertxVersion")
 
     // flyway

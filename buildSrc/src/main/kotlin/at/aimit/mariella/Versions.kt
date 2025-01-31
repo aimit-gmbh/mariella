@@ -1,9 +1,9 @@
 package at.aimit.mariella
 
-const val vertxVersion = "4.5.9"
-const val logbackVersion = "1.5.7"
-const val postgresVersion = "42.7.4"
-const val flywayVersion = "10.17.3"
+const val vertxVersion = "5.0.0.CR4"
+const val logbackVersion = "1.5.16"
+const val postgresVersion = "42.7.5"
+const val flywayVersion = "11.3.0"
 const val h2Version = "2.2.220"
-const val hikariVersion = "5.1.0"
-const val scramClientVersion = "2.1"
+const val hikariVersion = "6.2.1"
+const val scramClientVersion = "3.1"

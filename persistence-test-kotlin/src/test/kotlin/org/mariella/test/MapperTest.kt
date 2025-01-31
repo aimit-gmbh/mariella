@@ -13,10 +13,7 @@ import org.mariella.test.util.read
 import org.mariella.test.util.write
 import strikt.api.expectThat
 import strikt.api.expectThrows
-import strikt.assertions.hasSize
-import strikt.assertions.isA
-import strikt.assertions.isEmpty
-import strikt.assertions.isEqualTo
+import strikt.assertions.*
 import java.time.Instant
 import java.util.*
 
@@ -165,7 +162,8 @@ class MapperTest : AbstractDatabaseTest() {
                     "insert into batch_job_instance (job_instance_id, version, job_name, job_key) values ($1, $2, $3, $4)",
                     1, 1, "bla", "blup1"
                 )
-                expectThat(res.size()).isEqualTo(-1)
+                //h2 returns -1, postgres 0
+                expectThat(listOf(0, -1)).contains(res.size())
             }
             checkCountOfTable("batch_job_instance", 1)
         }

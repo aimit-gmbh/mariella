@@ -98,7 +98,7 @@ public class ReferencePropertyMapping extends RelationshipPropertyMapping {
                         ColumnMapping cm = getReferencedClassMapping().getColumnMapping(joinColumn.getReferencedUpdateColumn());
                         relatedValue = ModifiableAccessor.Singleton.getValue(value, cm.getPropertyDescription());
                     }
-                    persistor.getPrimaryRow(getClassMapping().getPrimaryUpdateTable()).setProperty(joinColumn.getMyUpdateColumn(), relatedValue);
+                    getClassMapping().getPrimaryRow(persistor, this).setProperty(joinColumn.getMyUpdateColumn(), relatedValue);
                 }
             }
         }

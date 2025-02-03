@@ -2,9 +2,11 @@ package org.mariella.test
 
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
+import org.mariella.persistence.kotlin.DatabaseException
 import org.mariella.test.entities.*
 import org.mariella.test.util.*
 import strikt.api.expectThat
+import strikt.api.expectThrows
 import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
@@ -52,6 +54,30 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             checkCountOfTable("resource_node_version", 1)
             checkCountOfTable("file_node", 1)
             checkCountOfTable("file_version", 1)
+        }
+    }
+
+    @Test
+    fun `throws database exception when persisting`() {
+        runTest {
+            database.write {
+                val c = modify()
+                c.create<Space> {
+                    it.name = "hansi"
+                    it.securityConcept = SecurityConcept.Space
+                }
+                c.flush()
+            }
+            expectThrows<DatabaseException> {
+                database.write {
+                    val c = modify()
+                    c.create<Space> {
+                        it.name = "hansi"
+                        it.securityConcept = SecurityConcept.Space
+                    }
+                    c.flush()
+                }
+            }
         }
     }
 

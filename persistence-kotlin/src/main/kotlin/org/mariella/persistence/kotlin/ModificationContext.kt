@@ -50,7 +50,7 @@ class ModificationContext internal constructor(
 
     suspend fun flush() {
         if (tracker.isDirty) {
-            val ex = RuntimeException("persisting failed")
+            val ex = DatabaseException("persisting failed")
             try {
                 VertxPersistor(
                     databaseSession.sqlClient,
@@ -74,9 +74,8 @@ class ModificationContext internal constructor(
         val classDesc = databaseSession.schemaMapping.schemaDescription.getClassDescription(clazz.name)
         val cd = ClusterDescription(classDesc, *paths)
         val clusterLoader = VertxClusterLoader<T>(databaseSession.schemaMapping, cd)
-        val loaderContext =
-            LoaderContext(modifications, databaseSession.modifiableFactory).apply { this.isUpdate = isUpdate }
-        val ex = RuntimeException("loading cluster failed")
+        val loaderContext = LoaderContext(modifications, databaseSession.modifiableFactory).apply { this.isUpdate = isUpdate }
+        val ex = DatabaseException("loading cluster failed")
         return try {
             clusterLoader.load(databaseSession.sqlClient, loaderContext, conditionProvider)
         } catch (e: Exception) {

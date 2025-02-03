@@ -1,19 +1,23 @@
 package org.mariella.test
 
+import io.vertx.pgclient.PgException
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import org.h2.jdbc.JdbcSQLSyntaxErrorException
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import org.mariella.persistence.kotlin.DatabaseException
 import org.mariella.test.entities.Entity
 import org.mariella.test.entities.ResourceType
 import org.mariella.test.entities.SecurityConcept
-import org.mariella.test.util.AbstractDatabaseTest
-import org.mariella.test.util.createFiles
-import org.mariella.test.util.read
-import org.mariella.test.util.write
+import org.mariella.test.util.*
 import strikt.api.expectThat
 import strikt.api.expectThrows
-import strikt.assertions.*
+import strikt.assertions.hasSize
+import strikt.assertions.isA
+import strikt.assertions.isEmpty
+import strikt.assertions.isEqualTo
 import java.time.Instant
 import java.util.*
 
@@ -138,6 +142,37 @@ class MapperTest : AbstractDatabaseTest() {
     }
 
     @Test
+    fun `cursor fails with database exception`() {
+        val sql = "asdfgadfgdafg"
+
+        runTest {
+            database.read {
+                expectThrows<DatabaseException> { mapper.cursor<ClassWithStandardMappings>(sql, batchSize = 9).first() }
+            }
+        }
+    }
+
+    @Test
+    fun `can extract db exception`() {
+        runTest {
+            database.read {
+                try {
+                    mapper.cursor<ClassWithStandardMappings>("asdfgadfgdafg").first()
+                    fail()
+                } catch (d: DatabaseException) {
+                    if (DATABASE_TYPE == DatabaseType.POSTGRES) {
+                        val ex = d.unwrapOrThrow<PgException>()
+                        expectThat(ex.sqlState).isEqualTo("42601")
+                    } else {
+                        val ex = d.unwrapOrThrow<JdbcSQLSyntaxErrorException>()
+                        expectThat(ex.sqlState).isEqualTo("42001")
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
     fun `can execute batches`() {
         runTest {
             database.write {
@@ -154,6 +189,22 @@ class MapperTest : AbstractDatabaseTest() {
     }
 
     @Test
+    fun `batches fail with database exception`() {
+        runTest {
+            database.write {
+                val mapper = modify().mapper
+                expectThrows<DatabaseException> {
+                    mapper.executeBatch(
+                        "insert into asdasd (job_instance_id, version, job_name, job_key) values ($1, $2, $3, $4)",
+                        listOf(listOf(1, 1, "bla", "blup1"), listOf(2, 1, "bla", "blup2"), listOf(3, 1, "bla", "blup3"), listOf(4, 1, "bla", "blup4"), listOf(5, 1, "bla", "blup5")),
+                        2
+                    )
+                }
+            }
+        }
+    }
+
+    @Test
     fun `can execute statement`() {
         runTest {
             database.write {
@@ -162,8 +213,11 @@ class MapperTest : AbstractDatabaseTest() {
                     "insert into batch_job_instance (job_instance_id, version, job_name, job_key) values ($1, $2, $3, $4)",
                     1, 1, "bla", "blup1"
                 )
-                //h2 returns -1, postgres 0
-                expectThat(listOf(0, -1)).contains(res.size())
+                if (DATABASE_TYPE == DatabaseType.POSTGRES) {
+                    expectThat(res.size()).isEqualTo(0)
+                } else {
+                    expectThat(res.size()).isEqualTo(-1)
+                }
             }
             checkCountOfTable("batch_job_instance", 1)
         }
@@ -214,7 +268,17 @@ class MapperTest : AbstractDatabaseTest() {
         val sql = "select id from resource_node"
         runTest {
             database.read {
-                assertThrows<RuntimeException> { mapper.select<ClassWithNullableAndDefault>(sql) }
+                expectThrows<DatabaseException> { mapper.select<ClassWithNullableAndDefault>(sql) }
+            }
+        }
+    }
+
+    @Test
+    fun `fails on invalid sql`() {
+        val sql = "asdfjghkadfhgksdfhjg"
+        runTest {
+            database.read {
+                expectThrows<DatabaseException> { mapper.select<ClassWithStandardMappings>(sql) }
             }
         }
     }
@@ -329,7 +393,7 @@ class MapperTest : AbstractDatabaseTest() {
 
         runTest {
             database.read {
-                expectThrows<RuntimeException> { mapper.selectOneExistingPrimitive<UUID>(sql) }
+                expectThrows<DatabaseException> { mapper.selectOneExistingPrimitive<UUID>(sql) }
             }
         }
     }
@@ -341,7 +405,7 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             database.read {
                 createFiles(2)
-                expectThrows<RuntimeException> { mapper.selectOneExistingPrimitive<UUID>(sql) }
+                expectThrows<DatabaseException> { mapper.selectOneExistingPrimitive<UUID>(sql) }
             }
         }
     }
@@ -354,7 +418,7 @@ class MapperTest : AbstractDatabaseTest() {
             createFiles(1)
 
             database.read {
-                expectThrows<RuntimeException> { mapper.selectPrimitive<UUID>(sql) }
+                expectThrows<DatabaseException> { mapper.selectPrimitive<UUID>(sql) }
             }
         }
     }

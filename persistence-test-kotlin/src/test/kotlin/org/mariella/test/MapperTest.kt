@@ -1,8 +1,11 @@
 package org.mariella.test
 
+import io.vertx.pgclient.PgException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import org.h2.jdbc.JdbcSQLSyntaxErrorException
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.mariella.persistence.kotlin.DatabaseException
 import org.mariella.test.entities.Entity
@@ -145,6 +148,26 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             database.read {
                 expectThrows<DatabaseException> { mapper.cursor<ClassWithStandardMappings>(sql, batchSize = 9).first() }
+            }
+        }
+    }
+
+    @Test
+    fun `can extract db exception`() {
+        runTest {
+            database.read {
+                try {
+                    mapper.cursor<ClassWithStandardMappings>("asdfgadfgdafg").first()
+                    fail()
+                } catch (d: DatabaseException) {
+                    if (DATABASE_TYPE == DatabaseType.POSTGRES) {
+                        val ex = d.unwrapOrThrow<PgException>()
+                        expectThat(ex.sqlState).isEqualTo("42601")
+                    } else {
+                        val ex = d.unwrapOrThrow<JdbcSQLSyntaxErrorException>()
+                        expectThat(ex.sqlState).isEqualTo("42001")
+                    }
+                }
             }
         }
     }

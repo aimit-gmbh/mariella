@@ -70,7 +70,7 @@ class Mapper internal constructor(private val sqlClient: SqlClient, private val 
 
     suspend fun <T : Any> select(sql: String, clazz: KClass<T>, vararg params: Any?): List<T> {
         val primaryConstructor = verifyConstructor(clazz)
-        val ex = RuntimeException("query failed -> $sql")
+        val ex = DatabaseException("query failed -> $sql")
         try {
             val result = runQuery(sql, params)
             if (result.size() == 0) return emptyList()
@@ -84,7 +84,7 @@ class Mapper internal constructor(private val sqlClient: SqlClient, private val 
         val primaryConstructor = clazz.primaryConstructor!!
 
         primaryConstructor.parameters.forEach {
-            if (it.isOptional && it.type.isMarkedNullable) error("mapping a nullable type with default value does not make sense")
+            if (it.isOptional && it.type.isMarkedNullable) throw DatabaseException("mapping a nullable type with default value does not make sense")
         }
         return primaryConstructor
     }
@@ -92,7 +92,7 @@ class Mapper internal constructor(private val sqlClient: SqlClient, private val 
     fun <T : Any> cursor(sql: String, clazz: KClass<T>, vararg params: Any?, batchSize: Int = 100): Flow<T> {
         val primaryConstructor = verifyConstructor(clazz)
         return flow {
-            val ex = RuntimeException("cursor failed -> $sql")
+            val ex = DatabaseException("cursor failed -> $sql")
             val cursor = try {
                 @Suppress("SqlSourceToSinkFlow") (sqlClient as SqlConnection).prepare(sql).coAwait().cursor(getTuple(params))
             } catch (e: Throwable) {
@@ -118,7 +118,7 @@ class Mapper internal constructor(private val sqlClient: SqlClient, private val 
     suspend inline fun <reified T> selectPrimitive(sql: String, vararg params: Any?): List<T> = selectPrimitive(sql, T::class, params = params)
 
     suspend fun <T> selectPrimitive(sql: String, clazz: KClass<*>, vararg params: Any?): List<T> {
-        val ex = RuntimeException("query failed -> $sql")
+        val ex = DatabaseException("query failed -> $sql")
         try {
             val result = runQuery(sql, params)
             if (result.size() == 0) return emptyList()
@@ -144,7 +144,7 @@ class Mapper internal constructor(private val sqlClient: SqlClient, private val 
     }
 
     suspend fun executeBatch(sql: String, params: List<List<Any?>>, batchSize: Int = 10000): List<RowSet<Row>> {
-        val ex = RuntimeException("batch operation failed -> $sql")
+        val ex = DatabaseException("batch operation failed -> $sql")
         try {
             @Suppress("SqlSourceToSinkFlow") val st = sqlClient.preparedQuery(sql)
             return params.chunked(batchSize).map { sublist ->
@@ -171,7 +171,12 @@ class Mapper internal constructor(private val sqlClient: SqlClient, private val 
 
     suspend inline fun <reified T> selectOnePrimitive(sql: String, vararg params: Any?): T? = selectPrimitive<T>(sql, params = params).singleOrNull()
 
-    suspend inline fun <reified T> selectOneExistingPrimitive(sql: String, vararg params: Any?): T = selectPrimitive<T>(sql, params = params).single()
+    suspend inline fun <reified T> selectOneExistingPrimitive(sql: String, vararg params: Any?): T {
+        val res = selectPrimitive<T>(sql, params = params)
+        if (res.size != 1)
+            throw DatabaseException("Expected exactly 1 result for query \"$sql\" but got ${res.size}")
+        return res.single()
+    }
 
 }
 

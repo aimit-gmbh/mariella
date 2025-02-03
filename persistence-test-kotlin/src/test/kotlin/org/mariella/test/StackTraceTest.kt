@@ -4,12 +4,14 @@ import io.vertx.kotlin.coroutines.coAwait
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
+import org.mariella.persistence.kotlin.DatabaseException
 import org.mariella.test.entities.FileVersion
 import org.mariella.test.util.AbstractDatabaseTest
 import org.mariella.test.util.createFiles
 import org.mariella.test.util.createPool
 import strikt.api.expectThat
 import strikt.assertions.contains
+import strikt.assertions.isA
 import java.util.*
 
 class StackTraceTest : AbstractDatabaseTest() {
@@ -35,6 +37,7 @@ class StackTraceTest : AbstractDatabaseTest() {
             val session = database.createSession()
             val modifications = session.modify()
             val ex = runCatching { modifications.loadEntity<FileVersion>(UUID.randomUUID()) }.exceptionOrNull()!!
+            expectThat(ex).isA<DatabaseException>()
             expectThat(ex.stackTraceToString()).contains(this@StackTraceTest.javaClass.simpleName)
         }
     }

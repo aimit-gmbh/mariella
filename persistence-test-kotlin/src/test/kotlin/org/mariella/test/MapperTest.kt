@@ -7,13 +7,13 @@ import org.junit.jupiter.api.assertThrows
 import org.mariella.test.entities.Entity
 import org.mariella.test.entities.ResourceType
 import org.mariella.test.entities.SecurityConcept
-import org.mariella.test.util.AbstractDatabaseTest
-import org.mariella.test.util.createFiles
-import org.mariella.test.util.read
-import org.mariella.test.util.write
+import org.mariella.test.util.*
 import strikt.api.expectThat
 import strikt.api.expectThrows
-import strikt.assertions.*
+import strikt.assertions.hasSize
+import strikt.assertions.isA
+import strikt.assertions.isEmpty
+import strikt.assertions.isEqualTo
 import java.time.Instant
 import java.util.*
 
@@ -162,8 +162,11 @@ class MapperTest : AbstractDatabaseTest() {
                     "insert into batch_job_instance (job_instance_id, version, job_name, job_key) values ($1, $2, $3, $4)",
                     1, 1, "bla", "blup1"
                 )
-                //h2 returns -1, postgres 0
-                expectThat(listOf(0, -1)).contains(res.size())
+                if (DATABASE_TYPE == DatabaseType.POSTGRES) {
+                    expectThat(res.size()).isEqualTo(0)
+                } else {
+                    expectThat(res.size()).isEqualTo(-1)
+                }
             }
             checkCountOfTable("batch_job_instance", 1)
         }

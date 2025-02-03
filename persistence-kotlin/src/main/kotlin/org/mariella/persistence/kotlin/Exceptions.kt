@@ -5,7 +5,7 @@ package org.mariella.persistence.kotlin
 class DatabaseException(msg: String) : RuntimeException(msg) {
     inline fun <reified T : Throwable> unwrapOrThrow(): T {
         var localCause = cause
-        while (true) {
+        repeat(100) {
             if (localCause == null) throw this
             if (localCause is T)
                 return localCause

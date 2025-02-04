@@ -38,22 +38,47 @@ class DatabaseSession internal constructor(
     }
 
     suspend fun close() {
-        vertxConnectionAndTransaction.close()
+        val ex = DatabaseException("close connection failed")
+        try {
+            vertxConnectionAndTransaction.close()
+        } catch (e: Throwable) {
+            throw ex.initCause(e)
+        }
     }
 
     suspend fun commit() {
-        vertxConnectionAndTransaction.commit()
+        val ex = DatabaseException("commit failed")
+        try {
+            vertxConnectionAndTransaction.commit()
+        } catch (e: Throwable) {
+            throw ex.initCause(e)
+        }
     }
 
     suspend fun commitAndClose() {
-        vertxConnectionAndTransaction.commitAndClose()
+        val ex = DatabaseException("commit and close failed")
+        try {
+            vertxConnectionAndTransaction.commitAndClose()
+        } catch (e: Throwable) {
+            throw ex.initCause(e)
+        }
     }
 
     suspend fun rollbackAndClose() {
-        vertxConnectionAndTransaction.rollbackAndClose()
+        val ex = DatabaseException("rollback and close failed")
+        try {
+            vertxConnectionAndTransaction.rollbackAndClose()
+        } catch (e: Throwable) {
+            throw ex.initCause(e)
+        }
     }
 
     suspend fun rollback() {
-        vertxConnectionAndTransaction.rollback()
+        val ex = DatabaseException("rollback failed")
+        try {
+            vertxConnectionAndTransaction.rollback()
+        } catch (e: Throwable) {
+            throw ex.initCause(e)
+        }
     }
 }

@@ -21,7 +21,7 @@ import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import java.time.Instant
 
-val DATABASE_TYPE = DatabaseType.H2_MEM
+val DATABASE_TYPE = if (System.getenv("MARIELLA_TEST_DB") != null) DatabaseType.valueOf(System.getenv("MARIELLA_TEST_DB")) else DatabaseType.H2_MEM
 
 /**
  * to run the tests start postgres with

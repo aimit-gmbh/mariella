@@ -191,9 +191,10 @@ class MapperTest : AbstractDatabaseTest() {
     @Test
     fun `batches fail with database exception`() {
         runTest {
-            database.write {
-                val mapper = modify().mapper
-                expectThrows<DatabaseException> {
+            expectThrows<DatabaseException> {
+                database.write {
+                    val mapper = modify().mapper
+
                     mapper.executeBatch(
                         "insert into asdasd (job_instance_id, version, job_name, job_key) values ($1, $2, $3, $4)",
                         listOf(listOf(1, 1, "bla", "blup1"), listOf(2, 1, "bla", "blup2"), listOf(3, 1, "bla", "blup3"), listOf(4, 1, "bla", "blup4"), listOf(5, 1, "bla", "blup5")),
@@ -201,6 +202,18 @@ class MapperTest : AbstractDatabaseTest() {
                     )
                 }
             }
+        }
+    }
+
+    @Test
+    fun `rollback works`() {
+        runTest {
+            expectThrows<DatabaseException> {
+                database.write {
+                    rollback()
+                    expectThrows<DatabaseException> { rollback() }.get { message }.isEqualTo("rollback failed")
+                }
+            }.get { message }.isEqualTo("commit failed")
         }
     }
 

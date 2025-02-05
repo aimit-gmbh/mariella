@@ -109,8 +109,7 @@ CREATE TABLE public.resource_node_version
     CONSTRAINT resource_version_space FOREIGN KEY (space_id) REFERENCES public.SPACE (id),
     CONSTRAINT revision_from FOREIGN KEY (revision_from_id) REFERENCES public.revision (id)
 );
-create unique index resource_version_end_uq_idx on public.resource_node_version (resource_node, revision_to_time);
-create unique index resource_version_start_uq_idx on public.resource_node_version (resource_node, revision_from_time);
+
 CREATE TABLE public.file_version
 (
     id              uuid         NOT NULL,

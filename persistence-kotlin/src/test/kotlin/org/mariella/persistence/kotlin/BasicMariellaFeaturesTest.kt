@@ -6,10 +6,7 @@ import org.mariella.persistence.kotlin.entities.*
 import org.mariella.persistence.kotlin.util.*
 import strikt.api.expectThat
 import strikt.api.expectThrows
-import strikt.assertions.hasSize
-import strikt.assertions.isEqualTo
-import strikt.assertions.isNotNull
-import strikt.assertions.isNull
+import strikt.assertions.*
 import java.time.Instant
 import java.util.*
 
@@ -55,6 +52,78 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             checkCountOfTable("resource_node_version", 1)
             checkCountOfTable("file_node", 1)
             checkCountOfTable("file_version", 1)
+        }
+    }
+
+    @Test
+    fun `can map one to many`() {
+        runTest {
+            val session = database.createSession()
+            val context = session.modify()
+
+            val space = context.addExisting<Space>(TestData.TEST_SPACE)
+            val user = context.addExisting<UserEntity>(TestData.USER_SEPPI)
+
+            val revision = context.create<Revision> {
+                it.space = space
+                it.creationUser = user
+                it.createdAt = Instant.now()
+            }
+
+            val file = context.create<File>()
+            file.space = space
+            file.comment = "my comment"
+            file.owner = user
+            file.revision = revision
+            file.createdAt = revision.createdAt
+            file.entityId = "entityId-1"
+
+            context.flush()
+            val newContext = session.modify()
+            val loadedFile = newContext.loadEntity<File>(file.id, "root", "root.resourceVersions")
+            expectThat(loadedFile!!.resourceVersions).isEmpty()
+
+            val fileVersion = newContext.create<FileVersion>()
+            fileVersion.name = "my file"
+            fileVersion.space = space
+            fileVersion.path = "/my/file/ola"
+            fileVersion.revision = revision
+            fileVersion.size = 100
+            fileVersion.resource = file
+            fileVersion.revisionFrom = revision.createdAt
+            fileVersion.versionId = file.entityId + "-1"
+
+            loadedFile.resourceVersions.add(fileVersion)
+            newContext.flush()
+
+            val newestContext = session.modify()
+            val newLoadedFile = newestContext.loadEntity<File>(file.id, "root.resourceVersions")
+            expectThat(newLoadedFile!!.resourceVersions).hasSize(1)
+
+            val fileVersion2 = newestContext.create<FileVersion>()
+            fileVersion2.name = "my file"
+            fileVersion2.space = space
+            fileVersion2.path = "/my/file/ola"
+            fileVersion2.revision = revision
+            fileVersion2.size = 100
+            fileVersion2.resource = file
+            fileVersion2.revisionFrom = revision.createdAt
+            fileVersion2.revisionTo = Instant.now()
+            fileVersion2.versionId = file.entityId + "-1"
+            newLoadedFile.resourceVersions.add(fileVersion2)
+            newestContext.flush()
+
+            val fileWith2 = newestContext.loadEntity<File>(file.id, "root", "root.resourceVersions")
+            expectThat(newLoadedFile.resourceVersions).hasSize(2)
+
+            newestContext.delete<FileVersion>(fileWith2!!.resourceVersions[0].id)
+            newestContext.flush()
+            newestContext.loadEntity<File>(file.id, "root", "root.resourceVersions")
+            expectThat(newLoadedFile.resourceVersions).hasSize(1)
+
+            val version = fileWith2.resourceVersions.removeFirst()
+            expectThat(version.resource).isNull()
+            expectThrows<DatabaseException> { newestContext.flush() }
         }
     }
 

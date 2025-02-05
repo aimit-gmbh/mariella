@@ -1,5 +1,6 @@
 package org.mariella.persistence.kotlin.entities
 
+import org.mariella.persistence.runtime.TrackedList
 import java.time.Instant
 import javax.persistence.*
 
@@ -31,6 +32,9 @@ abstract class Resource : Entity() {
 
     @get:Column(name = "entity_id")
     var entityId: String by changeSupport()
+
+    @get:OneToMany(mappedBy = "resource")
+    var resourceVersions: MutableList<ResourceVersion> = TrackedList(propertyChangeSupport, "resourceVersions")
 
     abstract fun isContainer(): Boolean
 }

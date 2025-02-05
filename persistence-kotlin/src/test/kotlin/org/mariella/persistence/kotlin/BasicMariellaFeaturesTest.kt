@@ -208,9 +208,13 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
 
             val session = database.createSession()
             val context = session.modify()
-            val fileVersions = context.loadEntities<FileVersion>(fileVersionIds)
+            val fileVersions = context.loadEntities<FileVersion>(fileVersionIds, "root", "root.revision", "root.space")
 
             expectThat(fileVersions).hasSize(3)
+            fileVersions.forEach {
+                expectThat(it.space).isNotNull()
+                expectThat(it.revision).isNotNull()
+            }
             session.close()
         }
     }

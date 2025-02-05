@@ -11,6 +11,7 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 import strikt.assertions.isNull
 import java.time.Instant
+import java.util.*
 
 class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
 
@@ -23,10 +24,11 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             val space = context.addExisting<Space>(TestData.TEST_SPACE)
             val user = context.addExisting<UserEntity>(TestData.USER_SEPPI)
 
-            val revision = context.create<Revision>()
-            revision.space = space
-            revision.creationUser = user
-            revision.createdAt = Instant.now()
+            val revision = context.create<Revision> {
+                it.space = space
+                it.creationUser = user
+                it.createdAt = Instant.now()
+            }
 
             val file = context.create<File>()
             file.space = space
@@ -95,6 +97,16 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             database.read {
                 val entity = modify().loadEntity<FileVersion>(fileId)!!
                 expectThat(entity.name).isEqualTo("asdasdasdasdasd")
+            }
+        }
+    }
+
+    @Test
+    fun `flush works with no modification`() {
+        runTest {
+            database.write {
+                val context = modify()
+                context.flush()
             }
         }
     }
@@ -200,6 +212,19 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
 
             expectThat(fileVersions).hasSize(3)
             session.close()
+        }
+    }
+
+    @Test
+    fun `fails when updating a non existing entity`() {
+        runTest {
+            val session = database.createSession()
+            val context = session.modify()
+            expectThrows<RuntimeException> {
+                context.updateOne<FileVersion>(UUID.randomUUID()) {
+                    it.name = "asdasdasdasdasd"
+                }
+            }
         }
     }
 

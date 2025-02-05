@@ -70,6 +70,7 @@ CREATE TABLE public.resource_node
     description        varchar(4000)            NULL,
     revision_id        uuid                     NOT NULL,
     revision_time      TIMESTAMP WITH TIME ZONE NOT NULL,
+    locked_at TIMESTAMP WITH TIME ZONE NULL,
     entity_id          varchar(50)              NOT NULL,
     space_id           uuid                     NOT NULL,
     resource_character uuid                     NULL,

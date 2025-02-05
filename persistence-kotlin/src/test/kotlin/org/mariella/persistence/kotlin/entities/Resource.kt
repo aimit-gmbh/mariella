@@ -26,6 +26,9 @@ abstract class Resource : Entity() {
     @get:Column(name = "revision_time")
     var createdAt: Instant by changeSupport()
 
+    @get:Column(name = "locked_at")
+    var lockedAt: Instant? by changeSupport()
+
     @get:Column(name = "entity_id")
     var entityId: String by changeSupport()
 

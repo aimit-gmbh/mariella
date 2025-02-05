@@ -58,9 +58,9 @@ public class DatabaseMetaDataDatabaseInfoProvider implements DatabaseInfoProvide
     private boolean equals(String s1, String s2) {
         if (s1 == null && s2 == null) {
             return true;
-        } else if (s1 == null && s2.equals("")) {
+        } else if (s1 == null && s2.isEmpty()) {
             return true;
-        } else if (s2 == null && s1.equals("")) {
+        } else if (s2 == null && s1.isEmpty()) {
             return true;
         } else if (s1 == null || s2 == null) {
             return false;
@@ -71,10 +71,10 @@ public class DatabaseMetaDataDatabaseInfoProvider implements DatabaseInfoProvide
 
     public DatabaseTableInfo loadTableInfo(String catalog, String schema, String tableName) {
         try {
-            if (ignoreCatalog || (catalog != null && catalog.length() == 0)) {
+            if (ignoreCatalog || (catalog != null && catalog.isEmpty())) {
                 catalog = null;
             }
-            if (ignoreSchema || (schema != null && schema.length() == 0)) {
+            if (ignoreSchema || (schema != null && schema.isEmpty())) {
                 schema = null;
             }
             if (!ignoreSchema && usernameAsSchema && schema == null) {

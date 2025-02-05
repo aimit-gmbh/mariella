@@ -202,7 +202,7 @@ public class CreateIndicesForForeignKeys {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof Hint other) || ((Hint) obj).table != table) {
+            if (!(obj instanceof Hint other) || other.table != table) {
                 return false;
             }
             if (other.columns.size() != columns.size()) {

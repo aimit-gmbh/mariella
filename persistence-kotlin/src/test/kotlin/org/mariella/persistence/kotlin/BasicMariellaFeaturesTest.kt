@@ -215,6 +215,15 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
                 expectThat(it.space).isNotNull()
                 expectThat(it.revision).isNotNull()
             }
+
+            val newContext = session.modify()
+            val emptyFileVersion = newContext.loadEntities<FileVersion>(fileVersionIds)
+            expectThat(emptyFileVersion).hasSize(3)
+            emptyFileVersion.forEach {
+                expectThat(it.space).isNull()
+                expectThat(it.revision).isNull()
+            }
+
             session.close()
         }
     }

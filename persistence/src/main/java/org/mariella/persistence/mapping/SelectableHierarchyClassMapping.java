@@ -121,7 +121,9 @@ public abstract class SelectableHierarchyClassMapping extends ClassMapping {
 
     @Override
     protected boolean needsSubSelect(ClassMapping childMapping) {
-        return !containedChildren.contains(childMapping);
+        if (childMapping instanceof SelectableHierarchyClassMapping)
+            return !containedChildren.contains(childMapping);
+        return false;
     }
 
     @Override

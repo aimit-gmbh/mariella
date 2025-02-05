@@ -211,8 +211,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
 
             val e = mod.create<Group> {
                 it.name = "test group"
-                it.members.add(addExisting<UserEntity>(TestData.USER_SEPPI))
-                it.members.add(addExisting<UserEntity>(TestData.USER_KARL))
+                it.members.add(addExisting<UserEntity>(TestData.USER_SEPPI, "U"))
+                it.members.add(addExisting<UserEntity>(TestData.USER_KARL, "U"))
             }
             mod.flush()
             session.commitAndClose()

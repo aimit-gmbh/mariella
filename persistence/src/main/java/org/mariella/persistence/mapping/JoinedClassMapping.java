@@ -11,6 +11,7 @@ import org.mariella.persistence.runtime.ModifiableAccessor;
 import org.mariella.persistence.runtime.ModificationInfo;
 import org.mariella.persistence.schema.ClassDescription;
 import org.mariella.persistence.schema.PropertyDescription;
+import org.mariella.persistence.util.InitializationHelper;
 
 import java.util.Collection;
 import java.util.List;
@@ -46,8 +47,8 @@ public class JoinedClassMapping extends SelectableHierarchyClassMapping {
     }
 
     @Override
-    public void initialize(ClassMappingInitializationContext context) {
-        super.initialize(context);
+    public void initialize(InitializationHelper<ClassMapping> initializationHelper) {
+        super.initialize(initializationHelper);
         for (PrimaryKeyJoinColumn primaryKeyJoinColumn : primaryKeyJoinColumns.getPrimaryKeyJoinColumns()) {
             primaryKeyJoinColumn.setPrimaryKeyProperty(
                     getPrimaryKeyPropertyDescription(primaryKeyJoinColumn.getPrimaryTableColumn()));

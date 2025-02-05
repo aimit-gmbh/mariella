@@ -2,6 +2,7 @@ package org.mariella.persistence.mapping;
 
 import org.mariella.persistence.schema.ClassDescription;
 import org.mariella.persistence.schema.PropertyDescription;
+import org.mariella.persistence.util.InitializationHelper;
 
 import java.util.*;
 
@@ -21,7 +22,7 @@ public abstract class AbstractClassMapping {
         this.classDescription = classDescription;
     }
 
-    public void initialize(ClassMappingInitializationContext context) {
+    public void initialize(InitializationHelper<ClassMapping> context) {
         if (getSuperClassMapping() != null) {
             context.ensureInitialized(getSuperClassMapping());
             propertyMappings.putAll(getSuperClassMapping().propertyMappings);
@@ -36,7 +37,7 @@ public abstract class AbstractClassMapping {
         }
     }
 
-    public void postInitialize(ClassMappingInitializationContext context) {
+    public void postInitialize(InitializationHelper<ClassMapping> context) {
     }
 
     public SchemaMapping getSchemaMapping() {

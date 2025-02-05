@@ -40,7 +40,9 @@ public class TablePerClassClassMapping extends ClassMapping {
 
     @Override
     protected boolean maySelectForHierarchy(PropertyMapping propertyMapping) {
-        return getPhysicalPropertyMappingList().contains(propertyMapping);
+        if (propertyMapping instanceof PhysicalPropertyMapping)
+            return getPhysicalPropertyMappingList().contains(propertyMapping);
+        return false;
     }
 
 }

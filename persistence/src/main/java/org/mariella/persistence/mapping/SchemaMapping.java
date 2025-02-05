@@ -4,6 +4,7 @@ import org.mariella.persistence.database.Column;
 import org.mariella.persistence.database.Schema;
 import org.mariella.persistence.database.Table;
 import org.mariella.persistence.schema.SchemaDescription;
+import org.mariella.persistence.util.InitializationHelper;
 
 import java.util.*;
 
@@ -28,54 +29,15 @@ public class SchemaMapping {
     }
 
     public void initialize() {
-        ClassMappingInitializationContext context = new ClassMappingInitializationContext() {
-            private final Collection<AbstractClassMapping> initialized = new HashSet<>();
-            private final Collection<AbstractClassMapping> initializing = new HashSet<>();
-
-            @Override
-            public void ensureInitialized(ClassMapping classMapping) {
-                if (!initialized.contains(classMapping)) {
-                    if (initializing.contains(classMapping)) {
-                        throw new IllegalStateException();
-                    } else {
-                        initializing.add(classMapping);
-                        classMapping.initialize(this);
-                        initializing.remove(classMapping);
-                        initialized.add(classMapping);
-                    }
-                }
-
-            }
-        };
-
+        InitializationHelper<ClassMapping> context = new InitializationHelper<>(ClassMapping::initialize);
         for (ClassMapping classMapping : getClassMappings()) {
             context.ensureInitialized(classMapping);
         }
-
         postInitialize();
     }
 
     private void postInitialize() {
-        ClassMappingInitializationContext context = new ClassMappingInitializationContext() {
-            private final Collection<AbstractClassMapping> initialized = new HashSet<>();
-            private final Collection<AbstractClassMapping> initializing = new HashSet<>();
-
-            @Override
-            public void ensureInitialized(ClassMapping classMapping) {
-                if (!initialized.contains(classMapping)) {
-                    if (initializing.contains(classMapping)) {
-                        throw new IllegalStateException();
-                    } else {
-                        initializing.add(classMapping);
-                        classMapping.postInitialize(this);
-                        initializing.remove(classMapping);
-                        initialized.add(classMapping);
-                    }
-                }
-
-            }
-        };
-
+        InitializationHelper<ClassMapping> context = new InitializationHelper<>(ClassMapping::postInitialize);
         for (ClassMapping classMapping : getClassMappings()) {
             context.ensureInitialized(classMapping);
         }

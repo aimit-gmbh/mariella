@@ -3,6 +3,7 @@ package org.mariella.persistence.schema;
 import org.mariella.persistence.runtime.BeanInfo;
 import org.mariella.persistence.runtime.ModifiableAccessor;
 import org.mariella.persistence.util.Assert;
+import org.mariella.persistence.util.InitializationHelper;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -39,7 +40,7 @@ public class ClassDescription implements Serializable {
         this.superClassDescription = superClassDescription;
     }
 
-    public void initialize(ClassDescriptionInitializationContext context) {
+    public void initialize(InitializationHelper<ClassDescription> context) {
         if (superClassDescription != null) {
             context.ensureInitialized(superClassDescription);
             identityPropertyDescriptions = superClassDescription.getIdentityPropertyDescriptions();
@@ -70,7 +71,7 @@ public class ClassDescription implements Serializable {
         }
     }
 
-    public void postInitialize(ClassDescriptionInitializationContext context) {
+    public void postInitialize(InitializationHelper<ClassDescription> context) {
         for (PropertyDescription propertyDescription : propertyDescriptions.values()) {
             hierarchyPropertyDescriptions.put(propertyDescription.getPropertyDescriptor().getName(), propertyDescription);
         }

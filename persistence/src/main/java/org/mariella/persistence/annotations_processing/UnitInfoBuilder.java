@@ -142,7 +142,7 @@ public class UnitInfoBuilder {
 
     private void parseDomainDefinitions(UnitInfo unitInfo, List<Class<?>> classes) {
         for (Class<?> clazz : classes) {
-            DomainDefinitions defs = ((AnnotatedElement) clazz).getAnnotation(DomainDefinitions.class);
+            DomainDefinitions defs = clazz.getAnnotation(DomainDefinitions.class);
             for (int i = 0; i < defs.value().length; i++) {
                 buildDomainDefinitionInfo(unitInfo, defs.value()[i]);
             }
@@ -151,7 +151,7 @@ public class UnitInfoBuilder {
 
     private void parseDomainDefinitionInstances(UnitInfo unitInfo, List<Class<?>> resultSetClasses) {
         for (Class<?> clazz : resultSetClasses) {
-            DomainDefinition def = ((AnnotatedElement) clazz).getAnnotation(DomainDefinition.class);
+            DomainDefinition def = clazz.getAnnotation(DomainDefinition.class);
             buildDomainDefinitionInfo(unitInfo, def);
         }
     }
@@ -168,7 +168,7 @@ public class UnitInfoBuilder {
 
     private void parseNamedNativeQueries(UnitInfo unitInfo, List<Class<?>> classes) {
         for (Class<?> clazz : classes) {
-            NamedNativeQueries queries = ((AnnotatedElement) clazz).getAnnotation(NamedNativeQueries.class);
+            NamedNativeQueries queries = clazz.getAnnotation(NamedNativeQueries.class);
             for (int i = 0; i < queries.value().length; i++) {
                 buildNamedNativeQueryInfo(unitInfo, queries.value()[i]);
             }
@@ -177,7 +177,7 @@ public class UnitInfoBuilder {
 
     private void parseNamedNativeQueryInstances(UnitInfo unitInfo, List<Class<?>> resultSetClasses) {
         for (Class<?> clazz : resultSetClasses) {
-            NamedNativeQuery mapping = ((AnnotatedElement) clazz).getAnnotation(NamedNativeQuery.class);
+            NamedNativeQuery mapping = clazz.getAnnotation(NamedNativeQuery.class);
             buildNamedNativeQueryInfo(unitInfo, mapping);
         }
     }
@@ -207,7 +207,7 @@ public class UnitInfoBuilder {
 
     private void parseSqlResultSetMappings(UnitInfo unitInfo, List<Class<?>> classes) {
         for (Class<?> clazz : classes) {
-            SqlResultSetMappings mappings = ((AnnotatedElement) clazz).getAnnotation(SqlResultSetMappings.class);
+            SqlResultSetMappings mappings = clazz.getAnnotation(SqlResultSetMappings.class);
             for (int i = 0; i < mappings.value().length; i++) {
                 buildSqlResultSetMappingInfo(unitInfo, mappings.value()[i]);
             }
@@ -216,7 +216,7 @@ public class UnitInfoBuilder {
 
     private void parseSqlResultSetMappingInstances(UnitInfo unitInfo, List<Class<?>> resultSetClasses) {
         for (Class<?> clazz : resultSetClasses) {
-            SqlResultSetMapping mapping = ((AnnotatedElement) clazz).getAnnotation(SqlResultSetMapping.class);
+            SqlResultSetMapping mapping = clazz.getAnnotation(SqlResultSetMapping.class);
             buildSqlResultSetMappingInfo(unitInfo, mapping);
         }
     }
@@ -268,7 +268,7 @@ public class UnitInfoBuilder {
 
     private void parseMariellaAnnotations(UnitInfo unitInfo, List<Class<?>> clusterClasses) {
         for (Class<?> clazz : clusterClasses) {
-            Cluster cluster = ((AnnotatedElement) clazz).getAnnotation(Cluster.class);
+            Cluster cluster = clazz.getAnnotation(Cluster.class);
             ClusterInfo clusterInfo = new ClusterInfo();
             clusterInfo.setName(cluster.name());
             clusterInfo.setPathExpressions(cluster.pathExpressions());
@@ -356,11 +356,11 @@ public class UnitInfoBuilder {
         if (clazz.isAnnotationPresent(Entity.class)) {
             IModelToDb translator = getTranslator(unitInfo);
             info = new EntityInfo();
-            Entity annotation = ((AnnotatedElement) clazz).getAnnotation(Entity.class);
+            Entity annotation = clazz.getAnnotation(Entity.class);
             info.setName("".equals(annotation.name()) ? null : annotation.name());
             info.setExcludeSuperclassListeners(clazz.isAnnotationPresent(ExcludeSuperclassListeners.class));
             if (clazz.isAnnotationPresent(Table.class)) {
-                Table table = ((AnnotatedElement) clazz).getAnnotation(Table.class);
+                Table table = clazz.getAnnotation(Table.class);
 
                 TableTableInfo tti = new TableTableInfo();
                 tti.setCatalog(translator.translate(table.catalog()));
@@ -369,7 +369,7 @@ public class UnitInfoBuilder {
                 ((EntityInfo) info).setTableInfo(tti);
             }
             if (clazz.isAnnotationPresent(UpdateTable.class)) {
-                UpdateTable table = ((AnnotatedElement) clazz).getAnnotation(UpdateTable.class);
+                UpdateTable table = clazz.getAnnotation(UpdateTable.class);
 
                 UpdateTableInfo uti = new UpdateTableInfo();
                 uti.setCatalog(translator.translate(table.catalog()));
@@ -384,7 +384,7 @@ public class UnitInfoBuilder {
 
 
         if (clazz.isAnnotationPresent(EntityListeners.class)) {
-            EntityListeners entityListeners = ((AnnotatedElement) clazz).getAnnotation(EntityListeners.class);
+            EntityListeners entityListeners = clazz.getAnnotation(EntityListeners.class);
             for (Class<?> lclazz : entityListeners.value()) {
                 buildEntityListenerClassInfoBuilder(unitInfo, lclazz, info);
             }
@@ -400,7 +400,7 @@ public class UnitInfoBuilder {
         if (clazz.isAnnotationPresent(Inheritance.class)) {
             info.setInheritanceInfo(new InheritanceInfo());
             info.getInheritanceInfo()
-                    .setStrategy(((AnnotatedElement) clazz).getAnnotation(Inheritance.class).strategy());
+                    .setStrategy(clazz.getAnnotation(Inheritance.class).strategy());
         }
 
         if (clazz.isAnnotationPresent(DiscriminatorColumn.class)) {
@@ -408,7 +408,7 @@ public class UnitInfoBuilder {
                 throw new IllegalArgumentException(
                         "@DiscriminatorColumn annotation can only be assigned to classes that have an @Entity annotation");
             IModelToDb translator = getTranslator(unitInfo);
-            DiscriminatorColumn discrCol = ((AnnotatedElement) clazz).getAnnotation(DiscriminatorColumn.class);
+            DiscriminatorColumn discrCol = clazz.getAnnotation(DiscriminatorColumn.class);
             DiscriminatorColumnInfo discrColumnInfo = new DiscriminatorColumnInfo();
             discrColumnInfo.setColumnDefinition(discrCol.columnDefinition());
             discrColumnInfo.setDiscriminatorType(discrCol.discriminatorType());
@@ -422,7 +422,7 @@ public class UnitInfoBuilder {
             if (!(info instanceof EntityInfo))
                 throw new IllegalArgumentException(
                         "@DiscriminatorValue annotation can only be assigned to classes that have an @Entity annotation");
-            DiscriminatorValue discrValue = ((AnnotatedElement) clazz).getAnnotation(DiscriminatorValue.class);
+            DiscriminatorValue discrValue = clazz.getAnnotation(DiscriminatorValue.class);
             DiscriminatorValueInfo discrValueInfo = new DiscriminatorValueInfo();
             discrValueInfo.setValue(discrValue.value());
             ((EntityInfo) info).setDiscriminatorValueInfo(discrValueInfo);
@@ -437,19 +437,19 @@ public class UnitInfoBuilder {
                 throw new IllegalArgumentException(
                         "@PrimaryKeyJoinColumns and @PrimaryKeyJoinColumn annotations must not be used together!");
             }
-            PrimaryKeyJoinColumns primaryKeyJoinColumns = ((AnnotatedElement) clazz).getAnnotation(PrimaryKeyJoinColumns.class);
+            PrimaryKeyJoinColumns primaryKeyJoinColumns = clazz.getAnnotation(PrimaryKeyJoinColumns.class);
             for (PrimaryKeyJoinColumn primaryKeyJoinColumn : primaryKeyJoinColumns.value()) {
                 ((EntityInfo) info).getPrimaryKeyJoinColumnInfos()
                         .add(buildPrimaryKeyJoinColumnInfo(primaryKeyJoinColumn, translator));
             }
         } else if (clazz.isAnnotationPresent(PrimaryKeyJoinColumn.class) && info instanceof EntityInfo) {
             ((EntityInfo) info).getPrimaryKeyJoinColumnInfos()
-                    .add(buildPrimaryKeyJoinColumnInfo(((AnnotatedElement) clazz).getAnnotation(PrimaryKeyJoinColumn.class),
+                    .add(buildPrimaryKeyJoinColumnInfo(clazz.getAnnotation(PrimaryKeyJoinColumn.class),
                             translator));
         }
 
         if (clazz.isAnnotationPresent(SequenceGenerator.class)) {
-            SequenceGenerator generator = ((AnnotatedElement) clazz).getAnnotation(SequenceGenerator.class);
+            SequenceGenerator generator = clazz.getAnnotation(SequenceGenerator.class);
 
             SequenceGeneratorInfo sqinfo = new SequenceGeneratorInfo();
             sqinfo.setAllocationSize(generator.allocationSize());
@@ -460,7 +460,7 @@ public class UnitInfoBuilder {
         }
 
         if (clazz.isAnnotationPresent(TableGenerator.class)) {
-            new TableGeneratorInfoBuilder(((AnnotatedElement) clazz).getAnnotation(TableGenerator.class), unitInfo,
+            new TableGeneratorInfoBuilder(clazz.getAnnotation(TableGenerator.class), unitInfo,
                     translator).buildInfo();
         }
     }
@@ -486,7 +486,7 @@ public class UnitInfoBuilder {
     private List<Class<?>> orderHierarchy(List<Class<?>> original) {
         List<Class<?>> copy = new ArrayList<>(original);
         List<Class<?>> newList = new ArrayList<>();
-        while (copy.size() > 0) {
+        while (!copy.isEmpty()) {
             Class<?> clazz = copy.get(0);
             orderHierarchy(copy, newList, original, clazz);
         }

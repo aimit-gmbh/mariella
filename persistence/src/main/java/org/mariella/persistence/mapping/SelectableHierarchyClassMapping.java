@@ -8,6 +8,7 @@ import org.mariella.persistence.persistor.ObjectPersistor;
 import org.mariella.persistence.persistor.Row;
 import org.mariella.persistence.query.*;
 import org.mariella.persistence.schema.ClassDescription;
+import org.mariella.persistence.util.InitializationHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +34,7 @@ public abstract class SelectableHierarchyClassMapping extends ClassMapping {
     protected abstract boolean shouldBeContainedBy(ClassMapping classMapping);
 
     @Override
-    public void initialize(ClassMappingInitializationContext context) {
+    public void initialize(InitializationHelper<ClassMapping> context) {
         super.initialize(context);
         if (getSuperClassMapping() != null && shouldBeContainedBy(getSuperClassMapping())) {
             containingClassMapping = (SelectableHierarchyClassMapping) getSuperClassMapping();
@@ -85,7 +86,7 @@ public abstract class SelectableHierarchyClassMapping extends ClassMapping {
         return containedPropertyMappings;
     }
 
-    public void postInitialize(ClassMappingInitializationContext context) {
+    public void postInitialize(InitializationHelper<ClassMapping> context) {
         super.postInitialize(context);
 
         containedPropertyMappings = new ArrayList<>();
@@ -120,7 +121,9 @@ public abstract class SelectableHierarchyClassMapping extends ClassMapping {
 
     @Override
     protected boolean needsSubSelect(ClassMapping childMapping) {
-        return !containedChildren.contains(childMapping);
+        if (childMapping instanceof SelectableHierarchyClassMapping)
+            return !containedChildren.contains(childMapping);
+        return false;
     }
 
     @Override

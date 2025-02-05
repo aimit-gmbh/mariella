@@ -106,7 +106,7 @@ public class ClassLoaderPersistenceUnitParser implements PersistenceUnitParser {
     }
 
 
-    protected InputStream createPersistencUnitInputStream() throws Exception {
+    protected InputStream createPersistencUnitInputStream() {
         return null;
     }
 

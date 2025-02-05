@@ -15,12 +15,7 @@ public abstract class DatabaseAccess {
     }
 
     public SequenceAccessor getSequenceAccessor(Sequence sequence) {
-        SequenceAccessor sequenceAccessor = sequenceAccessors.get(sequence);
-        if (sequenceAccessor == null) {
-            sequenceAccessor = new SequenceAccessor(sequence);
-            sequenceAccessors.put(sequence, sequenceAccessor);
-        }
-        return sequenceAccessor;
+        return sequenceAccessors.computeIfAbsent(sequence, SequenceAccessor::new);
     }
 
     public abstract Object doInConnection(ConnectionCallback callback) throws SQLException;

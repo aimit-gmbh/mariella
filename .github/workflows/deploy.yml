@@ -18,7 +18,7 @@ jobs:
         with:
           java-version: 18
       - name: Build with Gradle
-        run: ./gradlew clean build publishAllPublicationsToCentralPortal -x :persistence-test:publishAllPublicationsToCentralPortal -x :persistence-test-kotlin:publishAllPublicationsToCentralPortal --stacktrace
+        run: ./gradlew clean build publishAllPublicationsToCentralPortal -x :persistence-test:publishAllPublicationsToCentralPortal --stacktrace
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MAVEN_CENTRAL_USER: ${{ secrets.MAVEN_CENTRAL_USER }}

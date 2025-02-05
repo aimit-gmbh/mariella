@@ -12,6 +12,7 @@ import org.mariella.persistence.runtime.ModifiableAccessor;
 import org.mariella.persistence.runtime.ModificationInfo;
 import org.mariella.persistence.schema.ClassDescription;
 import org.mariella.persistence.schema.PropertyDescription;
+import org.mariella.persistence.util.InitializationHelper;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -91,7 +92,7 @@ public abstract class ClassMapping extends AbstractClassMapping {
     }
 
     @Override
-    public void initialize(ClassMappingInitializationContext context) {
+    public void initialize(InitializationHelper<ClassMapping> context) {
         super.initialize(context);
 
         immediateChildren = new ArrayList<>();
@@ -122,7 +123,7 @@ public abstract class ClassMapping extends AbstractClassMapping {
         }
     }
 
-    public void postInitialize(ClassMappingInitializationContext context) {
+    public void postInitialize(InitializationHelper<ClassMapping> context) {
         super.postInitialize(context);
         for (PropertyMapping pm : getPropertyMappings()) {
             hierarchyPropertyMappings.add(pm);

@@ -1,5 +1,6 @@
 package org.mariella.test;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mariella.persistence.database.StandardUUIDConverter;
 import org.mariella.persistence.jdbc.JdbcQueryExecutor;
@@ -121,4 +122,52 @@ class ResourceTest extends AbstractSimpleTest {
         assertEquals(discriminator, "File");
     }
 
+    @Test
+    @Disabled
+    public void collections() throws Exception {
+        createModificationTracker();
+        Folder folder = new Folder();
+        folder.setId(UUID.randomUUID());
+        modificationTracker.addNewParticipant(folder);
+        folder.setName("root");
+        folder.setLastModified(new Timestamp(System.currentTimeMillis()));
+
+        File file = new File();
+        file.setId(UUID.randomUUID());
+        modificationTracker.addNewParticipant(file);
+        file.setParent(folder);
+        assertEquals(folder.getChildren().size(), 1);
+        assertSame(folder.getChildren().get(0), file);
+        file.setName("test.txt");
+        file.setLastModified(new Timestamp(System.currentTimeMillis()));
+        file.setSize(5);
+
+        persist();
+        ClusterDescription cd;
+
+        createModificationTracker();
+        cd = new ClusterDescription(getClassDescription(Folder.class), "root.children");
+        folder = loadById(cd, folder.getId(), false);
+        assertEquals(1, folder.getChildren().size());
+
+        createModificationTracker();
+        cd = new ClusterDescription(getClassDescription(Folder.class), "root");
+        folder = loadById(cd, folder.getId(), false);
+        assertEquals(0, folder.getChildren().size());
+
+        file = new File();
+        file.setId(UUID.randomUUID());
+        modificationTracker.addNewParticipant(file);
+        file.setParent(folder);
+        assertEquals(1, folder.getChildren().size());
+        assertSame(folder.getChildren().get(0), file);
+        file.setName("test2.txt");
+        file.setLastModified(new Timestamp(System.currentTimeMillis()));
+        file.setSize(5);
+        folder.getChildren().add(file);
+        assertEquals(1, folder.getChildren().size());
+        cd = new ClusterDescription(getClassDescription(Folder.class), "root.children");
+        loadById(cd, folder.getId(), true);
+        assertEquals(2, folder.getChildren().size());
+    }
 }

@@ -17,10 +17,7 @@ public class ReflectionUtil {
 
     public static Type readTypeArgumentsOfClass(Class<?> clazz) {
         Type t = clazz.getGenericSuperclass();
-        if (t instanceof ParameterizedType) {
-            return readActualTypeArgument((ParameterizedType) t);
-        }
-        return null;
+        return readCollectionElementType(t);
     }
 
     public static Type readActualTypeArgument(ParameterizedType pt) {

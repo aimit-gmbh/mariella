@@ -25,7 +25,7 @@ class ModificationContext internal constructor(
         }
     }
 
-    inline fun <reified T> create(block: ModificationContext.(T) -> Unit = {}): T {
+    inline fun <reified T> create(block: ModificationContext.(T) -> Unit): T {
         val entity = tracker.createNew<T>()
         block(entity)
         return entity

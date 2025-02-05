@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.mariella.persistence.kotlin.Database
 import org.mariella.persistence.kotlin.DatabaseSession
 import org.mariella.persistence.kotlin.MariellaMapping
+import org.mariella.persistence.kotlin.ThreadSafeCachedSequence
 import org.mariella.persistence.kotlin.entities.*
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
@@ -41,7 +42,7 @@ abstract class AbstractDatabaseTest {
     private fun createDatabase(databaseConfig: DatabaseConfig): Database {
         optionallyCreatePostgresDbFromTemplate(databaseConfig, vertx)
         migrateDb(databaseConfig, "db")
-        return TestEnvironment.createDatabase(TEST_MARIELLA, createPool(vertx, databaseConfig))
+        return TestEnvironment.createDatabase(TEST_MARIELLA, createPool(vertx, databaseConfig), mapOf("cached_entity_id_seq" to ThreadSafeCachedSequence("cached_entity_id_seq", 1000)))
     }
 
     @AfterEach

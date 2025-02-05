@@ -100,12 +100,42 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     }
 
     @Test
+    fun `can delete object`() {
+        runTest {
+            val fileId = createFiles(1).single().id
+            database.write {
+                val context = modify()
+                context.delete<FileVersion>(fileId)
+                context.flush()
+            }
+
+            database.read {
+                val entity = modify().loadEntity<FileVersion>(fileId)
+                expectThat(entity).isNull()
+            }
+        }
+    }
+
+    @Test
     fun `can get sequence value`() {
         runTest {
             val session = database.createSession()
             val mod = session.modify()
             val seq = mod.sequenceNextValue("entity_id_seq")
             expectThat(seq).isEqualTo(1)
+            session.close()
+        }
+    }
+
+    @Test
+    fun `can get cached sequence value`() {
+        runTest {
+            val session = database.createSession()
+            val mod = session.modify()
+            val seqValues = 1.rangeTo(1005).map {
+                mod.cachedSequenceNextValue("cached_entity_id_seq")
+            }
+            expectThat(seqValues).hasSize(1005)
             session.close()
         }
     }

@@ -7,6 +7,5 @@ include(
     "persistence-h2",
     "persistence-kotlin",
     "persistence-postgres",
-    "persistence-test",
-    "persistence-test-kotlin"
+    "persistence-test"
 )

@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SchemaDescription implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
     private final Map<String, ClassDescription> classDescriptions = new HashMap<>();
     private String schemaName;
 

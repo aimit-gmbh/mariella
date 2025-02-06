@@ -3,6 +3,8 @@ package org.mariella.persistence.mapping_builder;
 import java.io.Serializable;
 
 public class DatabaseColumnInfo implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
     private String name;
     private boolean nullable;
     private int type;

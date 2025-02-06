@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.*;
 
 public class DatabaseTableInfo implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
     private final Map<String, DatabaseColumnInfo> columnInfos = new HashMap<>();
     private final List<DatabaseColumnInfo> primaryKey = new ArrayList<>();
     private String name;

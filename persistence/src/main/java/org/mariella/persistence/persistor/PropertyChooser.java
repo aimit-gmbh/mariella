@@ -13,12 +13,16 @@ public interface PropertyChooser extends Serializable {
     boolean wants(PropertyDescription propertyDescription);
 
     class AllChooser implements PropertyChooser {
+    	private static final long serialVersionUID = 1L;
+    	
         public boolean wants(PropertyDescription propertyDescription) {
             return true;
         }
     }
 
     class Include implements PropertyChooser {
+    	private static final long serialVersionUID = 1L;
+    	
         private final Collection<String> propertyNames;
 
         public Include(String... propertyNames) {
@@ -32,6 +36,8 @@ public interface PropertyChooser extends Serializable {
     }
 
     class Exclude implements PropertyChooser {
+    	private static final long serialVersionUID = 1L;
+    	
         private final Collection<String> propertyNames;
 
         public Exclude(String... propertyNames) {

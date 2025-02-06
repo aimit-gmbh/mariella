@@ -12,6 +12,8 @@ import java.util.HashSet;
 import java.util.Map;
 
 public class ClassDescription implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
     public static final String TYPE_PROPERTY = "org.mariella.persistence.type";
     private final SchemaDescription schemaDescription;
     private final String className;

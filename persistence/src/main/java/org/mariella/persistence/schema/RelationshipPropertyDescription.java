@@ -3,6 +3,8 @@ package org.mariella.persistence.schema;
 import java.beans.PropertyDescriptor;
 
 public abstract class RelationshipPropertyDescription extends PropertyDescription {
+	private static final long serialVersionUID = 1L;
+	
     private final String reversePropertyName;
 
     public RelationshipPropertyDescription(ClassDescription classDescription, PropertyDescriptor propertyDescriptor) {

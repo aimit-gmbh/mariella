@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SerializableList<T> extends AbstractList<T> implements Serializable {
-
+	private static final long serialVersionUID = 1L;
+	
     private transient List<T> list = new ArrayList<>();
 
     @Override

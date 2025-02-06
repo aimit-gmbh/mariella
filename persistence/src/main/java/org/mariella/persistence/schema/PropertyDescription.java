@@ -6,6 +6,8 @@ import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 
 public abstract class PropertyDescription implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
     private final ClassDescription classDescription;
     private final String propertyName;
     private transient PropertyDescriptor propertyDescriptor;

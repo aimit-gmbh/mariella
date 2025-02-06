@@ -1,6 +1,10 @@
 package org.mariella.test.model;
 
+import java.util.List;
+
 import javax.persistence.*;
+
+import org.mariella.persistence.runtime.TrackedList;
 
 @javax.persistence.Entity
 @Table(name = "PERSON")
@@ -10,6 +14,8 @@ import javax.persistence.*;
 public class Person extends Partner {
     private String firstName;
     private String lastName;
+
+    private List<Employment> employments = new TrackedList<>(propertyChangeSupport, "employments");
 
     @Column(name = "FIRST_NAME")
     public String getFirstName() {
@@ -29,4 +35,8 @@ public class Person extends Partner {
         propertyChangeSupport.firePropertyChange("lastName", this.lastName, this.lastName = lastName);
     }
 
+    @OneToMany(mappedBy="employee")
+    public List<Employment> getEmployments() {
+		return employments;
+	}
 }

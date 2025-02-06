@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ClusterDescription implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
     private final Map<String, PropertyChooser> propertyChoosers = new HashMap<>();
     private ClassDescription rootDescription;
     private String[] pathExpressions;

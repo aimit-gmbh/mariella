@@ -1,7 +1,9 @@
 package org.mariella.persistence.runtime;
 
 public class PersistenceException extends RuntimeException {
-    public PersistenceException(Throwable t) {
+	private static final long serialVersionUID = 1L;
+
+	public PersistenceException(Throwable t) {
         super(t);
     }
 
@@ -9,4 +11,7 @@ public class PersistenceException extends RuntimeException {
         super(message, cause);
     }
 
+    public PersistenceException(String message) {
+        super(message);
+    }
 }

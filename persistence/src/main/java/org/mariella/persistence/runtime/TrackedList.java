@@ -3,6 +3,8 @@ package org.mariella.persistence.runtime;
 import java.beans.PropertyChangeSupport;
 
 public class TrackedList<T> extends ObservableList<T> {
+	private static final long serialVersionUID = 1L;
+	
     private final PropertyChangeSupport propertyChangeSupport;
 
     public TrackedList(PropertyChangeSupport propertyChangeSupport, String propertyName) {

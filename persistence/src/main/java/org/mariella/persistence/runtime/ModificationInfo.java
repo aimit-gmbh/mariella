@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.Map;
 
 public class ModificationInfo implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
     protected final Object object;
     private Collection<String> modifiedProperties = new HashSet<>();
     private Map<String, CollectionModificationInfo> collectionModificationInfos =

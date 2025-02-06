@@ -16,6 +16,8 @@ import java.util.List;
 public class Partner extends Entity {
     private String alias;
     private List<Partner> collaborators = new TrackedList<>(propertyChangeSupport, "collaborators");
+    private List<Phone> phoneNumbers = new TrackedList<>(propertyChangeSupport, "phoneNumber");
+    private List<EMail> mailAddresses = new TrackedList<>(propertyChangeSupport, "mailAddresses");
 
     @Column(name = "ALIAS")
     public String getAlias() {
@@ -28,13 +30,22 @@ public class Partner extends Entity {
 
     @ManyToMany
     @JoinTable(
-            name = "COLLABORATORS",
-            joinColumns = @JoinColumn(name = "PARTNER_ID", referencedColumnName = "ID"),
-            inverseJoinColumns = @JoinColumn(name = "COLLABORATOR_ID", referencedColumnName = "ID")
+        name = "COLLABORATORS",
+        joinColumns = @JoinColumn(name = "PARTNER_ID", referencedColumnName = "ID"),
+        inverseJoinColumns = @JoinColumn(name = "COLLABORATOR_ID", referencedColumnName = "ID")
     )
-
     public List<Partner> getCollaborators() {
         return collaborators;
     }
 
+    @OneToMany(mappedBy = "partner")
+    public List<EMail> getMailAddresses() {
+		return mailAddresses;
+	}
+    
+    @OneToMany(mappedBy = "partner")
+    public List<Phone> getPhoneNumbers() {
+		return phoneNumbers;
+	}
+    
 }

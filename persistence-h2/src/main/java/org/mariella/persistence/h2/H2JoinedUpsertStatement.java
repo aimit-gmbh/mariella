@@ -35,13 +35,12 @@ public class H2JoinedUpsertStatement extends AbstractPersistorStatement {
     public <T extends PreparedPersistorStatement> T prepare(Persistor<T> persistor) {
         nextParameterIndex = 1;
         parameters = new ArrayList<>();
-        String sql = getSqlString(
-                (b, column) -> {
-                    createParameter().print(b);
-                    parameters.add(column);
-                });
+        getSqlString(
+            (b, column) -> {
+                createParameter().print(b);
+                parameters.add(column);
+            });
 
-        int index = 1;
         return persistor.prepareStatement(this, getSqlString());
     }
 

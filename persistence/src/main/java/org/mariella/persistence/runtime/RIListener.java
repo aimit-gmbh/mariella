@@ -5,6 +5,8 @@ import org.mariella.persistence.schema.*;
 import java.io.Serializable;
 
 public class RIListener implements ModificationTrackerListener, Serializable {
+	private static final long serialVersionUID = 1L;
+	
     private final ModificationTracker modificationTracker;
 
     private boolean updating = false;

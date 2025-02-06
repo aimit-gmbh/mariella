@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class CollectionModificationInfo implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
     private Collection<Object> added = null;
     private Collection<Object> removed = null;
 

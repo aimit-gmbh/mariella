@@ -6,6 +6,8 @@ import java.util.*;
 
 @SuppressWarnings("unchecked")
 public abstract class ObservableList<T> implements List<T>, Serializable {
+	private static final long serialVersionUID = 1L;
+	
     private final String propertyName;
     private final List<T> list = new ArrayList<>();
     private int modCount = 0;

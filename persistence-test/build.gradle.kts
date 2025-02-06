@@ -24,4 +24,6 @@ dependencies {
     // flyway
     testImplementation("org.flywaydb:flyway-core:$flywayVersion")
     testImplementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
+    
+    testImplementation("org.apache.commons:commons-dbcp2:2.13.0")
 }

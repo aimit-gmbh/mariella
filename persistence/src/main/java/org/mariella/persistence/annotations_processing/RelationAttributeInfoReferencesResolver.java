@@ -19,6 +19,12 @@ public abstract class RelationAttributeInfoReferencesResolver {
         Class<?> targetEntity = getAnnotatedTargetEntity();
         if (targetEntity == null || targetEntity == void.class)
             targetEntity = readTargetEntityByReflection();
+        if(targetEntity == null) {
+        	String entity = relationAttributeInfo.getParentClassInfo().getName();
+        	String propertyName = relationAttributeInfo.getName();
+        	throw new IllegalStateException("cannot determine target entity for property " + entity + "." + propertyName);
+        }
+        
         relationAttributeInfo.setRelatedEntityInfo(
                 (EntityInfo) relationAttributeInfo.getParentClassInfo().getUnitInfo().getClassToInfoMap()
                         .get(targetEntity.getName()));

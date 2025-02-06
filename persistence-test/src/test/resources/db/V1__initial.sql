@@ -1,16 +1,24 @@
-drop table if exists collaborators;
-
-drop table if exists person;
-
-drop table if exists company;
-
-drop table if exists partner;
-
 create table partner
 (
     id    uuid primary key,
     type  char(1) not null,
     alias varchar(10)
+);
+
+create table phone
+(
+    id            	uuid primary key,
+    partner_id		uuid not null,
+    phone_number 	text not null,
+    foreign key (partner_id) references partner (id)
+);
+
+create table email
+(
+    id            	uuid primary key,
+    partner_id		uuid not null,
+    mail		 	text not null,
+    foreign key (partner_id) references partner (id)
 );
 
 create table person
@@ -26,7 +34,18 @@ create table company
     id   uuid primary key,
     boss_id uuid,
     name varchar(32),
-    foreign key (id) references partner (id)
+    foreign key (id) references partner (id),
+    foreign key (boss_id) references person (id)
+);
+
+create table employment
+(
+	id   			uuid primary key,
+	employer_id 	uuid not null,
+	employee_id		uuid not null,
+	employment_year	int	not null,
+	foreign key (employer_id) references person(id),
+	foreign key (employee_id) references person(id)
 );
 
 alter table company

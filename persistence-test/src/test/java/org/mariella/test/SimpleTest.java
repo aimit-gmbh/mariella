@@ -1,31 +1,39 @@
 package org.mariella.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.mariella.persistence.database.StandardUUIDConverter;
 import org.mariella.persistence.jdbc.JdbcQueryExecutor;
 import org.mariella.persistence.persistor.BatchingPersistorStrategy;
 import org.mariella.persistence.persistor.ClusterDescription;
-import org.mariella.persistence.query.*;
-import org.mariella.persistence.runtime.ModificationTracker;
+import org.mariella.persistence.query.BinaryCondition;
+import org.mariella.persistence.query.Literal;
+import org.mariella.persistence.query.QueryBuilder;
+import org.mariella.persistence.query.StringLiteral;
+import org.mariella.persistence.query.TableReference;
+import org.mariella.test.common.MariellaUtil;
 import org.mariella.test.model.Company;
 import org.mariella.test.model.Partner;
 import org.mariella.test.model.Person;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-class SimpleTest extends AbstractSimpleTest {
-
+class SimpleTest extends AbstractTest {
+	protected static final Logger logger = LoggerFactory.getLogger(SimpleTest.class);
+	
     @Test
     public void batchSqlError() throws Exception {
-        createModificationTracker();
         createPerson("alias", "lastname1", "firstname1");
         createPerson("this alias is much too long", "lastname2", "firstname2");
 
         boolean error = false;
         try {
-            persist(new BatchingPersistorStrategy<>());
+            mu.persist(new BatchingPersistorStrategy<>());
         } catch (RuntimeException e) {
             error = true;
         }
@@ -34,13 +42,12 @@ class SimpleTest extends AbstractSimpleTest {
 
     @Test
     public void batch() throws Exception {
-        createModificationTracker();
         Person tina = createTina();
         Person wolfi = createWolfi();
         Person flani = createFlani();
         Person ingrid = createIngrid();
 
-        persist(new BatchingPersistorStrategy<>());
+        mu.persist(new BatchingPersistorStrategy<>());
 
         UUID tinaId = tina.getId();
         UUID wolfiId = wolfi.getId();
@@ -57,25 +64,26 @@ class SimpleTest extends AbstractSimpleTest {
         ingrid.setFirstName(ingrid.getFirstName() + "1");
         ingrid.setLastName(ingrid.getLastName() + "1");
 
-        persist(new BatchingPersistorStrategy<>());
+        mu.persist(new BatchingPersistorStrategy<>());
 
         checkPerson(tinaId, "dr.", "Tina1", "Sulzenbacher");
         checkPerson(wolfiId, "wolfi1", "Wolfgang1", "Schwarzenbrunner");
         checkPerson(flaniId, "flani1", "Christian1", "Flandorfer");
         checkPerson(ingridId, "ingrid", "Ingrid1", "Wieser1");
 
-        modificationTracker.remove(tina);
-        modificationTracker.remove(wolfi);
-        modificationTracker.remove(flani);
+        mu.getModificationTracker().remove(tina);
+        mu.getModificationTracker().remove(wolfi);
+        mu.getModificationTracker().remove(flani);
 
-        persist(new BatchingPersistorStrategy<>());
+        mu.persist(new BatchingPersistorStrategy<>());
     }
 
     private void checkPerson(UUID id, String alias, String firstName, String lastName) {
-        ModificationTracker m = modificationTracker;
-        createModificationTracker();
+    	// we want to load the into a different modificationtracker for checking, so
+    	// the load can in no way interfere with existing state
+    	MariellaUtil myMu = new MariellaUtil(mariella, mu.getConnection());
 
-        Person p = loadById(Person.class, false, id, "root");
+        Person p = myMu.loadById(Person.class, false, id, "root");
         assertNotNull(p);
         if (alias != null) {
             assertEquals(alias, p.getAlias());
@@ -86,51 +94,48 @@ class SimpleTest extends AbstractSimpleTest {
         if (lastName != null) {
             assertEquals(lastName, p.getLastName());
         }
-
-        modificationTracker = m;
     }
 
 
     @Test
     public void test() throws Exception {
         create();
+        mu.resetModificationTracker();
         load();
     }
 
     private void create() throws Exception {
         logger.info("inserting");
 
-        createModificationTracker();
-
         Person p = new Person();
         p.setId(UUID.randomUUID());
-        modificationTracker.addNewParticipant(p);
+        mu.getModificationTracker().addNewParticipant(p);
         p.setAlias("hs");
         p.setFirstName("Hug");
         p.setLastName("Schlonz");
 
         p = new Person();
         p.setId(UUID.randomUUID());
-        modificationTracker.addNewParticipant(p);
+        mu.getModificationTracker().addNewParticipant(p);
         p.setAlias("wolfi");
         p.setFirstName("Wolfgang");
         p.setLastName("Schwarzenbrunner");
 
         Company c = new Company();
         c.setId(UUID.randomUUID());
-        modificationTracker.addNewParticipant(c);
+        mu.getModificationTracker().addNewParticipant(c);
         c.setAlias("Bellaflor");
         c.setName("Bellaflora Blumen GmbH & Co KG");
 
         p.getCollaborators().add(c);
 
-        persist();
+        mu.persist();
 
         logger.info("updating");
 
         p.setFirstName("Hugo");
         c.setAlias("Bellaflora");
-        persist();
+        mu.persist();
     }
 
     private void load() throws Exception {
@@ -140,13 +145,12 @@ class SimpleTest extends AbstractSimpleTest {
         QueryBuilder queryBuilder;
         JdbcQueryExecutor queryExecutor;
 
-        createModificationTracker();
-        queryBuilder = new QueryBuilder(environment.getSchemaMapping());
+        queryBuilder = new QueryBuilder(mu.getMariella().getSchemaMapping());
         queryBuilder.join(getClassDescription(Partner.class), "root");
         queryBuilder.addSelectItem("root.id");
         queryBuilder.and(BinaryCondition.eq(queryBuilder.createColumnReference("root.firstName"), new StringLiteral("Hugo")));
 
-        queryExecutor = new JdbcQueryExecutor(queryBuilder, createDatabaseAccess());
+        queryExecutor = new JdbcQueryExecutor(queryBuilder, mu.createDatabaseAccess());
         UUID id = (UUID) queryExecutor.queryforObject();
         assertNotNull(id);
 
@@ -154,7 +158,7 @@ class SimpleTest extends AbstractSimpleTest {
         // load cluster
         logger.info("loading cluster");
         ClusterDescription cd = new ClusterDescription(getClassDescription(Partner.class), "root.collaborators", "root");
-        Person hugo = loadById(cd, id, false);
+        Person hugo = mu.loadById(cd, id, false);
         assertNotNull(hugo);
         assertEquals(hugo.getFirstName(), "Hugo");
         assertEquals(hugo.getCollaborators().size(), 1);
@@ -170,18 +174,17 @@ class SimpleTest extends AbstractSimpleTest {
         QueryBuilder queryBuilder;
         JdbcQueryExecutor queryExecutor;
 
-        createModificationTracker();
-        queryBuilder = new QueryBuilder(environment.getSchemaMapping());
+        queryBuilder = new QueryBuilder(mu.getMariella().getSchemaMapping());
         queryBuilder.join(getClassDescription(Partner.class), "root");
         queryBuilder.addSelectItem("root.id");
         queryBuilder.and(BinaryCondition.eq(queryBuilder.createColumnReference("root.firstName"), new StringLiteral("Hugo")));
 
-        queryExecutor = new JdbcQueryExecutor(queryBuilder, createDatabaseAccess());
+        queryExecutor = new JdbcQueryExecutor(queryBuilder, mu.createDatabaseAccess());
         UUID id = (UUID) queryExecutor.queryforObject();
         assertNotNull(id);
 
         // query discrimiator of Hugo
-        QueryBuilder discriminatorQueryBuilder = new QueryBuilder(environment.getSchemaMapping());
+        QueryBuilder discriminatorQueryBuilder = new QueryBuilder(mu.getMariella().getSchemaMapping());
         TableReference tr = discriminatorQueryBuilder.join(getClassDescription(Partner.class), "root");
         discriminatorQueryBuilder.addSelectItem(
                 b -> b.append(tr.getAlias()).append(".TYPE")
@@ -189,7 +192,7 @@ class SimpleTest extends AbstractSimpleTest {
         discriminatorQueryBuilder.and(BinaryCondition.eq(queryBuilder.createColumnReference("root.id"),
                 new Literal<>(StandardUUIDConverter.Singleton, id)));
 
-        queryExecutor = new JdbcQueryExecutor(discriminatorQueryBuilder, createDatabaseAccess());
+        queryExecutor = new JdbcQueryExecutor(discriminatorQueryBuilder, mu.createDatabaseAccess());
         String discriminator = (String) queryExecutor.queryforObject();
         assertEquals(discriminator, "P");
     }

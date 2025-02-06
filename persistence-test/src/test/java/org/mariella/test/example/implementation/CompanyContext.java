@@ -14,8 +14,12 @@ import org.mariella.test.example.api.CreateCompany;
 import org.mariella.test.model.Company;
 import org.mariella.test.model.EMail;
 import org.mariella.test.model.Phone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CompanyContext {
+	protected static final Logger logger = LoggerFactory.getLogger(CompanyContext.class);
+
 	public static <T> T withCompanyContext(Mariella mariella, WithContextCallback<T, CompanyContext> callback) {
 		return withCompanyContext(mariella, null, callback);
 	}
@@ -38,7 +42,9 @@ public class CompanyContext {
 	
 public CompanyContext(MariellaUtil mu, UUID companyId) {
 	this.mu = mu;
-	company = new CompanyCluster(mu, companyId);
+	if(companyId != null) {
+		company = new CompanyCluster(mu, companyId);
+	}
 }
 
 public UUID createCompany(CreateCompany create) {
@@ -49,6 +55,20 @@ public UUID createCompany(CreateCompany create) {
 	mu.getModificationTracker().addNewParticipant(c);
 	c.setAlias(create.alias);
 	c.setName(create.name);
+	if(create.phone != null) {
+		Phone p = new Phone();
+		p.setId(UUID.randomUUID());
+		mu.getModificationTracker().addNewParticipant(p);
+		p.setPhoneNumber(create.phone);
+		p.setPartner(c);
+	}
+	if(create.email != null) {
+		EMail m = new EMail();
+		m.setId(UUID.randomUUID());
+		mu.getModificationTracker().addNewParticipant(m);
+		m.setMail(create.email);
+		m.setPartner(c);
+	}
 	company = new CompanyCluster(c);
 	return c.getId();
 }
@@ -70,6 +90,7 @@ public boolean contact()  {
 	for(Phone p : company.get().getPhoneNumbers()) {
 		if(p.getPhoneNumber() != null) {
 			// gotcha
+			logger.info("calling phone");
 			return true;
 		}
 	}
@@ -78,6 +99,7 @@ public boolean contact()  {
 	for(EMail m : company.get().getMailAddresses()) {
 		if(m.getMail() != null) {
 			// this time
+			logger.info("sending mail");
 			return true;
 		}
 	}

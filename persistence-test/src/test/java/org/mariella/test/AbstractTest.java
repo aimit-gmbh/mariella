@@ -17,7 +17,6 @@ import org.mariella.test.model.Person;
 
 public class AbstractTest {
     public final static String PERSISTENCE_UNIT_NAME = "sample/h2";
-
     
     protected Mariella mariella;
     protected MariellaUtil mu;

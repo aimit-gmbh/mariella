@@ -1,4 +1,4 @@
-package org.mariella.test.persistence;
+package org.mariella.test.example.implementation;
 
 import java.util.UUID;
 

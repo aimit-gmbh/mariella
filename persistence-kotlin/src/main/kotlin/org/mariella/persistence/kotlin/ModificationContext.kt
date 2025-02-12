@@ -64,6 +64,19 @@ class ModificationContext internal constructor(
         }
     }
 
+    suspend inline fun <reified T> load(
+        vararg paths: String = arrayOf("root"),
+        isUpdate: Boolean = false,
+        conditionProvider: ClusterLoaderConditionProvider
+    ): List<T> = load(paths = paths, isUpdate, conditionProvider, T::class.java)
+
+    suspend fun <T> load(
+        vararg paths: String = arrayOf("root"),
+        isUpdate: Boolean = false,
+        conditionProvider: ClusterLoaderConditionProvider,
+        clazz: Class<T>
+    ) = load(paths, tracker, isUpdate, conditionProvider, clazz)
+
     private suspend fun <T> load(
         paths: Array<out String>,
         modifications: ModificationTracker,
@@ -97,7 +110,8 @@ class ModificationContext internal constructor(
         isUpdate: Boolean = false,
         clazz: Class<T>
     ): T? {
-        return load(paths, tracker, isUpdate, LoadByIdProvider(id), clazz).singleOrNull()
+        val result = load(paths, tracker, isUpdate, LoadByIdProvider(id), clazz)
+        return if (result.isEmpty()) null else if (result.size == 1) result[0] else error("expected exactly one or zero results but got ${result.size}")
     }
 
     suspend inline fun <reified T> loadEntities(

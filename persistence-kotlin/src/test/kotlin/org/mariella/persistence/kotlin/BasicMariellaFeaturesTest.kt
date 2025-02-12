@@ -3,6 +3,7 @@ package org.mariella.persistence.kotlin
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.mariella.persistence.kotlin.entities.*
+import org.mariella.persistence.kotlin.internal.LoadByIdProvider
 import org.mariella.persistence.kotlin.util.*
 import strikt.api.expectThat
 import strikt.api.expectThrows
@@ -191,8 +192,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             }
 
             database.read {
-                val entity = modify().loadEntity<FileVersion>(fileId)
-                expectThat(entity).isNull()
+                val entities = modify().load<FileVersion>(conditionProvider = LoadByIdProvider(fileId))
+                expectThat(entities).isEmpty()
             }
         }
     }
@@ -242,6 +243,22 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
 
             expectThat(fileVersion.revision).isNotNull()
             expectThat(fileVersion.resource).isNotNull()
+
+            session.close()
+        }
+    }
+
+    @Test
+    fun `can load with own provider`() {
+        runTest {
+            val fileVersionId = createFiles().single().id
+
+            val session = database.createSession()
+            val modifications = session.modify()
+            val fileVersionShallow = modifications.load<FileVersion>(conditionProvider = LoadByIdProvider(fileVersionId)).single()
+
+            expectThat(fileVersionShallow.revision).isNull()
+            expectThat(fileVersionShallow.resource).isNull()
 
             session.close()
         }

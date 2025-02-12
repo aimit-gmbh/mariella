@@ -6,10 +6,12 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.h2.jdbc.JdbcSQLSyntaxErrorException
 import org.junit.jupiter.api.Assertions.fail
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.mariella.persistence.kotlin.entities.Entity
 import org.mariella.persistence.kotlin.entities.ResourceType
 import org.mariella.persistence.kotlin.entities.SecurityConcept
+import org.mariella.persistence.kotlin.internal.InstantLiteral
 import org.mariella.persistence.kotlin.util.*
 import strikt.api.expectThat
 import strikt.api.expectThrows
@@ -18,6 +20,7 @@ import strikt.assertions.isA
 import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 class MapperTest : AbstractDatabaseTest() {
@@ -110,6 +113,23 @@ class MapperTest : AbstractDatabaseTest() {
                 mapper.select<ClassWithStandardMappings>(sql, Entity.Companion.MAX_DB_TIMESTAMP)
             }
             expectThat(data.single().lockDate!!.toEpochMilli()).isEqualTo(Entity.Companion.MAX_DB_TIMESTAMP.toEpochMilli())
+        }
+    }
+
+    @Test
+    fun `instant literal has correct where clause`() {
+        assumeTrue(DATABASE_TYPE == DatabaseType.POSTGRES)
+        runTest {
+            val file = createFiles(1).single()
+            val sql = """
+                select id, 'hello' as description, revision_from_time as lockDate from resource_node_version
+                where revision_to_time = ${buildString { InstantLiteral(Entity.MAX_DB_TIMESTAMP).printSql(this) }}
+                and revision_from_time = ${buildString { InstantLiteral(file.revisionFrom).printSql(this) }}
+            """.trimIndent()
+            val data = database.read {
+                mapper.select<ClassWithStandardMappings>(sql)
+            }
+            expectThat(data.single().lockDate!!).isEqualTo(file.revisionFrom.truncatedTo(ChronoUnit.MICROS))
         }
     }
 

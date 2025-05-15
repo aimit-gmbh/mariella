@@ -37,3 +37,15 @@ dependencies {
 
     testImplementation("io.strikt:strikt-core:0.35.1")
 }
+
+kover {
+    reports {
+        verify {
+            rule {
+                bound {
+                    minValue = 84
+                }
+            }
+        }
+    }
+}

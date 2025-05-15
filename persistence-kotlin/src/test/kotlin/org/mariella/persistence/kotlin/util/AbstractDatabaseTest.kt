@@ -27,7 +27,8 @@ val DATABASE_TYPE = if (System.getenv("MARIELLA_TEST_DB") != null) DatabaseType.
 /**
  * to run the tests start postgres with
  * docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres
- * and set DATABASE_TYPE = DatabaseType.POSTGRES
+ * and set DATABASE_TYPE = DatabaseType.POSTGRES (in the IDE)
+ * you can also run MARIELLA_TEST_DB=POSTGRES ./gradlew clean test
  */
 abstract class AbstractDatabaseTest {
     protected val vertx = Vertx.vertx()!!

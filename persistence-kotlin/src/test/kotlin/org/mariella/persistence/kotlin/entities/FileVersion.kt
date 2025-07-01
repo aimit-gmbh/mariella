@@ -15,6 +15,9 @@ class FileVersion : ResourceVersion() {
     @get:Column(name = "filesize")
     var size: Long by changeSupport()
 
+    @get:Column(name = "file_hash")
+    var hash: ByteArray? by changeSupport()
+
     @Suppress("JpaAttributeTypeInspection")
     override fun getResourceVersionType(): ResourceType {
         return ResourceType.FileVersion

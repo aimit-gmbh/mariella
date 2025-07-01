@@ -50,6 +50,19 @@ class MapperTest : AbstractDatabaseTest() {
         val type: ResourceType
     )
 
+    data class ByteArrayWrapper(val arr: ByteArray) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+            other as ByteArrayWrapper
+            return arr.contentEquals(other.arr)
+        }
+
+        override fun hashCode(): Int {
+            return arr.contentHashCode()
+        }
+    }
+
     data class ClassWithDefaults(
         val id: UUID,
         val description: String = "hansi",
@@ -113,6 +126,22 @@ class MapperTest : AbstractDatabaseTest() {
                 mapper.select<ClassWithStandardMappings>(sql, Entity.Companion.MAX_DB_TIMESTAMP)
             }
             expectThat(data.single().lockDate!!.toEpochMilli()).isEqualTo(Entity.Companion.MAX_DB_TIMESTAMP.toEpochMilli())
+        }
+    }
+
+    @Test
+    fun `can map byte array`() {
+        val sql = """
+            select file_hash as arr from file_version
+            where id = $1
+        """.trimIndent()
+        runTest {
+            val file = createFiles(1).single()
+            val data = database.read {
+                mapper.select<ByteArrayWrapper>(sql, file.id)
+            }
+            expectThat(data.single().arr).isEqualTo(byteArrayOf(1, 2, 3))
+            expectThat(data.single()).isEqualTo(ByteArrayWrapper(byteArrayOf(1, 2, 3)))
         }
     }
 

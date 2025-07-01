@@ -37,8 +37,8 @@ internal class VertxResultRow(private val row: Row) : ResultRow {
         return row.getDouble(pos - 1)
     }
 
-    override fun getBytes(pos: Int): ByteArray {
-        throw UnsupportedOperationException()
+    override fun getBytes(pos: Int): ByteArray? {
+        return row.getBuffer(pos - 1)?.bytes
     }
 
     override fun getUUID(pos: Int): UUID? {

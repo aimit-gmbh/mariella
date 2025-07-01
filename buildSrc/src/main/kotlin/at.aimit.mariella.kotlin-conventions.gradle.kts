@@ -11,7 +11,7 @@ val coroutinesVersion = "1.10.2"
 
 dependencies {
     // Align versions of all Kotlin components
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.1.21"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.2.0"))
 
     // Use the Kotlin JDK 8 standard library
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")

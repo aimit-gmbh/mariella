@@ -160,6 +160,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
                 val context = modify()
                 context.updateOne<FileVersion>(fileId) {
                     it.name = "asdasdasdasdasd"
+                    it.hash = byteArrayOf(4, 5, 6)
                 }
                 context.flush()
             }
@@ -167,6 +168,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             database.read {
                 val entity = modify().loadEntity<FileVersion>(fileId)!!
                 expectThat(entity.name).isEqualTo("asdasdasdasdasd")
+                expectThat(entity.hash).isEqualTo(byteArrayOf(4, 5, 6))
             }
         }
     }
@@ -233,6 +235,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
 
             expectThat(fileVersionShallow.revision).isNull()
             expectThat(fileVersionShallow.resource).isNull()
+            expectThat(fileVersionShallow.hash).isEqualTo(byteArrayOf(1, 2, 3))
 
             val fileVersion = modifications.loadEntity<FileVersion>(
                 fileVersionId,

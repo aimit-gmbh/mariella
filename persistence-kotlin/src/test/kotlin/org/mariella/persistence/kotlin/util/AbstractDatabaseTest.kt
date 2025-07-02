@@ -165,6 +165,7 @@ suspend fun AbstractDatabaseTest.createFiles(nrOfFiles: Int = 1): List<FileVersi
             fileVersion.resource = it
             fileVersion.revisionFrom = revision.createdAt
             fileVersion.versionId = it.entityId + "-1"
+            fileVersion.hash = byteArrayOf(1, 2, 3)
 
             fileVersion
         }

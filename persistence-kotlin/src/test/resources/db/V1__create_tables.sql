@@ -115,6 +115,7 @@ CREATE TABLE public.file_version
     id              uuid         NOT NULL,
     filesize        int8         NOT NULL,
     file_store_path varchar(200) NOT NULL,
+    file_hash bytea null,
     CONSTRAINT file_version_pk PRIMARY KEY (id),
     CONSTRAINT file_version_inheritance FOREIGN KEY (id) REFERENCES public.resource_node_version (id) ON DELETE CASCADE
 );

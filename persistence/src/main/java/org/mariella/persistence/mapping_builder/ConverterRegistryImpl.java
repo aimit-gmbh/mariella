@@ -60,6 +60,7 @@ public class ConverterRegistryImpl implements ConverterRegistry {
 
         registerConverterFactory(Types.BLOB, byte[].class, new ConverterFactoryImpl(ByteArrayConverter.Singleton));
         registerConverterFactory(Types.BINARY, byte[].class, new ConverterFactoryImpl(ByteArrayConverter.Singleton));
+        registerConverterFactory(Types.VARBINARY, byte[].class, new ConverterFactoryImpl(ByteArrayConverter.Singleton));
         registerConverterFactory(Types.CLOB, char[].class, new ConverterFactoryImpl(CharArrayConverter.Singleton));
         registerConverterFactory(Types.CLOB, String.class, new ConverterFactoryImpl(ClobConverter.Singleton));
     }

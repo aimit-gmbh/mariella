@@ -17,7 +17,7 @@ internal class VertxParameterValues : ParameterValues {
     private fun set(pos: Int, value: Any?) {
         val p = pos - 1
         // TODO: ensureCapacity does not work. this is an ugly workaround
-        for (i in values.size until p + 1) {
+        for (@Suppress("Unused") i in values.size until p + 1) {
             values.add(null)
         }
         values[p] = value
@@ -55,8 +55,8 @@ internal class VertxParameterValues : ParameterValues {
         set(pos, value)
     }
 
-    override fun setBytes(pos: Int, value: ByteArray) {
-        throw UnsupportedOperationException()
+    override fun setBytes(pos: Int, value: ByteArray?) {
+        set(pos, value)
     }
 
     override fun setUUID(pos: Int, value: UUID?) {

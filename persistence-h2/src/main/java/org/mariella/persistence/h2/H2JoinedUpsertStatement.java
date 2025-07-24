@@ -67,7 +67,7 @@ public class H2JoinedUpsertStatement extends AbstractPersistorStatement {
         key.append(")");
 
         StringBuilder b = new StringBuilder();
-        b.append("MERGE INTO ").append(table.getName());
+        b.append("MERGE INTO ").append(table.getQualifiedName());
         b.append(" (");
         first = true;
         for (Column column : columns) {

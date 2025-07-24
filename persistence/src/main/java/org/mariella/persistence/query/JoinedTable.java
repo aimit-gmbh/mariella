@@ -36,13 +36,13 @@ public class JoinedTable implements TableReference {
         if (alias != null) {
             b.append(alias);
         } else {
-            b.append(table.getName());
+            b.append(table.getQualifiedName());
         }
     }
 
     @Override
     public void printFromClause(StringBuilder b) {
-        b.append(table.getName());
+        b.append(table.getQualifiedName());
         if (alias != null) {
             b.append(" ");
             b.append(alias);

@@ -28,8 +28,16 @@ public abstract class Schema {
         return tables.get(name);
     }
 
+    public Table getTable(String schema, String name) {
+    	if(schema == null)
+    		return tables.get(name);
+    	else
+    		return tables.get(schema + "." + name);
+    }
+
+
     public void addTable(Table table) {
-        tables.put(table.getName(), table);
+        tables.put(table.getQualifiedName(), table);
     }
 
     public Collection<Sequence> getSequences() {

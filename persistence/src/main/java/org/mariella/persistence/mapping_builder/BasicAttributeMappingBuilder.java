@@ -76,7 +76,7 @@ public class BasicAttributeMappingBuilder extends AttributeMappingBuilder<BasicA
                             .getClassName() + "." + getPropertyDescription().getPropertyDescriptor().getName() + "!");
                 }
                 Sequence sequence = entityMappingBuilder.getPersistenceBuilder()
-                        .getSequence(getClassMapping().getPrimaryUpdateTable().getName(),
+                        .getSequence(getClassMapping().getPrimaryUpdateTable().getQualifiedName(),
                                 attributeInfo.getGeneratedValueInfo().getGenerator());
                 if (sequence == null) {
                     throw new IllegalStateException("The sequence '" + attributeInfo.getGeneratedValueInfo()

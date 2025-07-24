@@ -40,7 +40,7 @@ public class JoinedInsertStatement extends AbstractPersistorStatement {
 
         List<Column> requiredNotSetColumns = new ArrayList<>();
         StringBuilder b = new StringBuilder();
-        b.append(" INSERT INTO ").append(table.getName()).append(" (");
+        b.append(" INSERT INTO ").append(table.getQualifiedName()).append(" (");
         first = true;
         for (Column column : columns) {
             if (first)

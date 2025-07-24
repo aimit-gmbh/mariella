@@ -322,7 +322,7 @@ public abstract class ClassMapping extends AbstractClassMapping {
     }
 
     public String toString() {
-        return getClassDescription().toString() + " (" + getPrimaryTable().getName() + ")";
+        return getClassDescription().toString() + " (" + getPrimaryTable().getQualifiedName() + ")";
     }
 
     public void collectUsedTables(Collection<Table> collection) {

@@ -161,7 +161,7 @@ public abstract class PersistenceBuilder {
     }
 
     public Table getTable(String catalog, String schema, String name) {
-        Table table = persistenceInfo.getSchema().getTable(name);
+        Table table = persistenceInfo.getSchema().getTable(schema, name);
         if (table == null) {
             DatabaseTableInfo dti = databaseInfoProvider.getTableInfo(catalog, schema, name);
             if (dti == null) {

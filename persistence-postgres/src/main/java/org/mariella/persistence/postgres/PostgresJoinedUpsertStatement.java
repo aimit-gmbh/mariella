@@ -52,7 +52,7 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
 
         List<Column> requiredNotSetColumns = new ArrayList<>();
         StringBuilder b = new StringBuilder();
-        b.append("MERGE INTO ").append(table.getName()).append(" a using (select ");
+        b.append("MERGE INTO ").append(table.getQualifiedName()).append(" a using (select ");
         for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
             if (first)
                 first = false;
@@ -60,7 +60,7 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
                 b.append(", ");
             b.append(primaryKeyJoinColumn.getJoinTableColumn().name());
         }
-        b.append(" from ").append(table.getName()).append(" where ");
+        b.append(" from ").append(table.getQualifiedName()).append(" where ");
         first = true;
         for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
             if (first)

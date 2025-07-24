@@ -13,10 +13,10 @@ public abstract class RelationshipAsOwnedTablePropertyMapping extends Relationsh
     protected Table table;
 
     public RelationshipAsOwnedTablePropertyMapping(ClassMapping classMapping, PropertyDescription propertyDescription,
-                                                   String tableName, Map<Column, ColumnMapping> foreignKeyMapToOwner,
+                                                   String qualfiedTableName, Map<Column, ColumnMapping> foreignKeyMapToOwner,
                                                    Map<Column, ColumnMapping> foreignKeyMapToContent) {
         super(classMapping, propertyDescription);
-        this.table = classMapping.getSchemaMapping().getSchema().getTable(tableName);
+        this.table = classMapping.getSchemaMapping().getSchema().getTable(qualfiedTableName);
         this.foreignKeyMapToOwner = foreignKeyMapToOwner;
         this.foreignKeyMapToContent = foreignKeyMapToContent;
     }

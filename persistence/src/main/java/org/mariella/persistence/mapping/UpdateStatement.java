@@ -40,7 +40,7 @@ public class UpdateStatement extends AbstractPersistorStatement {
     public String getSqlString(BuildCallback buildCallback) {
         StringBuilder b = new StringBuilder();
         b.append("UPDATE ");
-        b.append(table.getName());
+        b.append(table.getQualifiedName());
         b.append(" SET ");
         boolean first = true;
         for (Column column : columns) {

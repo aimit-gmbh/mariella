@@ -92,7 +92,7 @@ public abstract class ToManyAttributeMappingBuilder<T extends ToManyAttributeInf
             OrderedListAsTablePropertyMapping pm = new OrderedListAsTablePropertyMapping(
                     getClassMapping(),
                     getPropertyDescription(),
-                    joinTable.getName(),
+                    joinTable.getQualifiedName(),
                     foreignKeyMapToOwner,
                     foreignKeyMapToContent,
                     orderByColumn.name());
@@ -102,7 +102,7 @@ public abstract class ToManyAttributeMappingBuilder<T extends ToManyAttributeInf
             CollectionAsTablePropertyMapping pm = new CollectionAsTablePropertyMapping(
                     getClassMapping(),
                     getPropertyDescription(),
-                    joinTable.getName(),
+                    joinTable.getQualifiedName(),
                     foreignKeyMapToOwner,
                     foreignKeyMapToContent);
             getClassMapping().setPropertyMapping(getPropertyDescription(), pm);

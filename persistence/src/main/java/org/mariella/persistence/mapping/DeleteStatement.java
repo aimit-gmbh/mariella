@@ -32,7 +32,7 @@ public class DeleteStatement extends AbstractPersistorStatement {
     protected String getSqlString(BuildCallback buildCallback) {
         StringBuilder b = new StringBuilder();
         b.append("DELETE FROM ");
-        b.append(table.getName());
+        b.append(table.getQualifiedName());
         b.append(" WHERE ");
 
         boolean first = true;

@@ -57,6 +57,31 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     }
 
     @Test
+    fun `can handle tables in other schemas`() {
+        runTest {
+            val id = database.write {
+                val context = modify()
+
+                val tab = context.create<OtherSchema>()
+                tab.name = "hansi"
+
+                context.flush()
+
+                tab.id
+            }
+            database.read {
+                val context = modify()
+
+                val loaded = context.loadEntity<OtherSchema>(id)!!
+                expectThat(loaded.name).isEqualTo("hansi")
+
+                val loadedId = context.mapper.selectOneExistingPrimitive<UUID>("select id from hansi.other_schema")
+                expectThat(loadedId).isEqualTo(id)
+            }
+        }
+    }
+
+    @Test
     fun `can map one to many`() {
         runTest {
             val session = database.createSession()

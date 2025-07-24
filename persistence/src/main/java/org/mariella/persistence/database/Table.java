@@ -20,6 +20,14 @@ public class Table {
         return name;
     }
 
+    public String getQualifiedName() {
+    	if(schema != null) {
+    		return schema + "." + name;
+    	} else {
+    		return name;
+    	}
+    }
+    
     public String getSchema() {
         return schema;
     }
@@ -27,7 +35,7 @@ public class Table {
     public String getCatalog() {
         return catalog;
     }
-
+    
     public Collection<Column> getColumns() {
         return columns.values();
     }

@@ -47,7 +47,7 @@ public class OracleJoinedUpsertStatement extends AbstractPersistorStatement {
     protected String getSqlString(BuildCallback buildCallback) {
         boolean first;
         StringBuilder b = new StringBuilder();
-        b.append("MERGE INTO ").append(table.getName());
+        b.append("MERGE INTO ").append(table.getQualifiedName());
         b.append("\n\tUSING DUAL ON (");
 
         first = true;

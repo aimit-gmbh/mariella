@@ -326,7 +326,7 @@ public class CreateIndicesForForeignKeys {
         }
 
         String buildBaseName() {
-            StringBuilder s = new StringBuilder(nameAbbreviator.abbreviateTableName(table.getName()));
+            StringBuilder s = new StringBuilder(nameAbbreviator.abbreviateTableName(table.getQualifiedName()));
             for (Column col : columns) {
                 s.append("@").append(nameAbbreviator.abbreviateColumnName(col.name()));
             }

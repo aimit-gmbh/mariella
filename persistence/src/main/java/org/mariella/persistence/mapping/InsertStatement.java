@@ -23,7 +23,7 @@ public class InsertStatement extends AbstractPersistorStatement {
     protected String getSqlString(BuildCallback buildCallback) {
         StringBuilder b = new StringBuilder();
         b.append("INSERT INTO ");
-        b.append(table.getName());
+        b.append(table.getQualifiedName());
         b.append(" (");
         boolean first = true;
         for (Column column : columns) {

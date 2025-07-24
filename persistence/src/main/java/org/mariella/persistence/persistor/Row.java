@@ -46,7 +46,7 @@ public class Row {
     @SuppressWarnings("unchecked")
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append(table.getName());
+        b.append(table.getQualifiedName());
         b.append("(");
         boolean first = true;
         for (Column column : setColumns) {

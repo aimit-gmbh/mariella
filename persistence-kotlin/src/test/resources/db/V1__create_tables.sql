@@ -187,3 +187,11 @@ CREATE TABLE public.batch_job_instance
     CONSTRAINT batch_job_instance_pkey PRIMARY KEY (job_instance_id),
     CONSTRAINT job_inst_un UNIQUE (job_name, job_key)
 );
+
+create schema hansi;
+
+create table hansi.other_schema
+(
+    id   UUID         not null,
+    name varchar(100) not null
+);

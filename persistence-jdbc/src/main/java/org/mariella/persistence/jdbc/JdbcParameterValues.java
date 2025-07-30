@@ -1,8 +1,8 @@
 package org.mariella.persistence.jdbc;
 
+import jakarta.persistence.PersistenceException;
 import org.mariella.persistence.database.ParameterValues;
 
-import javax.persistence.PersistenceException;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.sql.*;

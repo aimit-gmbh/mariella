@@ -1,8 +1,8 @@
 package org.mariella.persistence.bootstrap;
 
+import jakarta.persistence.PersistenceException;
 import org.mariella.persistence.mapping.UnitInfo;
 
-import javax.persistence.PersistenceException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;

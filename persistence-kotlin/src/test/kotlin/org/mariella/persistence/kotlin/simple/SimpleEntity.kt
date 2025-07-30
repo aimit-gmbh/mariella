@@ -1,11 +1,11 @@
 package org.mariella.persistence.kotlin.simple
 
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 import org.mariella.persistence.kotlin.TrackingSupport
 import java.util.*
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.Table
 
 @Table(name = "simple")
 @Entity

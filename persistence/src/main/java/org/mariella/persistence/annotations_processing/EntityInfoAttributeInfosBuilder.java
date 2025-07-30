@@ -1,11 +1,10 @@
 package org.mariella.persistence.annotations_processing;
 
+import jakarta.persistence.IdClass;
 import org.mariella.persistence.mapping.AttributeInfo;
 import org.mariella.persistence.mapping.EntityInfo;
 import org.mariella.persistence.mapping.MappedClassInfo;
 import org.mariella.persistence.mapping.MappedSuperclassInfo;
-
-import javax.persistence.IdClass;
 
 public class EntityInfoAttributeInfosBuilder extends MappedClassInfoAttributeInfosBuilder {
 

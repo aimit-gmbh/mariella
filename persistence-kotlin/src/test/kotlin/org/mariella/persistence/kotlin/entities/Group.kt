@@ -1,8 +1,8 @@
 package org.mariella.persistence.kotlin.entities
 
+import jakarta.persistence.*
+import jakarta.persistence.Entity
 import org.mariella.persistence.runtime.TrackedList
-import javax.persistence.*
-import javax.persistence.Entity
 
 
 @Entity

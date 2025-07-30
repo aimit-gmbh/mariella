@@ -1,8 +1,7 @@
 package org.mariella.persistence.annotations_processing;
 
+import jakarta.persistence.ManyToMany;
 import org.mariella.persistence.mapping.RelationAttributeInfo;
-
-import javax.persistence.ManyToMany;
 
 public class ManyToManyAttributeInfoReferencesResolver extends
         ToManyAttributeInfoReferencesResolver {

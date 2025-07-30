@@ -1,8 +1,8 @@
 package org.mariella.persistence.jdbc;
 
+import jakarta.persistence.PersistenceException;
 import org.mariella.persistence.database.ResultRow;
 
-import javax.persistence.PersistenceException;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.UUID;

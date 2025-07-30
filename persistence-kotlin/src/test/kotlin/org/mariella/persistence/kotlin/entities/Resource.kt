@@ -1,10 +1,10 @@
 package org.mariella.persistence.kotlin.entities
 
+import jakarta.persistence.*
 import org.mariella.persistence.runtime.TrackedList
 import java.time.Instant
-import javax.persistence.*
 
-@javax.persistence.Entity
+@jakarta.persistence.Entity
 @Table(name = "resource_node")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "node_type", discriminatorType = DiscriminatorType.STRING)

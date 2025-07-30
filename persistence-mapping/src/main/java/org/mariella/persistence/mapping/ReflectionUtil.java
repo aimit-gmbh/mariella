@@ -58,7 +58,7 @@ public class ReflectionUtil {
 
     public static boolean hasAnyEJB3Annotations(AnnotatedElement annotatedElement) {
         for (Annotation anno : annotatedElement.getAnnotations()) {
-            if (anno.getClass().getPackage().getName().equals("javax.persistence")) return true;
+            if (anno.getClass().getPackage().getName().equals("jakarta.persistence")) return true;
         }
         return false;
     }

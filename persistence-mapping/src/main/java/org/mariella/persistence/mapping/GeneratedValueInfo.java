@@ -1,6 +1,6 @@
 package org.mariella.persistence.mapping;
 
-import javax.persistence.GenerationType;
+import jakarta.persistence.GenerationType;
 
 
 public class GeneratedValueInfo {

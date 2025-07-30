@@ -1,11 +1,11 @@
 package org.mariella.persistence.kotlin.entities
 
-import javax.persistence.Column
-import javax.persistence.Inheritance
-import javax.persistence.InheritanceType
-import javax.persistence.Table
+import jakarta.persistence.Column
+import jakarta.persistence.Inheritance
+import jakarta.persistence.InheritanceType
+import jakarta.persistence.Table
 
-@javax.persistence.Entity
+@jakarta.persistence.Entity
 @Table(name = "resource_character")
 @Inheritance(strategy = InheritanceType.JOINED)
 open class ResourceCharacter : Entity() {

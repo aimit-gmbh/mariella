@@ -1,8 +1,8 @@
 package org.mariella.test.model;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
-@javax.persistence.Entity
+@jakarta.persistence.Entity
 @Table(name = "PERSON")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorValue("P")

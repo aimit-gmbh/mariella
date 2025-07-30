@@ -1,10 +1,9 @@
 package org.mariella.persistence.annotations_processing;
 
+import jakarta.persistence.TableGenerator;
 import org.mariella.persistence.mapping.TableGeneratorInfo;
 import org.mariella.persistence.mapping.UniqueConstraintInfo;
 import org.mariella.persistence.mapping.UnitInfo;
-
-import javax.persistence.TableGenerator;
 
 public class TableGeneratorInfoBuilder {
 

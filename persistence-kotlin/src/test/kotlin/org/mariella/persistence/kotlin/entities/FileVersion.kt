@@ -1,7 +1,7 @@
 package org.mariella.persistence.kotlin.entities
 
-import javax.persistence.*
-import javax.persistence.Entity
+import jakarta.persistence.*
+import jakarta.persistence.Entity
 
 @Entity
 @Table(name = "file_version")

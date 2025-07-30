@@ -1,5 +1,6 @@
 package org.mariella.persistence.mapping_builder;
 
+import jakarta.persistence.GenerationType;
 import org.mariella.persistence.database.Column;
 import org.mariella.persistence.database.Converter;
 import org.mariella.persistence.database.Sequence;
@@ -9,7 +10,6 @@ import org.mariella.persistence.runtime.Introspector;
 import org.mariella.persistence.schema.ScalarPropertyDescription;
 import org.mariella.persistence.util.Assert;
 
-import javax.persistence.GenerationType;
 import java.beans.PropertyDescriptor;
 
 public class BasicAttributeMappingBuilder extends AttributeMappingBuilder<BasicAttributeInfo> {

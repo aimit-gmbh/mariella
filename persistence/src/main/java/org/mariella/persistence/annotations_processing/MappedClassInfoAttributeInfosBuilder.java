@@ -1,12 +1,12 @@
 package org.mariella.persistence.annotations_processing;
 
+import jakarta.persistence.*;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.SequenceGenerator;
 import org.mariella.persistence.annotations.Converter;
 import org.mariella.persistence.annotations.Domain;
 import org.mariella.persistence.mapping.*;
 
-import javax.persistence.JoinColumn;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.*;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.AnnotatedElement;
@@ -254,7 +254,7 @@ public class MappedClassInfoAttributeInfosBuilder {
     }
 
     private boolean isId(AnnotatedElement ae) {
-        return ae.isAnnotationPresent(Id.class) || ae.isAnnotationPresent(javax.persistence.EmbeddedId.class);
+        return ae.isAnnotationPresent(Id.class) || ae.isAnnotationPresent(jakarta.persistence.EmbeddedId.class);
     }
 
     private boolean isOptionalOrNullable(AnnotatedElement ae) {

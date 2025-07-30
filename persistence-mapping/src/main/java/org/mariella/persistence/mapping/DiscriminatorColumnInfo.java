@@ -1,6 +1,6 @@
 package org.mariella.persistence.mapping;
 
-import javax.persistence.DiscriminatorType;
+import jakarta.persistence.DiscriminatorType;
 
 
 public class DiscriminatorColumnInfo {

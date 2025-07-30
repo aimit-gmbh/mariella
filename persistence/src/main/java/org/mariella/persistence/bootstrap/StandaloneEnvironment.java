@@ -1,11 +1,11 @@
 package org.mariella.persistence.bootstrap;
 
+import jakarta.persistence.PersistenceException;
 import org.mariella.persistence.annotations_processing.ClassLoaderPersistenceUnitParser;
 import org.mariella.persistence.annotations_processing.PersistenceUnitParser;
 import org.mariella.persistence.annotations_processing.UnitInfoBuilder;
 import org.mariella.persistence.mapping.UnitInfo;
 
-import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 import java.util.Map;
 

@@ -1,9 +1,9 @@
 package org.mariella.persistence.kotlin.entities
 
-import javax.persistence.Column
-import javax.persistence.Table
+import jakarta.persistence.Column
+import jakarta.persistence.Table
 
-@javax.persistence.Entity
+@jakarta.persistence.Entity
 @Table(name = "space")
 class Space : Entity() {
     @get:Column(name = "name")

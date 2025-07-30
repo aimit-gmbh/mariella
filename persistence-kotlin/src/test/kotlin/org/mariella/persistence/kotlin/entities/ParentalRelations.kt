@@ -1,12 +1,12 @@
 package org.mariella.persistence.kotlin.entities
 
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.JoinTable
+import jakarta.persistence.ManyToMany
+import jakarta.persistence.Table
 import org.mariella.persistence.runtime.TrackedList
-import javax.persistence.JoinColumn
-import javax.persistence.JoinTable
-import javax.persistence.ManyToMany
-import javax.persistence.Table
 
-@javax.persistence.Entity
+@jakarta.persistence.Entity
 @Table(name = "parental_relation")
 class ParentalRelations : Entity() {
     @ManyToMany

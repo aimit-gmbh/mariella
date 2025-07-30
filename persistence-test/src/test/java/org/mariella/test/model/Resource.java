@@ -1,11 +1,11 @@
 package org.mariella.test.model;
 
+import jakarta.persistence.*;
 import org.mariella.persistence.runtime.TrackedList;
 
-import javax.persistence.*;
 import java.sql.Timestamp;
 
-@javax.persistence.Entity
+@jakarta.persistence.Entity
 @Table(name = "RESOURCE")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(

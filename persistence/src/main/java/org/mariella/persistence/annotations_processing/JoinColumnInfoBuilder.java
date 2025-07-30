@@ -1,8 +1,7 @@
 package org.mariella.persistence.annotations_processing;
 
+import jakarta.persistence.JoinColumn;
 import org.mariella.persistence.mapping.JoinColumnInfo;
-
-import javax.persistence.JoinColumn;
 
 public class JoinColumnInfoBuilder {
 

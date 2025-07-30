@@ -1,12 +1,12 @@
 package org.mariella.persistence.kotlin.entities
 
+import jakarta.persistence.Column
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToOne
+import jakarta.persistence.Table
 import java.time.Instant
-import javax.persistence.Column
-import javax.persistence.JoinColumn
-import javax.persistence.OneToOne
-import javax.persistence.Table
 
-@javax.persistence.Entity
+@jakarta.persistence.Entity
 @Table(name = "revision")
 class Revision : Entity() {
     @get:OneToOne

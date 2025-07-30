@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    api("javax.persistence:javax.persistence-api:2.2")
+    api("jakarta.persistence:jakarta.persistence-api:3.2.0")
     implementation("org.slf4j:slf4j-api:2.0.17")
 }
 

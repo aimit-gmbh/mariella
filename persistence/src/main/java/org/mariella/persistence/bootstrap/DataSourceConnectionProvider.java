@@ -1,6 +1,7 @@
 package org.mariella.persistence.bootstrap;
 
-import javax.persistence.PersistenceException;
+import jakarta.persistence.PersistenceException;
+
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;

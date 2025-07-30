@@ -1,11 +1,11 @@
 package org.mariella.test.model;
 
+import jakarta.persistence.*;
 import org.mariella.persistence.runtime.TrackedList;
 
-import javax.persistence.*;
 import java.util.List;
 
-@javax.persistence.Entity
+@jakarta.persistence.Entity
 @Table(name = "PARTNER")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(

@@ -1,11 +1,11 @@
 package org.mariella.persistence.kotlin.entities
 
+import jakarta.persistence.Column
+import jakarta.persistence.Id
+import jakarta.persistence.MappedSuperclass
 import org.mariella.persistence.kotlin.TrackingSupport
 import java.time.Instant
 import java.util.*
-import javax.persistence.Column
-import javax.persistence.Id
-import javax.persistence.MappedSuperclass
 
 @MappedSuperclass
 abstract class Entity : TrackingSupport() {

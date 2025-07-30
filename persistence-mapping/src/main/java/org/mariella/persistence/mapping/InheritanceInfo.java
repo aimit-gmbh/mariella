@@ -1,6 +1,6 @@
 package org.mariella.persistence.mapping;
 
-import javax.persistence.InheritanceType;
+import jakarta.persistence.InheritanceType;
 
 
 public class InheritanceInfo {

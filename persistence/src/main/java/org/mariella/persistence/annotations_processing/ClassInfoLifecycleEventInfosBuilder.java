@@ -1,10 +1,10 @@
 package org.mariella.persistence.annotations_processing;
 
+import jakarta.persistence.*;
 import org.mariella.persistence.mapping.ClassInfo;
 import org.mariella.persistence.mapping.LifecycleEventInfo;
 import org.mariella.persistence.mapping.LifecycleEventType;
 
-import javax.persistence.*;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 

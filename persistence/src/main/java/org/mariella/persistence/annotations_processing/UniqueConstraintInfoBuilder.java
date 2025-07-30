@@ -1,8 +1,7 @@
 package org.mariella.persistence.annotations_processing;
 
+import jakarta.persistence.UniqueConstraint;
 import org.mariella.persistence.mapping.UniqueConstraintInfo;
-
-import javax.persistence.UniqueConstraint;
 
 public class UniqueConstraintInfoBuilder {
 

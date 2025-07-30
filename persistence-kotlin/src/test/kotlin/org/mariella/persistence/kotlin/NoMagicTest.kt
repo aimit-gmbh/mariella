@@ -6,6 +6,10 @@ import io.vertx.core.Vertx
 import io.vertx.jdbcclient.JDBCPool
 import io.vertx.kotlin.coroutines.coAwait
 import io.vertx.sqlclient.PoolOptions
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
@@ -17,10 +21,6 @@ import strikt.api.expectThat
 import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 import java.util.*
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.Table
 
 class NoMagicTest {
 

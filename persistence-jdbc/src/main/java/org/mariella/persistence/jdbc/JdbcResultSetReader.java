@@ -1,9 +1,9 @@
 package org.mariella.persistence.jdbc;
 
+import jakarta.persistence.PersistenceException;
 import org.mariella.persistence.database.ResultRow;
 import org.mariella.persistence.database.ResultSetReader;
 
-import javax.persistence.PersistenceException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 

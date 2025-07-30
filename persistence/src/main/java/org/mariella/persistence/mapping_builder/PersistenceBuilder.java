@@ -1,5 +1,6 @@
 package org.mariella.persistence.mapping_builder;
 
+import jakarta.persistence.InheritanceType;
 import org.mariella.persistence.database.Column;
 import org.mariella.persistence.database.Converter;
 import org.mariella.persistence.database.Sequence;
@@ -9,7 +10,6 @@ import org.mariella.persistence.schema.ClassDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.InheritanceType;
 import java.util.HashMap;
 import java.util.Map;
 

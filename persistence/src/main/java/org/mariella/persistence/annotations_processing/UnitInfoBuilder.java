@@ -1,5 +1,10 @@
 package org.mariella.persistence.annotations_processing;
 
+import jakarta.persistence.*;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.PrimaryKeyJoinColumns;
+import jakarta.persistence.SequenceGenerator;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
 import org.mariella.persistence.annotations.Cluster;
@@ -8,11 +13,6 @@ import org.mariella.persistence.annotations.DomainDefinitions;
 import org.mariella.persistence.annotations.UpdateTable;
 import org.mariella.persistence.mapping.*;
 
-import javax.persistence.JoinColumn;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.PrimaryKeyJoinColumns;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -77,10 +77,10 @@ public class UnitInfoBuilder {
         if (ae == null)
             throw new IllegalStateException();
 
-        if (!ae.isAnnotationPresent(javax.persistence.JoinTable.class))
+        if (!ae.isAnnotationPresent(jakarta.persistence.JoinTable.class))
             return;
 
-        javax.persistence.JoinTable joinTable = ae.getAnnotation(javax.persistence.JoinTable.class);
+        jakarta.persistence.JoinTable joinTable = ae.getAnnotation(jakarta.persistence.JoinTable.class);
 
         JoinTableInfo info = new JoinTableInfo();
         info.setCatalog(translator.translate(joinTable.catalog()));
@@ -100,7 +100,7 @@ public class UnitInfoBuilder {
         return infos;
     }
 
-    private List<UniqueConstraintInfo> buildUniqueContraintInfos(javax.persistence.UniqueConstraint[] uniqueConstraints,
+    private List<UniqueConstraintInfo> buildUniqueContraintInfos(jakarta.persistence.UniqueConstraint[] uniqueConstraints,
                                                                  IModelToDb translator) {
         List<UniqueConstraintInfo> infos = new ArrayList<>();
         for (UniqueConstraint con : uniqueConstraints) {

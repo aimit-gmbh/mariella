@@ -1,8 +1,8 @@
 package org.mariella.persistence.kotlin.entities
 
-import javax.persistence.*
+import jakarta.persistence.*
 
-@javax.persistence.Entity
+@jakarta.persistence.Entity
 @Table(name = "auth_member")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "obj_type", discriminatorType = DiscriminatorType.STRING)

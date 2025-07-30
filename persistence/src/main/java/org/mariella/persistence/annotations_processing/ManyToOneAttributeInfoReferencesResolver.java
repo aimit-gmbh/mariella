@@ -1,8 +1,7 @@
 package org.mariella.persistence.annotations_processing;
 
+import jakarta.persistence.ManyToOne;
 import org.mariella.persistence.mapping.RelationAttributeInfo;
-
-import javax.persistence.ManyToOne;
 
 public class ManyToOneAttributeInfoReferencesResolver extends ToOneAttributeInfoReferencesResolver {
 

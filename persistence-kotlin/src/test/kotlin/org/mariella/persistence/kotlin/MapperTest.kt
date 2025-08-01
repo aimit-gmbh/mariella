@@ -102,6 +102,19 @@ class MapperTest : AbstractDatabaseTest() {
     }
 
     @Test
+    fun `can use sealed class as parameter`() {
+        val sql = "select security_concept from space where security_concept = $1"
+
+        runTest {
+            createFiles(1)
+            database.read {
+                val list = mapper.selectPrimitive<SecurityConcept>(sql, SecurityConcept.Public)
+                expectThat(list.single()).isEqualTo(SecurityConcept.Public)
+            }
+        }
+    }
+
+    @Test
     fun `can pass value classes as parameter`() {
         val sql = "select id, 'hello' as description from resource_node where id = $1"
 

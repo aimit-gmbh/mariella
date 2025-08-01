@@ -161,8 +161,12 @@ class Mapper internal constructor(private val sqlClient: SqlClient, private val 
         return Tuple.from(params.map {
             if (it != null) {
                 val actualValue = if (it::class.isValue) it::class.memberProperties.single().getter.call(it) else it
-                if (actualValue is Instant) OffsetDateTime.ofInstant(actualValue, ZoneId.of("UTC"))
-                else actualValue
+                when (actualValue) {
+                    is Instant -> OffsetDateTime.ofInstant(actualValue, ZoneId.of("UTC"))
+                    is StringMappedSealedClass -> actualValue.value
+                    is IntegerMappedSealedClass -> actualValue.value
+                    else -> actualValue
+                }
             } else {
                 null
             }

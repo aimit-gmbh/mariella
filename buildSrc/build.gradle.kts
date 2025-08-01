@@ -11,5 +11,5 @@ dependencies {
     implementation(kotlin("gradle-plugin", "2.2.0"))
     implementation("com.github.ben-manes:gradle-versions-plugin:0.52.0")
     implementation("org.jetbrains.kotlinx:kover-gradle-plugin:0.9.1")
-    implementation("com.vanniktech:gradle-maven-publish-plugin:0.32.0")
+    implementation("com.vanniktech:gradle-maven-publish-plugin:0.34.0")
 }

@@ -9,15 +9,15 @@ import java.time.Instant
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "node_type", discriminatorType = DiscriminatorType.STRING)
 abstract class Resource : Entity() {
-    @get:OneToOne
+    @get:ManyToOne
     @get:JoinColumn(name = "space_id", referencedColumnName = "id")
     var space: Space? by changeSupport()
 
-    @get:OneToOne
+    @get:ManyToOne
     @get:JoinColumn(name = "owned_by", referencedColumnName = "id")
     var owner: UserEntity? by changeSupport()
 
-    @get:OneToOne
+    @get:ManyToOne
     @get:JoinColumn(name = "revision_id", referencedColumnName = "id")
     var revision: Revision? by changeSupport()
 

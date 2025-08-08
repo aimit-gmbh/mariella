@@ -99,6 +99,7 @@ CREATE TABLE public.resource_node_version
     parent             uuid                     NULL,
     name               varchar(256)             NOT NULL,
     deleted            int8                     NOT NULL,
+    node_comment varchar(4000) NULL,
     resource_node      uuid                     NOT NULL,
     space_id           uuid                     NOT NULL,
     revision_from_id   uuid                     NOT NULL,

@@ -8,24 +8,27 @@ import java.time.Instant
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "node_type", discriminatorType = DiscriminatorType.STRING)
 abstract class ResourceVersion : Entity() {
-    @get:OneToOne
+    @get:ManyToOne
     @get:JoinColumn(name = "resource_node", referencedColumnName = "id")
     var resource: Resource? by changeSupport()
 
-    @get:OneToOne
+    @get:ManyToOne
     @get:JoinColumn(name = "parent", referencedColumnName = "id")
     var parent: Resource? by changeSupport()
 
-    @get:OneToOne
+    @get:ManyToOne
     @get:JoinColumn(name = "space_id", referencedColumnName = "id")
     var space: Space? by changeSupport()
 
-    @get:OneToOne
+    @get:ManyToOne
     @get:JoinColumn(name = "revision_from_id", referencedColumnName = "id")
     var revision: Revision? by changeSupport()
 
     @get:Column(name = "name")
     var name: String by changeSupport()
+
+    @get:Column(name = "node_comment")
+    var comment: String? by changeSupport()
 
     @get:Column(name = "revision_from_time")
     var revisionFrom: Instant by changeSupport()

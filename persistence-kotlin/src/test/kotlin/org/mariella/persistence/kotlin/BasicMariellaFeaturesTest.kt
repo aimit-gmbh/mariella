@@ -1,6 +1,7 @@
 package org.mariella.persistence.kotlin
 
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.mariella.persistence.kotlin.entities.*
 import org.mariella.persistence.kotlin.internal.LoadByIdProvider
@@ -154,19 +155,76 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     }
 
     @Test
+    fun `can query by date in postgres`() {
+        // TODO: maybe fix for H2?
+        assumeTrue(DATABASE_TYPE == DatabaseType.POSTGRES)
+        runTest {
+            val file = createFiles(3, null).first()
+            database.read {
+                expectThat(
+                    modify().load<FileVersion>(
+                        "root",
+                        conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id, "root.revisionFrom" to file.revisionFrom, "root.deleted" to false))
+                    )
+                ).hasSize(1)
+            }
+        }
+    }
+
+    @Test
+    fun `can load all`() {
+        runTest {
+            createFiles(3)
+            database.read {
+                val versions = modify().loadAll<FileVersion>("root.resource")
+                expectThat(versions).hasSize(3)
+                versions.forEach { expectThat(it.resource).isNotNull() }
+                expectThat(modify().loadAll<Space>()).hasSize(2)
+            }
+        }
+    }
+
+    @Test
+    fun `can load cluster with conditions`() {
+        runTest {
+            val file = createFiles(3, null).first()
+            database.read {
+                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id, "root.name" to file.name)))).hasSize(1)
+                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id)))).hasSize(1)
+                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id, "root.comment" to null)))).hasSize(1)
+                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.comment" to null)))).hasSize(3)
+                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id)))).hasSize(1)
+                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to UUID.randomUUID())))).hasSize(0)
+                expectThat(modify().load<FileVersion>("root", conditionProvider = LoadByConditionProvider(mapOf("root.name" to "not existing")))).isEmpty()
+                expectThat(modify().load<FileVersion>("root", conditionProvider = LoadByConditionProvider(mapOf("root.space" to UUID.randomUUID())))).isEmpty()
+                expectThat(
+                    modify().load<FileVersion>(
+                        "root",
+                        "root.space",
+                        conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id, "root.space" to TestData.TEST_SPACE))
+                    )
+                ).hasSize(1)
+                expectThrows<RuntimeException> { LoadByConditionProvider(mapOf("root.id" to file.id, "root.space.id" to UUID.randomUUID())) }.get { message }
+                    .isEqualTo("only root properties can be set")
+                expectThrows<RuntimeException> { LoadByConditionProvider(mapOf("root.id" to file.id, "muh.space" to UUID.randomUUID())) }.get { message }.isEqualTo("only root properties can be set")
+                expectThrows<RuntimeException> { LoadByConditionProvider(emptyMap()) }.get { message }.isEqualTo("conditions must not be empty")
+            }
+        }
+    }
+
+    @Test
     fun `can load object with sealed class`() {
         runTest {
             database.read {
-                val context = modify()
                 createFiles(1)
-                expectThat(context.load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to SecurityConcept.Public)))).hasSize(1)
-                expectThat(context.load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to SecurityConcept.Acl)))).hasSize(0)
-                expectThat(context.load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to null)))).hasSize(0)
+                expectThat(modify().load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to SecurityConcept.Public)))).hasSize(1)
+                expectThat(modify().load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to SecurityConcept.Acl)))).hasSize(0)
+                expectThat(modify().load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to null)))).hasSize(0)
 
-                expectThat(context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.CodeMonkey)))).hasSize(1)
-                expectThat(context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.Donkey)))).hasSize(1)
-                expectThat(context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.God)))).hasSize(0)
-                expectThat(context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to null)))).hasSize(1)
+                expectThat(modify().load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.CodeMonkey)))).hasSize(1)
+                expectThat(modify().load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.Donkey)))).hasSize(1)
+                expectThat(modify().load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.God)))).hasSize(0)
+                expectThat(modify().load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to null)))).hasSize(1)
             }
         }
     }
@@ -205,6 +263,13 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
                     it.name = "asdasdasdasdasd"
                     it.hash = byteArrayOf(4, 5, 6)
                 }
+
+                val user = context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.Donkey))).single()
+                user.role = UserRole.God
+                context.flush()
+
+                val user1 = context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.God))).single()
+                user1.role = null
                 context.flush()
             }
 

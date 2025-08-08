@@ -135,7 +135,7 @@ fun migrateDb(databaseConfig: DatabaseConfig, vararg locations: String) {
     flyway.migrate()
 }
 
-suspend fun AbstractDatabaseTest.createFiles(nrOfFiles: Int = 1): List<FileVersion> {
+suspend fun AbstractDatabaseTest.createFiles(nrOfFiles: Int = 1, comment: String? = "my comment"): List<FileVersion> {
     val files = database.write {
         val context = modify()
         val space = context.addExisting<Space>(TestData.TEST_SPACE)
@@ -161,6 +161,7 @@ suspend fun AbstractDatabaseTest.createFiles(nrOfFiles: Int = 1): List<FileVersi
             fileVersion.space = space
             fileVersion.path = "/my/file/ola"
             fileVersion.revision = revision
+            fileVersion.comment = comment
             fileVersion.size = 100
             fileVersion.resource = it
             fileVersion.revisionFrom = revision.createdAt

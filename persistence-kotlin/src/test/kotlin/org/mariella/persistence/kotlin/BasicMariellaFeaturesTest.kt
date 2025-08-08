@@ -154,6 +154,24 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     }
 
     @Test
+    fun `can load object with sealed class`() {
+        runTest {
+            database.read {
+                val context = modify()
+                createFiles(1)
+                expectThat(context.load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to SecurityConcept.Public)))).hasSize(1)
+                expectThat(context.load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to SecurityConcept.Acl)))).hasSize(0)
+                expectThat(context.load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to null)))).hasSize(0)
+
+                expectThat(context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.CodeMonkey)))).hasSize(1)
+                expectThat(context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.Donkey)))).hasSize(1)
+                expectThat(context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.God)))).hasSize(0)
+                expectThat(context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to null)))).hasSize(1)
+            }
+        }
+    }
+
+    @Test
     fun `throws database exception when persisting`() {
         runTest {
             database.write {

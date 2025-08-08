@@ -31,7 +31,16 @@ internal class IntSealedClassConverter<T : IntegerMappedSealedClass>(private val
     }
 
     override fun createLiteral(value: Any?): Literal<T?> {
-        throw UnsupportedOperationException()
+        @Suppress("UNCHECKED_CAST") val casted = value as T?
+        return object : Literal<T?>(this, casted) {
+            override fun printSql(b: StringBuilder) {
+                if (casted == null)
+                    b.append("null")
+                else {
+                    b.append(casted.value.toString())
+                }
+            }
+        }
     }
 
     override fun createDummy(): Literal<T?> {

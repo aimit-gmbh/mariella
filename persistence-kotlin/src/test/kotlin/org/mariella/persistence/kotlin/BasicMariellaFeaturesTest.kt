@@ -1,6 +1,7 @@
 package org.mariella.persistence.kotlin
 
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.mariella.persistence.kotlin.entities.*
 import org.mariella.persistence.kotlin.internal.LoadByIdProvider
@@ -150,6 +151,51 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             val version = fileWith2.resourceVersions.removeFirst()
             expectThat(version.resource).isNull()
             expectThrows<DatabaseException> { newestContext.flush() }
+        }
+    }
+
+    @Test
+    fun `can query by date in postgres`() {
+        // TODO: maybe fix for H2?
+        assumeTrue(DATABASE_TYPE == DatabaseType.POSTGRES)
+        runTest {
+            val file = createFiles(3, null).first()
+            database.read {
+                expectThat(
+                    modify().load<FileVersion>(
+                        "root",
+                        conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id, "root.revisionFrom" to file.revisionFrom, "root.deleted" to false))
+                    )
+                ).hasSize(1)
+            }
+        }
+    }
+
+    @Test
+    fun `can load cluster with conditions`() {
+        runTest {
+            val file = createFiles(3, null).first()
+            database.read {
+                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id, "root.name" to file.name)))).hasSize(1)
+                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id)))).hasSize(1)
+                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id, "root.comment" to null)))).hasSize(1)
+                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.comment" to null)))).hasSize(3)
+                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id)))).hasSize(1)
+                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to UUID.randomUUID())))).hasSize(0)
+                expectThat(modify().load<FileVersion>("root", conditionProvider = LoadByConditionProvider(mapOf("root.name" to "not existing")))).isEmpty()
+                expectThat(modify().load<FileVersion>("root", conditionProvider = LoadByConditionProvider(mapOf("root.space" to UUID.randomUUID())))).isEmpty()
+                expectThat(
+                    modify().load<FileVersion>(
+                        "root",
+                        "root.space",
+                        conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id, "root.space" to TestData.TEST_SPACE))
+                    )
+                ).hasSize(1)
+                expectThrows<RuntimeException> { LoadByConditionProvider(mapOf("root.id" to file.id, "root.space.id" to UUID.randomUUID())) }.get { message }
+                    .isEqualTo("only root properties can be set")
+                expectThrows<RuntimeException> { LoadByConditionProvider(mapOf("root.id" to file.id, "muh.space" to UUID.randomUUID())) }.get { message }.isEqualTo("only root properties can be set")
+                expectThrows<RuntimeException> { LoadByConditionProvider(emptyMap()) }.get { message }.isEqualTo("conditions must not be empty")
+            }
         }
     }
 

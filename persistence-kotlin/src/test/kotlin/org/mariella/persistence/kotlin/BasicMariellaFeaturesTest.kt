@@ -172,6 +172,19 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     }
 
     @Test
+    fun `can load all`() {
+        runTest {
+            createFiles(3)
+            database.read {
+                val versions = modify().loadAll<FileVersion>("root.resource")
+                expectThat(versions).hasSize(3)
+                versions.forEach { expectThat(it.resource).isNotNull() }
+                expectThat(modify().loadAll<Space>()).hasSize(2)
+            }
+        }
+    }
+
+    @Test
     fun `can load cluster with conditions`() {
         runTest {
             val file = createFiles(3, null).first()

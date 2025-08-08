@@ -96,6 +96,10 @@ class ModificationContext internal constructor(
         }
     }
 
+    suspend inline fun <reified T> loadAll(vararg paths: String = arrayOf("root")): List<T> {
+        return load(paths = paths, conditionProvider = ClusterLoaderConditionProvider.Default)
+    }
+
     suspend inline fun <reified T> loadEntity(
         id: UUID,
         vararg paths: String = arrayOf("root"),

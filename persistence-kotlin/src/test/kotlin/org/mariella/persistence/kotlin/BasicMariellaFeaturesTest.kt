@@ -203,16 +203,15 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     fun `can load object with sealed class`() {
         runTest {
             database.read {
-                val context = modify()
                 createFiles(1)
-                expectThat(context.load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to SecurityConcept.Public)))).hasSize(1)
-                expectThat(context.load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to SecurityConcept.Acl)))).hasSize(0)
-                expectThat(context.load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to null)))).hasSize(0)
+                expectThat(modify().load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to SecurityConcept.Public)))).hasSize(1)
+                expectThat(modify().load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to SecurityConcept.Acl)))).hasSize(0)
+                expectThat(modify().load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to null)))).hasSize(0)
 
-                expectThat(context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.CodeMonkey)))).hasSize(1)
-                expectThat(context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.Donkey)))).hasSize(1)
-                expectThat(context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.God)))).hasSize(0)
-                expectThat(context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to null)))).hasSize(1)
+                expectThat(modify().load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.CodeMonkey)))).hasSize(1)
+                expectThat(modify().load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.Donkey)))).hasSize(1)
+                expectThat(modify().load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.God)))).hasSize(0)
+                expectThat(modify().load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to null)))).hasSize(1)
             }
         }
     }
@@ -251,6 +250,13 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
                     it.name = "asdasdasdasdasd"
                     it.hash = byteArrayOf(4, 5, 6)
                 }
+
+                val user = context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.Donkey))).single()
+                user.role = UserRole.God
+                context.flush()
+
+                val user1 = context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.God))).single()
+                user1.role = null
                 context.flush()
             }
 

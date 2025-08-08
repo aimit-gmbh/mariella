@@ -32,18 +32,18 @@ values ('c97f213b-a030-4c1c-92d1-fbebe2a807c3', 'Super User Group', 2);
 
 insert into auth_member (id, obj_type, status)
 values ('84f80398-efcc-4ea7-8de1-bbc774f371dc', 'U', 0);
-insert into auth_user (id, name, email)
-values ('84f80398-efcc-4ea7-8de1-bbc774f371dc', 'Seppi', 'ss@aimit.at');
+insert into auth_user (id, name, email, role)
+values ('84f80398-efcc-4ea7-8de1-bbc774f371dc', 'Seppi', 'ss@aimit.at', 'donkey');
 
 insert into auth_member (id, obj_type, status)
 values ('a8c0926d-1859-4048-bc0f-1509713ad7cf', 'U', 0);
-insert into auth_user (id, name, email)
-values ('a8c0926d-1859-4048-bc0f-1509713ad7cf', 'Guest', 'guest@aimit.at');
+insert into auth_user (id, name, email, role)
+values ('a8c0926d-1859-4048-bc0f-1509713ad7cf', 'Guest', 'guest@aimit.at', null);
 
 insert into auth_member (id, obj_type, status)
 values ('e920a34d-fde0-450c-8e7a-7eed4dbae7ad', 'U', 0);
-insert into auth_user (id, name, email)
-values ('e920a34d-fde0-450c-8e7a-7eed4dbae7ad', 'Karl', 'kk@aimit.at');
+insert into auth_user (id, name, email, role)
+values ('e920a34d-fde0-450c-8e7a-7eed4dbae7ad', 'Karl', 'kk@aimit.at', 'codemonkey');
 
 insert into entity_type(id, type, description, table_name, entity_abbrev, container)
 values ('d841d50f-ab2d-4ea9-ac5d-204e98ca4457', 'I', 'file type', 'file_node', 'FI', 0);

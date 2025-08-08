@@ -14,4 +14,8 @@ class UserEntity : Member() {
 
     @get:Column(name = "email")
     var email: String by changeSupport()
+
+    @Suppress("JpaAttributeTypeInspection")
+    @get:Column(name = "role")
+    var role: UserRole? by changeSupport()
 }

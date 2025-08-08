@@ -5,6 +5,7 @@ import org.mariella.persistence.kotlin.*
 import org.mariella.persistence.kotlin.entities.ResourceType
 import org.mariella.persistence.kotlin.entities.SecurityConcept
 import org.mariella.persistence.kotlin.entities.SystemGroup
+import org.mariella.persistence.kotlin.entities.UserRole
 import org.mariella.persistence.mapping_builder.ConverterRegistryImpl
 import java.sql.Types
 import java.time.Instant
@@ -39,5 +40,6 @@ object TestEnvironment {
         registerIntMappedSealedClass(SecurityConcept::class)
         registerIntMappedSealedClass(SystemGroup::class)
         registerStringMappedSealedClass(ResourceType::class)
+        registerStringMappedSealedClass(UserRole::class)
     }
 }

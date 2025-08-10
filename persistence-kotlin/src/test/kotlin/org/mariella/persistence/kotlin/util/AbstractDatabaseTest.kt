@@ -13,10 +13,7 @@ import kotlinx.coroutines.runBlocking
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
-import org.mariella.persistence.kotlin.Database
-import org.mariella.persistence.kotlin.DatabaseSession
-import org.mariella.persistence.kotlin.MariellaMapping
-import org.mariella.persistence.kotlin.ThreadSafeCachedSequence
+import org.mariella.persistence.kotlin.*
 import org.mariella.persistence.kotlin.entities.*
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
@@ -43,7 +40,7 @@ abstract class AbstractDatabaseTest {
     private fun createDatabase(databaseConfig: DatabaseConfig): Database {
         optionallyCreatePostgresDbFromTemplate(databaseConfig, vertx)
         migrateDb(databaseConfig, "db")
-        return TestEnvironment.createDatabase(TEST_MARIELLA, createPool(vertx, databaseConfig), mapOf("cached_entity_id_seq" to ThreadSafeCachedSequence("cached_entity_id_seq", 1000)))
+        return TestEnvironment.createDatabase(TEST_MARIELLA, createPool(vertx, databaseConfig), mapOf("cached_entity_id_seq" to CachedSequence.of("cached_entity_id_seq", 1000)))
     }
 
     @AfterEach
@@ -103,10 +100,10 @@ private fun createPostgresPool(vertx: Vertx, databaseConfig: DatabaseConfig): Po
 }
 
 
-suspend fun <T> Database.read(block: suspend DatabaseSession.() -> T): T {
-    val session = createSession()
+suspend fun <T> Database.read(hans: suspend ReadOnlyConnection.() -> T): T {
+    val session = connectReadOnly()
     try {
-        return block(session)
+        return hans(session)
     } finally {
         session.close()
     }
@@ -114,12 +111,12 @@ suspend fun <T> Database.read(block: suspend DatabaseSession.() -> T): T {
 
 suspend fun Database.getCountOfTable(table: String): Int {
     return read {
-        mapper.selectOneExistingPrimitive("select count(*) from $table")
+        mapper().selectOneExistingPrimitive("select count(*) from $table")
     }
 }
 
-suspend fun <T> Database.write(block: suspend DatabaseSession.() -> T): T {
-    val session = createSession()
+suspend fun <T> Database.write(block: suspend TransactionalConnection.() -> T): T {
+    val session = connect()
     return try {
         val t = block(session)
         session.commit()
@@ -137,7 +134,7 @@ fun migrateDb(databaseConfig: DatabaseConfig, vararg locations: String) {
 
 suspend fun AbstractDatabaseTest.createFiles(nrOfFiles: Int = 1, comment: String? = "my comment"): List<FileVersion> {
     val files = database.write {
-        val context = modify()
+        val context = mariella()
         val space = context.addExisting<Space>(TestData.TEST_SPACE)
         val user = context.addExisting<UserEntity>(TestData.USER_SEPPI)
 

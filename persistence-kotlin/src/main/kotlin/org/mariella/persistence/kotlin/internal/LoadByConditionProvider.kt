@@ -1,4 +1,4 @@
-package org.mariella.persistence.kotlin
+package org.mariella.persistence.kotlin.internal
 
 import org.mariella.persistence.loader.ClusterLoaderConditionProvider
 import org.mariella.persistence.mapping.ClassMapping
@@ -6,11 +6,11 @@ import org.mariella.persistence.mapping.ReferencePropertyMapping
 import org.mariella.persistence.mapping.RelationshipPropertyMapping
 import org.mariella.persistence.query.*
 
-class LoadByConditionProvider(private val conditions: Map<String, Any?>) : ClusterLoaderConditionProvider {
+internal class LoadByConditionProvider(private val conditions: Map<String, Any?>) : ClusterLoaderConditionProvider {
     init {
         require(conditions.isNotEmpty()) { "conditions must not be empty" }
         conditions.forEach {
-            require(it.key.startsWith("root.") && it.key.count { it == '.' } == 1) { "only root properties can be set" }
+            require(it.key.startsWith("root.") && it.key.count { k -> k == '.' } == 1) { "only root properties can be set" }
         }
     }
 

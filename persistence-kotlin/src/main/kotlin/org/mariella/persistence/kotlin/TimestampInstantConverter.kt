@@ -9,8 +9,6 @@ import java.sql.Timestamp
 import java.time.Instant
 
 object TimestampInstantConverter : Converter<Instant?> {
-    const val name = "instantConverter"
-
     override fun toString(value: Instant?): String {
         return value.toString()
     }

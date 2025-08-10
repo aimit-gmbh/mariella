@@ -11,11 +11,7 @@ import java.util.*
 internal class InClusterLoaderConditionProvider(private val ids: Collection<UUID>, idPropertyPath: String? = null) :
     ClusterLoaderConditionProviderImpl() {
 
-    private val idPropertyPath: String
-
-    init {
-        this.idPropertyPath = idPropertyPath ?: "root.id"
-    }
+    private val idPropertyPath: String = idPropertyPath ?: "root.id"
 
     override fun pathExpressionJoined(
         queryBuilder: QueryBuilder,

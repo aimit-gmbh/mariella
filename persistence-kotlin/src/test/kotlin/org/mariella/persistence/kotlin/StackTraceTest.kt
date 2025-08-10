@@ -33,8 +33,8 @@ class StackTraceTest : AbstractDatabaseTest() {
         runTest {
             pool.connection.coAwait().preparedQuery("alter table file_version drop column filesize").execute().coAwait()
             pool.close().coAwait()
-            val session = database.createSession()
-            val modifications = session.modify()
+            val session = database.connect()
+            val modifications = session.mariella()
             val ex = runCatching { modifications.loadEntity<FileVersion>(UUID.randomUUID()) }.exceptionOrNull()!!
             expectThat(ex).isA<DatabaseException>()
             expectThat(ex.stackTraceToString()).contains(this@StackTraceTest.javaClass.simpleName)
@@ -46,8 +46,8 @@ class StackTraceTest : AbstractDatabaseTest() {
         runTest {
             data class Test(val id: String)
 
-            val session = database.createSession()
-            val mapper = session.mapper
+            val session = database.connect()
+            val mapper = session.mapper()
             val ex = runCatching { mapper.select<Test>("select asdasd from asdasd") }.exceptionOrNull()!!
             expectThat(ex.stackTraceToString()).contains(this@StackTraceTest.javaClass.simpleName)
 

@@ -25,7 +25,7 @@ data class MariellaMapping(
     val converterRegistry: ImmutableConverterRegistry
 )
 
-object MariellaFactory {
+object VertxDatabaseFactory {
     fun createMariellaMapping(
         jdbcUrl: String,
         entityPackages: List<String>,
@@ -34,16 +34,31 @@ object MariellaFactory {
         initPersistenceBuilder: PersistenceBuilder.() -> Unit = {}
     ): MariellaMapping {
         val unitInfo = createUnitInfo(jdbcUrl, entityPackages)
-        return createSchemaMapping(user, password, unitInfo, jdbcUrl, initPersistenceBuilder)
+        return createMariellaMapping(user, password, unitInfo, jdbcUrl, initPersistenceBuilder)
+    }
+
+    fun create(
+        jdbcUrl: String,
+        entityPackages: List<String>,
+        user: String,
+        password: String,
+        pool: Pool,
+        globalSequences: Map<String, CachedSequence> = emptyMap(),
+        modifiableFactory: ModifiableFactory = ModifiableFactoryImpl(),
+        initPersistenceBuilder: PersistenceBuilder.() -> Unit = {},
+    ): Database {
+        val unitInfo = createUnitInfo(jdbcUrl, entityPackages)
+        val mapping = createMariellaMapping(user, password, unitInfo, jdbcUrl, initPersistenceBuilder)
+        return createDatabase(mapping, pool, globalSequences, modifiableFactory)
     }
 
     fun createDatabase(
         mariella: MariellaMapping,
         pool: Pool,
-        globalSequences: Map<String, ThreadSafeCachedSequence> = emptyMap(),
+        globalSequences: Map<String, CachedSequence> = emptyMap(),
         modifiableFactory: ModifiableFactory = ModifiableFactoryImpl()
     ): Database {
-        return Database(
+        return VertxDatabase(
             pool,
             mariella.schemaMapping,
             mariella.converterRegistry,
@@ -52,13 +67,34 @@ object MariellaFactory {
         )
     }
 
-    private fun createSchemaMapping(
+    private fun createMariellaMapping(
         user: String,
         password: String,
         unitInfo: UnitInfo,
         jdbcUrl: String,
         initPersistenceBuilder: PersistenceBuilder.() -> Unit,
     ): MariellaMapping {
+        val persistenceBuilder = readInfoFromDatabase(jdbcUrl, user, password, unitInfo, initPersistenceBuilder)
+
+        val converterRegistry = ImmutableConverterRegistry(persistenceBuilder.converterRegistry)
+        val schemaMapping = persistenceBuilder.persistenceInfo.schemaMapping
+        schemaMapping.schemaDescription.schemaName = unitInfo.persistenceUnitName
+        val parameterStyle = unitInfo.properties.getProperty(PARAMETER_STYLE, "jdbc")
+        if (parameterStyle == PARAMETER_STYLE_JDBC) {
+            schemaMapping.schema.parameterClass = JdbcParameter::class.java
+        } else if (parameterStyle == PARAMETER_STYLE_INDEXED) {
+            schemaMapping.schema.parameterClass = IndexedParameter::class.java
+        }
+        return MariellaMapping(schemaMapping, converterRegistry)
+    }
+
+    private fun readInfoFromDatabase(
+        jdbcUrl: String,
+        user: String,
+        password: String,
+        unitInfo: UnitInfo,
+        initPersistenceBuilder: PersistenceBuilder.() -> Unit
+    ): PersistenceBuilder {
         val connectionProvider = J2SEConnectionProvider(jdbcUrl, user, password)
         val persistenceBuilder = try {
             val databaseInfoProvider = createDatabaseInfoProvider(connectionProvider, unitInfo)
@@ -73,17 +109,7 @@ object MariellaFactory {
         } finally {
             connectionProvider.close()
         }
-
-        val converterRegistry = ImmutableConverterRegistry(persistenceBuilder.converterRegistry)
-        val s = persistenceBuilder.persistenceInfo.schemaMapping
-        s.schemaDescription.schemaName = unitInfo.persistenceUnitName
-        val parameterStyle = unitInfo.properties.getProperty(PARAMETER_STYLE, "jdbc")
-        if (parameterStyle == PARAMETER_STYLE_JDBC) {
-            s.schema.parameterClass = JdbcParameter::class.java
-        } else if (parameterStyle == PARAMETER_STYLE_INDEXED) {
-            s.schema.parameterClass = IndexedParameter::class.java
-        }
-        return MariellaMapping(s, converterRegistry)
+        return persistenceBuilder
     }
 
     private fun createDatabaseInfoProvider(
@@ -143,6 +169,7 @@ object MariellaFactory {
         return getBooleanProperty(unitInfo.properties, propertyName, unitInfo)
     }
 
+    @Suppress("SameParameterValue")
     private fun getStringProperty(propertyName: String?, unitInfo: UnitInfo): String? {
         return getStringProperty(unitInfo.properties, propertyName)
     }

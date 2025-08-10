@@ -4,6 +4,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.mariella.persistence.kotlin.entities.*
+import org.mariella.persistence.kotlin.internal.LoadByConditionProvider
 import org.mariella.persistence.kotlin.internal.LoadByIdProvider
 import org.mariella.persistence.kotlin.util.*
 import strikt.api.expectThat
@@ -17,8 +18,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     @Test
     fun `can create object`() {
         runTest {
-            val session = database.createSession()
-            val context = session.modify()
+            val session = database.connect()
+            val context = session.mariella()
 
             val space = context.addExisting<Space>(TestData.TEST_SPACE)
             val user = context.addExisting<UserEntity>(TestData.USER_SEPPI)
@@ -61,7 +62,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     fun `can handle tables in other schemas`() {
         runTest {
             val id = database.write {
-                val context = modify()
+                val context = mariella()
 
                 val tab = context.create<OtherSchema>()
                 tab.name = "hansi"
@@ -71,12 +72,12 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
                 tab.id
             }
             database.read {
-                val context = modify()
+                val context = mariella()
 
                 val loaded = context.loadEntity<OtherSchema>(id)!!
                 expectThat(loaded.name).isEqualTo("hansi")
 
-                val loadedId = context.mapper.selectOneExistingPrimitive<UUID>("select id from hansi.other_schema")
+                val loadedId = mapper().selectOneExistingPrimitive<UUID>("select id from hansi.other_schema")
                 expectThat(loadedId).isEqualTo(id)
             }
         }
@@ -85,8 +86,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     @Test
     fun `can map one to many`() {
         runTest {
-            val session = database.createSession()
-            val context = session.modify()
+            val session = database.connect()
+            val context = session.mariella()
 
             val space = context.addExisting<Space>(TestData.TEST_SPACE)
             val user = context.addExisting<UserEntity>(TestData.USER_SEPPI)
@@ -106,7 +107,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             file.entityId = "entityId-1"
 
             context.flush()
-            val newContext = session.modify()
+            val newContext = session.mariella()
             val loadedFile = newContext.loadEntity<File>(file.id, "root", "root.resourceVersions")
             expectThat(loadedFile!!.resourceVersions).isEmpty()
 
@@ -123,7 +124,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             loadedFile.resourceVersions.add(fileVersion)
             newContext.flush()
 
-            val newestContext = session.modify()
+            val newestContext = session.mariella()
             val newLoadedFile = newestContext.loadEntity<File>(file.id, "root.resourceVersions")
             expectThat(newLoadedFile!!.resourceVersions).hasSize(1)
 
@@ -161,10 +162,11 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
         runTest {
             val file = createFiles(3, null).first()
             database.read {
+                val mariella = mariella()
                 expectThat(
-                    modify().load<FileVersion>(
+                    mariella.load<FileVersion>(
                         "root",
-                        conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id, "root.revisionFrom" to file.revisionFrom, "root.deleted" to false))
+                        conditionProvider = mariella.createConditionProvider(mapOf("root.id" to file.id, "root.revisionFrom" to file.revisionFrom, "root.deleted" to false))
                     )
                 ).hasSize(1)
             }
@@ -176,10 +178,10 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
         runTest {
             createFiles(3)
             database.read {
-                val versions = modify().loadAll<FileVersion>("root.resource")
+                val versions = mariella().loadAll<FileVersion>("root.resource")
                 expectThat(versions).hasSize(3)
                 versions.forEach { expectThat(it.resource).isNotNull() }
-                expectThat(modify().loadAll<Space>()).hasSize(2)
+                expectThat(mariella().loadAll<Space>()).hasSize(2)
             }
         }
     }
@@ -189,16 +191,16 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
         runTest {
             val file = createFiles(3, null).first()
             database.read {
-                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id, "root.name" to file.name)))).hasSize(1)
-                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id)))).hasSize(1)
-                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id, "root.comment" to null)))).hasSize(1)
-                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.comment" to null)))).hasSize(3)
-                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id)))).hasSize(1)
-                expectThat(modify().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to UUID.randomUUID())))).hasSize(0)
-                expectThat(modify().load<FileVersion>("root", conditionProvider = LoadByConditionProvider(mapOf("root.name" to "not existing")))).isEmpty()
-                expectThat(modify().load<FileVersion>("root", conditionProvider = LoadByConditionProvider(mapOf("root.space" to UUID.randomUUID())))).isEmpty()
+                expectThat(mariella().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id, "root.name" to file.name)))).hasSize(1)
+                expectThat(mariella().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id)))).hasSize(1)
+                expectThat(mariella().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id, "root.comment" to null)))).hasSize(1)
+                expectThat(mariella().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.comment" to null)))).hasSize(3)
+                expectThat(mariella().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id)))).hasSize(1)
+                expectThat(mariella().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to UUID.randomUUID())))).hasSize(0)
+                expectThat(mariella().load<FileVersion>("root", conditionProvider = LoadByConditionProvider(mapOf("root.name" to "not existing")))).isEmpty()
+                expectThat(mariella().load<FileVersion>("root", conditionProvider = LoadByConditionProvider(mapOf("root.space" to UUID.randomUUID())))).isEmpty()
                 expectThat(
-                    modify().load<FileVersion>(
+                    mariella().load<FileVersion>(
                         "root",
                         "root.space",
                         conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id, "root.space" to TestData.TEST_SPACE))
@@ -217,14 +219,15 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
         runTest {
             database.read {
                 createFiles(1)
-                expectThat(modify().load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to SecurityConcept.Public)))).hasSize(1)
-                expectThat(modify().load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to SecurityConcept.Acl)))).hasSize(0)
-                expectThat(modify().load<Space>(conditionProvider = LoadByConditionProvider(mapOf("root.securityConcept" to null)))).hasSize(0)
+                val mariella = mariella()
+                expectThat(mariella.load<Space>(conditionProvider = mariella.createConditionProvider(mapOf("root.securityConcept" to SecurityConcept.Public)))).hasSize(1)
+                expectThat(mariella.load<Space>(conditionProvider = mariella.createConditionProvider(mapOf("root.securityConcept" to SecurityConcept.Acl)))).hasSize(0)
+                expectThat(mariella.load<Space>(conditionProvider = mariella.createConditionProvider(mapOf("root.securityConcept" to null)))).hasSize(0)
 
-                expectThat(modify().load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.CodeMonkey)))).hasSize(1)
-                expectThat(modify().load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.Donkey)))).hasSize(1)
-                expectThat(modify().load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.God)))).hasSize(0)
-                expectThat(modify().load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to null)))).hasSize(1)
+                expectThat(mariella.load<UserEntity>(conditionProvider = mariella.createConditionProvider(mapOf("root.role" to UserRole.CodeMonkey)))).hasSize(1)
+                expectThat(mariella.load<UserEntity>(conditionProvider = mariella.createConditionProvider(mapOf("root.role" to UserRole.Donkey)))).hasSize(1)
+                expectThat(mariella.load<UserEntity>(conditionProvider = mariella.createConditionProvider(mapOf("root.role" to UserRole.God)))).hasSize(0)
+                expectThat(mariella.load<UserEntity>(conditionProvider = mariella.createConditionProvider(mapOf("root.role" to null)))).hasSize(1)
             }
         }
     }
@@ -233,7 +236,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     fun `throws database exception when persisting`() {
         runTest {
             database.write {
-                val c = modify()
+                val c = mariella()
                 c.create<Space> {
                     it.name = "hansi"
                     it.securityConcept = SecurityConcept.Space
@@ -242,7 +245,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             }
             expectThrows<DatabaseException> {
                 database.write {
-                    val c = modify()
+                    val c = mariella()
                     c.create<Space> {
                         it.name = "hansi"
                         it.securityConcept = SecurityConcept.Space
@@ -258,8 +261,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
         runTest {
             val fileId = createFiles(1).single().id
             database.write {
-                val context = modify()
-                context.updateOne<FileVersion>(fileId) {
+                val context = mariella()
+                context.modify<FileVersion>(fileId) {
                     it.name = "asdasdasdasdasd"
                     it.hash = byteArrayOf(4, 5, 6)
                 }
@@ -274,7 +277,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             }
 
             database.read {
-                val entity = modify().loadEntity<FileVersion>(fileId)!!
+                val entity = mariella().loadEntity<FileVersion>(fileId)!!
                 expectThat(entity.name).isEqualTo("asdasdasdasdasd")
                 expectThat(entity.hash).isEqualTo(byteArrayOf(4, 5, 6))
             }
@@ -285,7 +288,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     fun `flush works with no modification`() {
         runTest {
             database.write {
-                val context = modify()
+                val context = mariella()
                 context.flush()
             }
         }
@@ -296,13 +299,13 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
         runTest {
             val fileId = createFiles(1).single().id
             database.write {
-                val context = modify()
+                val context = mariella()
                 context.delete<FileVersion>(fileId)
                 context.flush()
             }
 
             database.read {
-                val entities = modify().load<FileVersion>(conditionProvider = LoadByIdProvider(fileId))
+                val entities = mariella().load<FileVersion>(conditionProvider = LoadByIdProvider(fileId))
                 expectThat(entities).isEmpty()
             }
         }
@@ -311,8 +314,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     @Test
     fun `can get sequence value`() {
         runTest {
-            val session = database.createSession()
-            val mod = session.modify()
+            val session = database.connect()
+            val mod = session.mariella()
             val seq = mod.sequenceNextValue("entity_id_seq")
             expectThat(seq).isEqualTo(1)
             session.close()
@@ -322,8 +325,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     @Test
     fun `can get cached sequence value`() {
         runTest {
-            val session = database.createSession()
-            val mod = session.modify()
+            val session = database.connect()
+            val mod = session.mariella()
             val seqValues = 1.rangeTo(1005).map {
                 mod.cachedSequenceNextValue("cached_entity_id_seq")
             }
@@ -337,8 +340,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
         runTest {
             val fileVersionId = createFiles().single().id
 
-            val session = database.createSession()
-            val modifications = session.modify()
+            val session = database.connect()
+            val modifications = session.mariella()
             val fileVersionShallow = modifications.loadEntity<FileVersion>(fileVersionId)!!
 
             expectThat(fileVersionShallow.revision).isNull()
@@ -364,8 +367,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
         runTest {
             val fileVersionId = createFiles().single().id
 
-            val session = database.createSession()
-            val modifications = session.modify()
+            val session = database.connect()
+            val modifications = session.mariella()
             val fileVersionShallow = modifications.load<FileVersion>(conditionProvider = LoadByIdProvider(fileVersionId)).single()
 
             expectThat(fileVersionShallow.revision).isNull()
@@ -380,8 +383,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
         runTest {
             val fileVersionId = createFiles().single().id
 
-            val session = database.createSession()
-            val context = session.modify()
+            val session = database.connect()
+            val context = session.mariella()
             val fileVersion = context.loadEntity<FileVersion>(fileVersionId)!!
 
             fileVersion.size = 12
@@ -391,7 +394,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             session.commitAndClose()
 
             database.read {
-                val entity = modify().loadEntity<FileVersion>(fileVersionId)!!
+                val entity = mariella().loadEntity<FileVersion>(fileVersionId)!!
                 expectThat(entity.size).isEqualTo(12)
                 expectThat(fileVersion.path).isEqualTo("hansi")
             }
@@ -403,8 +406,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
         runTest {
             val fileVersionIds = createFiles(3).map { it.id }
 
-            val session = database.createSession()
-            val context = session.modify()
+            val session = database.connect()
+            val context = session.mariella()
             val fileVersions = context.loadEntities<FileVersion>(fileVersionIds, "root", "root.revision", "root.space")
 
             expectThat(fileVersions).hasSize(3)
@@ -413,7 +416,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
                 expectThat(it.revision).isNotNull()
             }
 
-            val newContext = session.modify()
+            val newContext = session.mariella()
             val emptyFileVersion = newContext.loadEntities<FileVersion>(fileVersionIds)
             expectThat(emptyFileVersion).hasSize(3)
             emptyFileVersion.forEach {
@@ -428,10 +431,10 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     @Test
     fun `fails when updating a non existing entity`() {
         runTest {
-            val session = database.createSession()
-            val context = session.modify()
+            val session = database.connect()
+            val context = session.mariella()
             expectThrows<RuntimeException> {
-                context.updateOne<FileVersion>(UUID.randomUUID()) {
+                context.modify<FileVersion>(UUID.randomUUID()) {
                     it.name = "asdasdasdasdasd"
                 }
             }
@@ -441,8 +444,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     @Test
     fun `can load polymorphic object`() {
         runTest {
-            val session = database.createSession()
-            val mod = session.modify()
+            val session = database.connect()
+            val mod = session.mariella()
 
             val e = mod.create<Group> {
                 it.name = "test group"
@@ -453,7 +456,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             session.commitAndClose()
 
             database.read {
-                val context = modify()
+                val context = mariella()
                 val entity = context.loadEntity<Member>(e.id)
                 expectThat(((entity as Group).name)).isEqualTo("test group")
                 val entity1 = context.loadEntity<Member>(TestData.USER_SEPPI)
@@ -470,9 +473,9 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
         runTest {
             val fileVersions = createFiles(10)
 
-            val session = database.createSession()
+            val session = database.connect()
 
-            val modifications = session.modify()
+            val modifications = session.mariella()
 
             val relations = modifications.create<ParentalRelations>()
 
@@ -493,8 +496,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             checkCountOfTable("parental_input", 3)
             checkCountOfTable("parental_output", 3)
 
-            val newSession = database.createSession()
-            val newModifications = newSession.modify()
+            val newSession = database.connect()
+            val newModifications = newSession.mariella()
             val loadedEntity = newModifications.loadEntity<ParentalRelations>(
                 relationId,
                 "root",

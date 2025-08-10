@@ -79,7 +79,7 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             createFiles(3)
             database.read {
-                val listOfNodes = mapper.select<ClassWithStandardMappings>(sql)
+                val listOfNodes = mapper().select<ClassWithStandardMappings>(sql)
                 expectThat(listOfNodes).hasSize(3)
                 listOfNodes.forEach {
                     expectThat(it.description).isEqualTo("hello")
@@ -95,7 +95,7 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             createFiles(3)
             database.read {
-                val listOfNodes = mapper.select<ResourceWithId>(sql)
+                val listOfNodes = mapper().select<ResourceWithId>(sql)
                 expectThat(listOfNodes).hasSize(3)
             }
         }
@@ -108,7 +108,7 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             createFiles(1)
             database.read {
-                val list = mapper.selectPrimitive<SecurityConcept>(sql, SecurityConcept.Public)
+                val list = mapper().selectPrimitive<SecurityConcept>(sql, SecurityConcept.Public)
                 expectThat(list.single()).isEqualTo(SecurityConcept.Public)
             }
         }
@@ -121,7 +121,7 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             val id = createFiles(1).single().resource!!.id
             database.read {
-                val listOfNodes = mapper.select<ResourceWithId>(sql, ResourceId(id))
+                val listOfNodes = mapper().select<ResourceWithId>(sql, ResourceId(id))
                 expectThat(listOfNodes).hasSize(1)
             }
         }
@@ -136,9 +136,9 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             createFiles(1)
             val data = database.read {
-                mapper.select<ClassWithStandardMappings>(sql, Entity.Companion.MAX_DB_TIMESTAMP)
+                mapper().select<ClassWithStandardMappings>(sql, Entity.MAX_DB_TIMESTAMP)
             }
-            expectThat(data.single().lockDate!!.toEpochMilli()).isEqualTo(Entity.Companion.MAX_DB_TIMESTAMP.toEpochMilli())
+            expectThat(data.single().lockDate!!.toEpochMilli()).isEqualTo(Entity.MAX_DB_TIMESTAMP.toEpochMilli())
         }
     }
 
@@ -151,7 +151,7 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             val file = createFiles(1).single()
             val data = database.read {
-                mapper.select<ByteArrayWrapper>(sql, file.id)
+                mapper().select<ByteArrayWrapper>(sql, file.id)
             }
             expectThat(data.single().arr).isEqualTo(byteArrayOf(1, 2, 3))
             expectThat(data.single()).isEqualTo(ByteArrayWrapper(byteArrayOf(1, 2, 3)))
@@ -169,7 +169,7 @@ class MapperTest : AbstractDatabaseTest() {
                 and revision_from_time = ${buildString { InstantLiteral(file.revisionFrom).printSql(this) }}
             """.trimIndent()
             val data = database.read {
-                mapper.select<ClassWithStandardMappings>(sql)
+                mapper().select<ClassWithStandardMappings>(sql)
             }
             expectThat(data.single().lockDate!!).isEqualTo(file.revisionFrom.truncatedTo(ChronoUnit.MICROS))
         }
@@ -179,7 +179,7 @@ class MapperTest : AbstractDatabaseTest() {
     fun `can get current timestamp from the db`() {
         runTest {
             database.read {
-                val instant = mapper.selectOneExistingPrimitive<Instant>("select current_timestamp")
+                val instant = mapper().selectOneExistingPrimitive<Instant>("select current_timestamp")
                 expectThat(instant).isA<Instant>()
             }
         }
@@ -192,7 +192,7 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             createFiles(100)
             database.read {
-                val cursor = mapper.cursor<ClassWithStandardMappings>(sql, batchSize = 9)
+                val cursor = mapper().cursor<ClassWithStandardMappings>(sql, batchSize = 9)
                 val listOfNodes = cursor.toList()
                 expectThat(listOfNodes).hasSize(100)
                 listOfNodes.forEach {
@@ -208,7 +208,7 @@ class MapperTest : AbstractDatabaseTest() {
 
         runTest {
             database.read {
-                expectThrows<DatabaseException> { mapper.cursor<ClassWithStandardMappings>(sql, batchSize = 9).first() }
+                expectThrows<DatabaseException> { mapper().cursor<ClassWithStandardMappings>(sql, batchSize = 9).first() }
             }
         }
     }
@@ -218,7 +218,7 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             database.read {
                 try {
-                    mapper.cursor<ClassWithStandardMappings>("asdfgadfgdafg").first()
+                    mapper().cursor<ClassWithStandardMappings>("asdfgadfgdafg").first()
                     fail()
                 } catch (d: DatabaseException) {
                     if (DATABASE_TYPE == DatabaseType.POSTGRES) {
@@ -237,8 +237,7 @@ class MapperTest : AbstractDatabaseTest() {
     fun `can execute batches`() {
         runTest {
             database.write {
-                val mapper = modify().mapper
-                val results = mapper.executeBatch(
+                val results = mapper().executeBatch(
                     "insert into batch_job_instance (job_instance_id, version, job_name, job_key) values ($1, $2, $3, $4)",
                     listOf(listOf(1, 1, "bla", "blup1"), listOf(2, 1, "bla", "blup2"), listOf(3, 1, "bla", "blup3"), listOf(4, 1, "bla", "blup4"), listOf(5, 1, "bla", "blup5")),
                     2
@@ -254,9 +253,7 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             expectThrows<DatabaseException> {
                 database.write {
-                    val mapper = modify().mapper
-
-                    mapper.executeBatch(
+                    mapper().executeBatch(
                         "insert into asdasd (job_instance_id, version, job_name, job_key) values ($1, $2, $3, $4)",
                         listOf(listOf(1, 1, "bla", "blup1"), listOf(2, 1, "bla", "blup2"), listOf(3, 1, "bla", "blup3"), listOf(4, 1, "bla", "blup4"), listOf(5, 1, "bla", "blup5")),
                         2
@@ -282,8 +279,7 @@ class MapperTest : AbstractDatabaseTest() {
     fun `can execute statement`() {
         runTest {
             database.write {
-                val mapper = modify().mapper
-                val res = mapper.execute(
+                val res = mapper().execute(
                     "insert into batch_job_instance (job_instance_id, version, job_name, job_key) values ($1, $2, $3, $4)",
                     1, 1, "bla", "blup1"
                 )
@@ -304,7 +300,7 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             createFiles(3)
             database.read {
-                val listOfNodes = mapper.select<ClassWithStandardMappings>(sql, UUID.randomUUID())
+                val listOfNodes = mapper().select<ClassWithStandardMappings>(sql, UUID.randomUUID())
                 expectThat(listOfNodes).hasSize(0)
             }
         }
@@ -317,7 +313,7 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             createFiles(1)
             database.read {
-                val node = mapper.selectOne<ClassWithStandardMappings>(sql)!!
+                val node = mapper().selectOne<ClassWithStandardMappings>(sql)!!
                 expectThat(node.description).isEqualTo("hello")
             }
         }
@@ -331,7 +327,7 @@ class MapperTest : AbstractDatabaseTest() {
             val fileId = createFiles(3).random().resource!!.id
 
             database.read {
-                val listOfNodes = mapper.select<ClassWithStandardMappings>(sql, fileId)
+                val listOfNodes = mapper().select<ClassWithStandardMappings>(sql, fileId)
                 expectThat(listOfNodes).hasSize(1)
             }
         }
@@ -342,7 +338,7 @@ class MapperTest : AbstractDatabaseTest() {
         val sql = "select id from resource_node"
         runTest {
             database.read {
-                expectThrows<DatabaseException> { mapper.select<ClassWithNullableAndDefault>(sql) }
+                expectThrows<DatabaseException> { mapper().select<ClassWithNullableAndDefault>(sql) }
             }
         }
     }
@@ -352,7 +348,7 @@ class MapperTest : AbstractDatabaseTest() {
         val sql = "asdfjghkadfhgksdfhjg"
         runTest {
             database.read {
-                expectThrows<DatabaseException> { mapper.select<ClassWithStandardMappings>(sql) }
+                expectThrows<DatabaseException> { mapper().select<ClassWithStandardMappings>(sql) }
             }
         }
     }
@@ -365,7 +361,7 @@ class MapperTest : AbstractDatabaseTest() {
             val fileId = createFiles(3).random().resource!!.id
 
             database.read {
-                val node = mapper.select<ClassWithSealedClasses>(sql, fileId).single()
+                val node = mapper().select<ClassWithSealedClasses>(sql, fileId).single()
                 expectThat(node.sec1).isEqualTo(SecurityConcept.Public)
                 expectThat(node.sec2).isEqualTo(SecurityConcept.Space)
                 expectThat(node.type).isEqualTo(ResourceType.FolderVersion)
@@ -381,7 +377,7 @@ class MapperTest : AbstractDatabaseTest() {
             val fileId = createFiles(3).random().resource!!.id
 
             database.read {
-                val node = mapper.select<ClassWithDefaults>(sql, fileId).single()
+                val node = mapper().select<ClassWithDefaults>(sql, fileId).single()
                 expectThat(node.description).isEqualTo("hansi")
             }
         }
@@ -395,7 +391,7 @@ class MapperTest : AbstractDatabaseTest() {
             createFiles(3)
 
             database.read {
-                val listOfUUIDs = mapper.selectPrimitive<UUID>(sql)
+                val listOfUUIDs = mapper().selectPrimitive<UUID>(sql)
                 expectThat(listOfUUIDs).isA<List<UUID>>()
                 expectThat(listOfUUIDs).hasSize(3)
             }
@@ -410,7 +406,7 @@ class MapperTest : AbstractDatabaseTest() {
             createFiles(3)
 
             database.read {
-                val listOfUUIDs = mapper.selectPrimitive<ResourceId>(sql)
+                val listOfUUIDs = mapper().selectPrimitive<ResourceId>(sql)
                 expectThat(listOfUUIDs).isA<List<UUID>>()
                 expectThat(listOfUUIDs).isA<List<ResourceId>>()
                 expectThat(listOfUUIDs).hasSize(3)
@@ -426,7 +422,7 @@ class MapperTest : AbstractDatabaseTest() {
             createFiles(3)
 
             database.read {
-                val listOfUUIDs = mapper.selectPrimitive<Boolean>(sql)
+                val listOfUUIDs = mapper().selectPrimitive<Boolean>(sql)
                 expectThat(listOfUUIDs).isA<List<Boolean>>()
                 expectThat(listOfUUIDs).hasSize(3)
             }
@@ -441,7 +437,7 @@ class MapperTest : AbstractDatabaseTest() {
             createFiles(1)
 
             database.read {
-                val uuid = mapper.selectOnePrimitive<UUID>(sql)!!
+                val uuid = mapper().selectOnePrimitive<UUID>(sql)!!
                 expectThat(uuid).isA<UUID>()
             }
         }
@@ -455,7 +451,7 @@ class MapperTest : AbstractDatabaseTest() {
             createFiles(1)
 
             database.read {
-                val uuids = mapper.selectPrimitive<UUID>(sql, UUID.randomUUID())
+                val uuids = mapper().selectPrimitive<UUID>(sql, UUID.randomUUID())
                 expectThat(uuids).isEmpty()
             }
         }
@@ -467,7 +463,7 @@ class MapperTest : AbstractDatabaseTest() {
 
         runTest {
             database.read {
-                expectThrows<DatabaseException> { mapper.selectOneExistingPrimitive<UUID>(sql) }
+                expectThrows<DatabaseException> { mapper().selectOneExistingPrimitive<UUID>(sql) }
             }
         }
     }
@@ -479,7 +475,7 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             database.read {
                 createFiles(2)
-                expectThrows<DatabaseException> { mapper.selectOneExistingPrimitive<UUID>(sql) }
+                expectThrows<DatabaseException> { mapper().selectOneExistingPrimitive<UUID>(sql) }
             }
         }
     }
@@ -492,7 +488,7 @@ class MapperTest : AbstractDatabaseTest() {
             createFiles(1)
 
             database.read {
-                expectThrows<DatabaseException> { mapper.selectPrimitive<UUID>(sql) }
+                expectThrows<DatabaseException> { mapper().selectPrimitive<UUID>(sql) }
             }
         }
     }
@@ -505,7 +501,7 @@ class MapperTest : AbstractDatabaseTest() {
             createFiles(3)
 
             database.read {
-                val node = mapper.select<ClassWithEnums>(sql).random()
+                val node = mapper().select<ClassWithEnums>(sql).random()
                 expectThat(node.enum1).isEqualTo(TestEnum.A)
                 expectThat(node.enum2).isEqualTo(TestEnum.B)
             }

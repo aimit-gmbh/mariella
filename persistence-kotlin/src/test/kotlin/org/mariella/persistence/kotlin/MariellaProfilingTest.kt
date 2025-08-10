@@ -19,8 +19,8 @@ class MariellaProfilingTest : AbstractDatabaseTest() {
             val nrOfFiles = 10_000
             val files = createFiles(nrOfFiles)
 
-            val session = database.createSession()
-            val modifications = session.modify()
+            val session = database.connect()
+            val modifications = session.mariella()
             repeat(100_000) {
                 val versions =
                     modifications.loadEntities<FileVersion>(

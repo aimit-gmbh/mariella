@@ -7,7 +7,7 @@ import org.mariella.persistence.runtime.ModificationTracker
 import org.mariella.persistence.runtime.ModificationTrackerImpl
 import org.mariella.persistence.schema.ClassDescription
 
-class SchemaAwareModificationTracker(val schemaMapping: SchemaMapping, val factory: ModifiableFactory) :
+class SchemaAwareModificationTracker internal constructor(val schemaMapping: SchemaMapping, val factory: ModifiableFactory) :
     ModificationTracker by ModificationTrackerImpl(schemaMapping.schemaDescription) {
 
     inline fun <reified T> createNew(): T {

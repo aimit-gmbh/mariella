@@ -6,7 +6,7 @@ import org.mariella.persistence.mapping_builder.ConverterRegistryImpl
 import org.mariella.persistence.schema.ScalarPropertyDescription
 import java.sql.JDBCType
 
-class ImmutableConverterRegistry(private val converterRegistry: ConverterRegistry) : ConverterRegistry {
+class ImmutableConverterRegistry internal constructor(private val converterRegistry: ConverterRegistry) : ConverterRegistry {
     override fun getNamedConverter(converterName: String): Converter<*> {
         return converterRegistry.getNamedConverter(converterName) ?: error("converter $converterName not registered")
     }

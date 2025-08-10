@@ -20,10 +20,10 @@ object TestEnvironment {
     fun createDatabase(
         mariella: MariellaMapping,
         pool: Pool,
-        map: Map<String, ThreadSafeCachedSequence> = emptyMap()
-    ) = MariellaFactory.createDatabase(mariella, pool, map)
+        map: Map<String, CachedSequence> = emptyMap()
+    ) = VertxDatabaseFactory.createDatabase(mariella, pool, map)
 
-    fun createMariella(databaseConfig: DatabaseConfig) = MariellaFactory.createMariellaMapping(
+    fun createMariella(databaseConfig: DatabaseConfig) = VertxDatabaseFactory.createMariellaMapping(
         databaseConfig.getUrl(),
         listOf("org.mariella.persistence.kotlin.entities"),
         databaseConfig.user,

@@ -31,7 +31,7 @@ class Mapper internal constructor(private val sqlClient: SqlClient, private val 
     ): List<T> {
         val converters = columnDescriptors().map { columnDescriptor ->
             val parameter = primaryConstructor.parameters.singleOrNull {
-                it.name!!.lowercase() == columnDescriptor.name().lowercase()
+                it.name!!.equals(columnDescriptor.name(), ignoreCase = true)
             } ?: error("no constructor parameter for class ${kClass.simpleName} with name ${columnDescriptor.name().lowercase()}")
 
             val field = kClass.javaObjectType.declaredFields.single { parameter.name == it.name }

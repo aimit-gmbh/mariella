@@ -49,56 +49,59 @@ class NoMagicTest {
             val database = createDatabase("org.mariella.persistence.kotlin")
 
             // typical interaction 1 - insert data
-            // all modifications done within a session are not thread safe
-            val connectionWithTransaction = database.createSession()
-            val context = connectionWithTransaction.modify()
-            val bob = context.create<SimpleEntity> {
-                it.name = "Bob"
+            // all modifications done within a session are NOT thread safe
+            val connection = database.connect()
+            val mariella = connection.mariella()
+            val bob = mariella.create<SimpleEntity> {
+                it.name = "Bob "
                 it.age = 42
             }
-            val alice = context.create<SimpleEntity> {
+            val alice = mariella.create<SimpleEntity> {
                 it.name = "Alice"
                 it.age = 42
             }
             // flush serializes all modifications made to the context to the db
             // statements are written in the same order as the modifications occurred
-            context.flush()
-            connectionWithTransaction.commitAndClose()
+            mariella.flush()
+            connection.commitAndClose()
 
             // typical interaction 2 - update data
-            val connectionWithTransaction1 = database.createSession()
-            val context1 = connectionWithTransaction1.modify()
+            val updateConnection = database.connectAutoCommit()
+            val updateMariella = updateConnection.mariella()
 
-            context1.updateOne<SimpleEntity>(bob.id) {
+            updateMariella.modify<SimpleEntity>(bob.id) {
                 it.age = 60
             }
-            context1.updateOne<SimpleEntity>(alice.id) {
+            updateMariella.modify<SimpleEntity>(alice.id) {
                 it.age = 22
             }
-            context1.flush()
-            connectionWithTransaction1.commitAndClose()
+            updateMariella.flush()
+            updateConnection.close()
 
             // typical interaction 3 - read data
-            val connectionWithTransaction2 = database.createSession()
-            val context2 = connectionWithTransaction2.modify()
+            val readOnlyConnection = database.connectReadOnly()
+            val readOnlyMariella = readOnlyConnection.mariella()
 
-            val people = context2.loadEntities<SimpleEntity>(listOf(bob.id, alice.id))
+            val people = readOnlyMariella.loadEntities<SimpleEntity>(listOf(bob.id, alice.id))
             expectThat(people).hasSize(2)
-            connectionWithTransaction2.close()
+            expectThat(people.single { it.id == bob.id }.age).isEqualTo(60)
+            expectThat(people.single { it.id == alice.id }.age).isEqualTo(22)
+            readOnlyConnection.close()
 
-            // typical interaction 4 - combine sql with mapping
-            val connectionWithTransaction3 = database.createSession()
-            val context3 = connectionWithTransaction3.modify()
+            // typical interaction 4 - combine the mariella API with the mapper API
+            val transactionalConnection = database.connect()
+            val mariellaAPI = transactionalConnection.mariella()
+            val mapperAPI = transactionalConnection.mapper()
 
-            val allIds = context3.mapper.selectPrimitive<UUID>("select id from simple for update")
-            val all = context3.loadEntities<SimpleEntity>(allIds)
+            val allIds = mapperAPI.selectPrimitive<UUID>("select id from simple for update")
+            val all = mariellaAPI.loadEntities<SimpleEntity>(allIds)
 
             all.forEach {
                 it.age = 100
                 it.name = "the same"
             }
-            context3.flush()
-            connectionWithTransaction3.commitAndClose()
+            mariellaAPI.flush()
+            transactionalConnection.commitAndClose()
         }
     }
 
@@ -109,7 +112,7 @@ class NoMagicTest {
             val database1 = createDatabase("org.mariella.persistence.kotlin.simple")
 
             database.write {
-                val modify = modify()
+                val modify = mariella()
                 modify.create<SimpleEntity> {
                     it.name = "Bob"
                     it.age = 42
@@ -118,7 +121,7 @@ class NoMagicTest {
             }
 
             database1.write {
-                val modify = modify()
+                val modify = mariella()
                 modify.create<OtherSimpleEntity> {
                     it.name = "Alice"
                     it.age = 42
@@ -127,12 +130,12 @@ class NoMagicTest {
             }
 
             database.read {
-                val count = mapper.selectOneExistingPrimitive<Int>("select count(*) from simple")
+                val count = mapper().selectOneExistingPrimitive<Int>("select count(*) from simple")
                 expectThat(count).isEqualTo(1)
             }
 
             database1.read {
-                val count = mapper.selectOneExistingPrimitive<Int>("select count(*) from simple")
+                val count = mapper().selectOneExistingPrimitive<Int>("select count(*) from simple")
                 expectThat(count).isEqualTo(1)
             }
         }
@@ -159,16 +162,14 @@ class NoMagicTest {
         connection.close().coAwait()
         // end setup code
 
-        // reads metadata from the database and the jpa annotations
-        // the mapping can be cached as long as the database does not change
-        val mapping = MariellaFactory.createMariellaMapping(
+        // immutable and thread safe
+        val database = VertxDatabaseFactory.create(
             jdbcUrl = databaseUrl,
             entityPackages = listOf(packageName),
             user = databaseUser,
-            password = ""
+            password = "",
+            pool = pool
         )
-        // immutable and thread safe
-        val database = MariellaFactory.createDatabase(mapping, pool)
         return database
     }
 }

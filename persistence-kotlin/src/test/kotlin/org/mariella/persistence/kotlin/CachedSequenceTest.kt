@@ -15,9 +15,10 @@ class CachedSequenceTest : AbstractDatabaseTest() {
     fun `can cache sequence`() {
         runTest {
             database.read {
-                val seq = CachedSequence("cached_entity_id_seq", 1000, mapper)
+                val mapper = mapper()
+                val seq = CachedSequence.of("cached_entity_id_seq", 1000)
                 repeat(100_000) {
-                    expectThat(seq.next().toInt()).isEqualTo(it + 1)
+                    expectThat(seq.next(mapper).toInt()).isEqualTo(it + 1)
                 }
             }
         }
@@ -27,7 +28,8 @@ class CachedSequenceTest : AbstractDatabaseTest() {
     fun `keeps order when caching thread safe`() {
         runTest {
             database.read {
-                val seq = ThreadSafeCachedSequence("cached_entity_id_seq", 1000)
+                val mapper = mapper()
+                val seq = CachedSequence.of("cached_entity_id_seq", 1000)
                 val e = 1.rangeTo(100000).map { it.toLong() }
                 val noThread = 1.rangeTo(100000).map {
                     seq.next(mapper)
@@ -42,7 +44,8 @@ class CachedSequenceTest : AbstractDatabaseTest() {
     fun `selects all values when running async`() {
         runTest {
             database.read {
-                val seq = ThreadSafeCachedSequence("cached_entity_id_seq", 1000)
+                val mapper = mapper()
+                val seq = CachedSequence.of("cached_entity_id_seq", 1000)
                 val data1 = async {
                     1.rangeTo(50000).map {
                         seq.next(mapper)

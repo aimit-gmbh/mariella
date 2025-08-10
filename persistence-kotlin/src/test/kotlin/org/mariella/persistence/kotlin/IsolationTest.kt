@@ -15,15 +15,15 @@ class IsolationTest : AbstractDatabaseTest() {
     @Test
     fun `sessions are isolated`() {
         runTest {
-            val session1 = database.createSession()
-            val mod1 = session1.modify()
+            val session1 = database.connect()
+            val mod1 = session1.mariella()
             val group = mod1.create<Group> {
                 it.name = "hansi"
             }
             mod1.flush()
 
-            val session2 = database.createSession()
-            val mod2 = session2.modify()
+            val session2 = database.connect()
+            val mod2 = session2.mariella()
             val loaded = mod2.loadEntity<Group>(group.id)
             expectThat(loaded).isNull()
 
@@ -41,15 +41,15 @@ class IsolationTest : AbstractDatabaseTest() {
     fun `auto commit mode works`() {
         runTest {
             val autoCommitDatabase = TestEnvironment.createDatabase(createPool(vertx, dbConfig, true), dbConfig)
-            val session1 = autoCommitDatabase.createSession(true)
-            val mod1 = session1.modify()
+            val session1 = autoCommitDatabase.connectAutoCommit()
+            val mod1 = session1.mariella()
             val group = mod1.create<Group> {
                 it.name = "hansi"
             }
             mod1.flush()
 
-            val session2 = autoCommitDatabase.createSession()
-            val mod2 = session2.modify()
+            val session2 = autoCommitDatabase.connect()
+            val mod2 = session2.mariella()
             val loaded = mod2.loadEntity<Group>(group.id)
             expectThat(loaded).isNotNull()
 

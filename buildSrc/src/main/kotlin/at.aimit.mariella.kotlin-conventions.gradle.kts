@@ -24,7 +24,7 @@ dependencies {
 
 tasks.withType(KotlinCompile::class) {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_18)
+        jvmTarget.set(JvmTarget.JVM_21)
         freeCompilerArgs.add("-Xjsr305=strict")
     }
 }

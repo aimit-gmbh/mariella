@@ -1,5 +1,4 @@
-import at.aimit.mariella.jakartaVersion
-import at.aimit.mariella.slf4jVersion
+import at.aimit.mariella.junitVersion
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
@@ -15,11 +14,6 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation("jakarta.persistence:jakarta.persistence-api:$jakartaVersion")
-    implementation("org.slf4j:slf4j-api:$slf4jVersion")
-}
-
 tasks.withType(JavaCompile::class) {
     sourceCompatibility = "21"
     targetCompatibility = "21"
@@ -30,7 +24,7 @@ testing {
         // Configure the built-in test suite
         @Suppress("UnstableApiUsage", "Unused") val test by getting(JvmTestSuite::class) {
             // Use JUnit Jupiter test framework
-            useJUnitJupiter("5.13.4")
+            useJUnitJupiter(junitVersion)
         }
     }
 }

@@ -1,3 +1,4 @@
+import at.aimit.mariella.junitVersion
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
@@ -6,28 +7,24 @@ plugins {
     `java-library`
     id("com.vanniktech.maven.publish")
     id("com.github.ben-manes.versions")
+    id("com.autonomousapps.dependency-analysis")
 }
 
 repositories {
     mavenCentral()
 }
 
-dependencies {
-    api("jakarta.persistence:jakarta.persistence-api:3.2.0")
-    implementation("org.slf4j:slf4j-api:2.0.17")
-}
-
 tasks.withType(JavaCompile::class) {
-    sourceCompatibility = "18"
-    targetCompatibility = "18"
+    sourceCompatibility = "21"
+    targetCompatibility = "21"
 }
 
 testing {
     suites {
         // Configure the built-in test suite
-        @Suppress("UnstableApiUsage") val test by getting(JvmTestSuite::class) {
+        @Suppress("UnstableApiUsage", "Unused") val test by getting(JvmTestSuite::class) {
             // Use JUnit Jupiter test framework
-            useJUnitJupiter("5.9.2")
+            useJUnitJupiter(junitVersion)
         }
     }
 }

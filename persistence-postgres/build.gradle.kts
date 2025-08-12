@@ -3,6 +3,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":persistence-mapping"))
-    implementation(project(":persistence"))
+    api(project(":persistence-mapping"))
+    api(project(":persistence"))
 }

@@ -18,7 +18,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${coroutinesVersion}")
     testRuntimeOnly(project(":persistence-h2"))
     testRuntimeOnly(project(":persistence-postgres"))
-    testImplementation("jakarta.persistence:jakarta.persistence-api:3.2.0")
+    testImplementation("jakarta.persistence:jakarta.persistence-api:$jakartaVersion")
 
     testRuntimeOnly("ch.qos.logback:logback-classic:$logbackVersion")
 

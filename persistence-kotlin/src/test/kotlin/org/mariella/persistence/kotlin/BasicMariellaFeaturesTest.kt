@@ -446,21 +446,21 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     @Test
     fun `can load polymorphic object`() {
         runTest {
-            val session = database.connect()
-            val mod = session.mariella()
+            val id = database.write {
+                val mariella = mariella()
 
-            val e = mod.create<Group> {
-                it.name = "test group"
-                it.members.add(addExisting<UserEntity>(TestData.USER_SEPPI, "U"))
-                it.members.add(addExisting<UserEntity>(TestData.USER_KARL, "U"))
+                val e = mariella.create<Group> {
+                    it.name = "test group"
+                    it.members.add(addExisting<UserEntity>(TestData.USER_SEPPI, "U"))
+                    it.members.add(addExisting<UserEntity>(TestData.USER_KARL, "U"))
+                }
+                mariella.flush()
+                e.id
             }
-            mod.flush()
-            session.commit()
-            session.close()
 
             database.read {
                 val context = mariella()
-                val entity = context.loadEntity<Member>(e.id)
+                val entity = context.loadEntity<Member>(id)
                 expectThat(((entity as Group).name)).isEqualTo("test group")
                 val entity1 = context.loadEntity<Member>(TestData.USER_SEPPI)
                 expectThat(((entity1 as UserEntity).name)).isEqualTo("Seppi")

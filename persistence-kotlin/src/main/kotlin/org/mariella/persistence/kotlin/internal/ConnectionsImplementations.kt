@@ -92,24 +92,6 @@ internal class TransactionConnectionImpl internal constructor(
         }
     }
 
-    override suspend fun commitAndClose() {
-        val ex = DatabaseException("commit and close failed")
-        try {
-            vertxConnectionAndTransaction.commitAndClose()
-        } catch (e: Throwable) {
-            throw ex.initCause(e)
-        }
-    }
-
-    override suspend fun rollbackAndClose() {
-        val ex = DatabaseException("rollback and close failed")
-        try {
-            vertxConnectionAndTransaction.rollbackAndClose()
-        } catch (e: Throwable) {
-            throw ex.initCause(e)
-        }
-    }
-
     override suspend fun rollback() {
         val ex = DatabaseException("rollback failed")
         try {

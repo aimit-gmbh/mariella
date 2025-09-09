@@ -15,7 +15,5 @@ interface AutoCommitConnection : Connection<Mariella>
 
 interface TransactionalConnection : Connection<Mariella> {
     suspend fun commit()
-    suspend fun commitAndClose()
-    suspend fun rollbackAndClose()
     suspend fun rollback()
 }

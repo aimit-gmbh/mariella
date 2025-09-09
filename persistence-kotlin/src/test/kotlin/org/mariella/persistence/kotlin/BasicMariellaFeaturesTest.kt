@@ -49,7 +49,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             fileVersion.versionId = file.entityId + "-1"
 
             context.flush()
-            session.commitAndClose()
+            session.commit()
+            session.close()
 
             checkCountOfTable("resource_node", 1)
             checkCountOfTable("resource_node_version", 1)
@@ -391,7 +392,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             fileVersion.path = "hansi"
 
             context.flush()
-            session.commitAndClose()
+            session.commit()
+            session.close()
 
             database.read {
                 val entity = mariella().loadEntity<FileVersion>(fileVersionId)!!
@@ -453,7 +455,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
                 it.members.add(addExisting<UserEntity>(TestData.USER_KARL, "U"))
             }
             mod.flush()
-            session.commitAndClose()
+            session.commit()
+            session.close()
 
             database.read {
                 val context = mariella()
@@ -488,7 +491,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             relations.outputs.add(fileVersions[8])
 
             modifications.flush()
-            session.commitAndClose()
+            session.commit()
+            session.close()
 
             val relationId = relations.id
 

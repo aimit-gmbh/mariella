@@ -61,7 +61,8 @@ class NoMagicTest {
             // flush serializes all modifications made to the context to the db
             // statements are written in the same order as the modifications occurred
             mariella.flush()
-            connection.commitAndClose()
+            connection.commit()
+            connection.close()
 
             // typical interaction 2 - update data
             val updateConnection = database.connectAutoCommit()
@@ -99,7 +100,8 @@ class NoMagicTest {
                 it.name = "the same"
             }
             mariellaAPI.flush()
-            transactionalConnection.commitAndClose()
+            transactionalConnection.commit()
+            transactionalConnection.close()
         }
     }
 

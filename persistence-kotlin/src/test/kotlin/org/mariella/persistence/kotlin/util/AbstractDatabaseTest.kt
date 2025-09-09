@@ -13,7 +13,9 @@ import kotlinx.coroutines.runBlocking
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
-import org.mariella.persistence.kotlin.*
+import org.mariella.persistence.kotlin.CachedSequence
+import org.mariella.persistence.kotlin.Database
+import org.mariella.persistence.kotlin.MariellaMapping
 import org.mariella.persistence.kotlin.entities.*
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
@@ -99,30 +101,9 @@ private fun createPostgresPool(vertx: Vertx, databaseConfig: DatabaseConfig): Po
         .build()
 }
 
-
-suspend fun <T> Database.read(hans: suspend ReadOnlyConnection.() -> T): T {
-    val session = connectReadOnly()
-    try {
-        return hans(session)
-    } finally {
-        session.close()
-    }
-}
-
 suspend fun Database.getCountOfTable(table: String): Int {
     return read {
         mapper().selectOneExistingPrimitive("select count(*) from $table")
-    }
-}
-
-suspend fun <T> Database.write(block: suspend TransactionalConnection.() -> T): T {
-    val session = connect()
-    return try {
-        val t = block(session)
-        session.commit()
-        t
-    } finally {
-        session.close()
     }
 }
 

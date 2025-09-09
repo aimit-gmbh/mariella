@@ -15,8 +15,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.mariella.persistence.kotlin.simple.OtherSimpleEntity
-import org.mariella.persistence.kotlin.util.read
-import org.mariella.persistence.kotlin.util.write
 import strikt.api.expectThat
 import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
@@ -63,7 +61,8 @@ class NoMagicTest {
             // flush serializes all modifications made to the context to the db
             // statements are written in the same order as the modifications occurred
             mariella.flush()
-            connection.commitAndClose()
+            connection.commit()
+            connection.close()
 
             // typical interaction 2 - update data
             val updateConnection = database.connectAutoCommit()
@@ -101,7 +100,8 @@ class NoMagicTest {
                 it.name = "the same"
             }
             mariellaAPI.flush()
-            transactionalConnection.commitAndClose()
+            transactionalConnection.commit()
+            transactionalConnection.close()
         }
     }
 
@@ -158,6 +158,7 @@ class NoMagicTest {
         val pool = JDBCPool.pool(vertx, HikariDataSource(poolConfig), PoolOptions().setMaxSize(10))
 
         val connection = pool.connection.coAwait()
+        @Suppress("SqlNoDataSourceInspection")
         connection.preparedQuery("create table simple (id uuid not null, name varchar, age int, constraint simple_pk primary key (id))").execute().coAwait()
         connection.close().coAwait()
         // end setup code

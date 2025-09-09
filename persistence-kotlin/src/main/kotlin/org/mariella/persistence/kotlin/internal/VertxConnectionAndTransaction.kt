@@ -20,20 +20,4 @@ internal class VertxConnectionAndTransaction(
     suspend fun close() {
         sqlClient.close().coAwait()
     }
-
-    suspend fun commitAndClose() {
-        try {
-            commit()
-        } finally {
-            close()
-        }
-    }
-
-    suspend fun rollbackAndClose() {
-        try {
-            rollback()
-        } finally {
-            close()
-        }
-    }
 }

@@ -5,7 +5,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.mariella.persistence.kotlin.util.AbstractDatabaseTest
-import org.mariella.persistence.kotlin.util.read
 import strikt.api.expectThat
 import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo

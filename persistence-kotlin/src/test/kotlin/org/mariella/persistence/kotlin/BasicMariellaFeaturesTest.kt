@@ -49,7 +49,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             fileVersion.versionId = file.entityId + "-1"
 
             context.flush()
-            session.commitAndClose()
+            session.commit()
+            session.close()
 
             checkCountOfTable("resource_node", 1)
             checkCountOfTable("resource_node_version", 1)
@@ -391,7 +392,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             fileVersion.path = "hansi"
 
             context.flush()
-            session.commitAndClose()
+            session.commit()
+            session.close()
 
             database.read {
                 val entity = mariella().loadEntity<FileVersion>(fileVersionId)!!
@@ -444,20 +446,21 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     @Test
     fun `can load polymorphic object`() {
         runTest {
-            val session = database.connect()
-            val mod = session.mariella()
+            val id = database.write {
+                val mariella = mariella()
 
-            val e = mod.create<Group> {
-                it.name = "test group"
-                it.members.add(addExisting<UserEntity>(TestData.USER_SEPPI, "U"))
-                it.members.add(addExisting<UserEntity>(TestData.USER_KARL, "U"))
+                val e = mariella.create<Group> {
+                    it.name = "test group"
+                    it.members.add(addExisting<UserEntity>(TestData.USER_SEPPI, "U"))
+                    it.members.add(addExisting<UserEntity>(TestData.USER_KARL, "U"))
+                }
+                mariella.flush()
+                e.id
             }
-            mod.flush()
-            session.commitAndClose()
 
             database.read {
                 val context = mariella()
-                val entity = context.loadEntity<Member>(e.id)
+                val entity = context.loadEntity<Member>(id)
                 expectThat(((entity as Group).name)).isEqualTo("test group")
                 val entity1 = context.loadEntity<Member>(TestData.USER_SEPPI)
                 expectThat(((entity1 as UserEntity).name)).isEqualTo("Seppi")
@@ -488,7 +491,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             relations.outputs.add(fileVersions[8])
 
             modifications.flush()
-            session.commitAndClose()
+            session.commit()
+            session.close()
 
             val relationId = relations.id
 

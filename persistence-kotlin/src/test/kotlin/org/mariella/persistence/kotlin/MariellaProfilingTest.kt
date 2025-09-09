@@ -33,7 +33,7 @@ class MariellaProfilingTest : AbstractDatabaseTest() {
                 expectThat(versions).hasSize(nrOfFiles)
             }
 
-            session.rollbackAndClose()
+            session.close()
         }
     }
 }

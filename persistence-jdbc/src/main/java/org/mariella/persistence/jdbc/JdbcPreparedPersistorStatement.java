@@ -2,8 +2,8 @@ package org.mariella.persistence.jdbc;
 
 import org.mariella.persistence.database.AbstractPreparedPersistorStatement;
 import org.mariella.persistence.database.ParameterValues;
-import org.mariella.persistence.database.ResultRow;
 import org.mariella.persistence.mapping.PersistorStatement;
+import org.mariella.persistence.mapping.RowAndObject;
 import org.mariella.persistence.persistor.Row;
 import org.mariella.persistence.runtime.PersistenceException;
 import org.slf4j.Logger;
@@ -39,7 +39,7 @@ public class JdbcPreparedPersistorStatement extends AbstractPreparedPersistorSta
         }
     }
 
-    protected void execute(Row row, Consumer<ResultRow> generatedColumnNamesCallback) {
+    protected void execute(Row row, Consumer<RowAndObject> generatedColumnNamesCallback, Object entity) {
         try {
             if (logger.isDebugEnabled())
                 logger.debug("execute with callback: " + statement.getSqlDebugString(row));
@@ -50,7 +50,7 @@ public class JdbcPreparedPersistorStatement extends AbstractPreparedPersistorSta
             try (ResultSet rs = preparedStatement.getGeneratedKeys()) {
                 rs.next();
                 JdbcResultRow rr = new JdbcResultRow(rs);
-                generatedColumnNamesCallback.accept(rr);
+                generatedColumnNamesCallback.accept(new RowAndObject(rr, entity));
             }
         } catch (SQLException e) {
             logger.error("Failed to execute statement: " + statement.getSqlDebugString(row), e);
@@ -59,14 +59,14 @@ public class JdbcPreparedPersistorStatement extends AbstractPreparedPersistorSta
     }
 
     @Override
-    public void addBatch(Row row) {
+    public void addBatch(Row row, Object entity) {
         if (logger.isDebugEnabled())
             logger.debug("addBatch: {}", statement.getSqlDebugString(row));
 
         ParameterValues parameterValues = new JdbcParameterValues(preparedStatement);
         statement.setParameters(parameterValues, row);
 
-        Consumer<ResultRow> consumer = statement.getGeneratedColumnsCallback();
+        Consumer<RowAndObject> consumer = statement.getGeneratedColumnsCallback();
         if (consumer == null) {
             try {
                 persistor.getSchemaMapping().getSchema().addBatch(preparedStatement);
@@ -75,7 +75,7 @@ public class JdbcPreparedPersistorStatement extends AbstractPreparedPersistorSta
                 throw new PersistenceException(e);
             }
         } else {
-            execute(row, consumer);
+            execute(row, consumer, entity);
         }
     }
 

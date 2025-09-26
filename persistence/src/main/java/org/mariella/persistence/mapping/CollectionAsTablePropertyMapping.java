@@ -25,7 +25,7 @@ public class CollectionAsTablePropertyMapping extends RelationshipAsOwnedTablePr
             for (Object removed : cmi.getRemoved()) {
                 Row row = new Row(table);
                 setRowValues(row, persistor.getModificationInfo().getObject(), removed);
-                persistor.getSetColumnsDeleteStatement(this).addBatch(row);
+                persistor.getSetColumnsDeleteStatement(this).addBatch(row, removed);
             }
         }
     }
@@ -38,7 +38,7 @@ public class CollectionAsTablePropertyMapping extends RelationshipAsOwnedTablePr
             for (Object added : cmi.getAdded()) {
                 Row row = new Row(table);
                 setRowValues(row, persistor.getModificationInfo().getObject(), added);
-                persistor.getBatchInsertStatement(this).addBatch(row);
+                persistor.getBatchInsertStatement(this).addBatch(row, added);
             }
         }
     }

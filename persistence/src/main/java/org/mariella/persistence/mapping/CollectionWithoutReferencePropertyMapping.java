@@ -69,7 +69,7 @@ public class CollectionWithoutReferencePropertyMapping extends RelationshipPrope
                     row.setProperty(joinColumn.getReferencedUpdateColumn(), null);
                 }
                 PreparedPersistorStatement ps = persistor.getCollectionWithoutReferenceUpdateStatement(this, row.getTable(), row.getSetColumns());
-                ps.addBatch(row);
+                ps.addBatch(row, removed);
             }
             for (Object added : cmi.getAdded()) {
                 ClassMapping relatedClassMapping = getClassMapping().getSchemaMapping().getClassMapping(added.getClass().getName());
@@ -80,7 +80,7 @@ public class CollectionWithoutReferencePropertyMapping extends RelationshipPrope
                     row.setProperty(joinColumn.getReferencedUpdateColumn(), myValue);
                 }
                 PreparedPersistorStatement ps = persistor.getCollectionWithoutReferenceUpdateStatement(this, row.getTable(), row.getSetColumns());
-                ps.addBatch(row);
+                ps.addBatch(row, added);
             }
         }
     }

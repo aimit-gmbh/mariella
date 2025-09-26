@@ -6,6 +6,7 @@ import io.vertx.sqlclient.Row
 import io.vertx.sqlclient.RowSet
 import org.mariella.persistence.database.AbstractPreparedPersistorStatement
 import org.mariella.persistence.mapping.PersistorStatement
+import org.mariella.persistence.mapping.RowAndObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.math.ceil
@@ -15,28 +16,44 @@ typealias MariellaRow = org.mariella.persistence.persistor.Row
 
 internal class VertxPreparedPersistorStatement(
     statement: PersistorStatement,
-    private val preparedQuery: PreparedQuery<RowSet<Row>>
+    private val preparedQuery: PreparedQuery<RowSet<Row>>,
 ) : AbstractPreparedPersistorStatement(statement) {
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(VertxPreparedPersistorStatement::class.java)
     }
-    
+
+    private val callback = statement.generatedColumnsCallback
     private val batch: MutableList<VertxParameterValues> = ArrayList()
-    override fun addBatch(parameters: MariellaRow) {
+    private val objects: MutableList<Any?> = ArrayList()
+
+    override fun addBatch(parameters: MariellaRow, o: Any?) {
         if (logger.isTraceEnabled)
             logger.trace("addBatch: {}", statement.getSqlDebugString(parameters))
         val parameterValues = VertxParameterValues()
         statement.setParameters(parameterValues, parameters)
         batch.add(parameterValues)
+        objects.add(o)
     }
 
     suspend fun executeBatch(batchSize: Int = 10000) {
         val elapsed = measureTimeMillis {
-            batch.chunked(batchSize).forEach {
+            batch.chunked(batchSize).forEach { values ->
                 try {
-                    preparedQuery
-                        .executeBatch(it.map { p -> p.tuple() })
+                    val result = preparedQuery
+                        .executeBatch(values.map { p -> p.tuple() })
                         .coAwait()
+
+                    if (callback != null) {
+                        var index = 0
+                        var curRes = result
+                        while (curRes != null) {
+                            curRes.forEach { row ->
+                                callback.accept(RowAndObject(VertxResultRow(row), objects[index]))
+                            }
+                            index++
+                            curRes = curRes.next()
+                        }
+                    }
                 } catch (e: Throwable) {
                     throw QueryExecutionException(statement.sqlString, e)
                 }

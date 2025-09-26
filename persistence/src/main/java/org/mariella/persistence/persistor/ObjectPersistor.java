@@ -112,7 +112,7 @@ public class ObjectPersistor<T extends PreparedPersistorStatement> {
             }
         }
         for (Row row : primaryRows) {
-            getPrimaryPreparedPersistorStatement(row).addBatch(row);
+            getPrimaryPreparedPersistorStatement(row).addBatch(row, modificationInfo.getObject());
         }
     }
 

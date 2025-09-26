@@ -39,7 +39,7 @@ public abstract class AbstractPersistorStatement implements PersistorStatement {
     }
 
     @Override
-    public Consumer<ResultRow> getGeneratedColumnsCallback() {
+    public Consumer<RowAndObject> getGeneratedColumnsCallback() {
         return null;
     }
 

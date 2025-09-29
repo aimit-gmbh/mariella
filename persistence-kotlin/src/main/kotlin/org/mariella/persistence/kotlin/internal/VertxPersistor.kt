@@ -1,6 +1,7 @@
 package org.mariella.persistence.kotlin.internal
 
 import io.vertx.sqlclient.SqlClient
+import org.mariella.persistence.kotlin.DatabaseException
 import org.mariella.persistence.mapping.PersistorStatement
 import org.mariella.persistence.mapping.SchemaMapping
 import org.mariella.persistence.persistor.BatchingPersistorStrategy
@@ -69,13 +70,17 @@ internal class VertxPersistor(
         sql: String,
         columnNames: Array<String>
     ): VertxPreparedPersistorStatement {
-        throw UnsupportedOperationException()
+        if (sqlClient::class.simpleName != "PgConnectionImpl")
+            throw DatabaseException("prepared statements returning auto generated IDs only implemented for postgres")
+        val rewrittenStatement = sql + " RETURNING " + columnNames.joinToString { it }
+        @Suppress("SqlSourceToSinkFlow") val preparedQuery = sqlClient.preparedQuery(rewrittenStatement)
+        return VertxPreparedPersistorStatement(statement, preparedQuery)
     }
 
     override fun prepareStatement(statement: PersistorStatement, sql: String): VertxPreparedPersistorStatement {
         if (logger.isTraceEnabled)
             logger.trace("prepare: $sql")
-        val preparedQuery = sqlClient.preparedQuery(sql)
+        @Suppress("SqlSourceToSinkFlow") val preparedQuery = sqlClient.preparedQuery(sql)
         return VertxPreparedPersistorStatement(statement, preparedQuery)
     }
 }

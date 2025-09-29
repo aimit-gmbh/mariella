@@ -54,7 +54,7 @@ public class OrderedListAsTablePropertyMapping extends RelationshipAsOwnedTableP
                         entry.getValue().getPropertyDescription());
                 row.setProperty(entry.getKey(), ownerValue);
             }
-            persistor.getSetColumnsDeleteStatement(this).addBatch(row);
+            persistor.getSetColumnsDeleteStatement(this).addBatch(row, null);
         }
     }
 
@@ -69,7 +69,7 @@ public class OrderedListAsTablePropertyMapping extends RelationshipAsOwnedTableP
                 Row row = new Row(table);
                 setRowValues(row, persistor.getModificationInfo().getObject(), element);
                 row.setProperty(orderColumn, i);
-                persistor.getBatchInsertStatement(this).addBatch(row);
+                persistor.getBatchInsertStatement(this).addBatch(row, null);
             }
         }
     }

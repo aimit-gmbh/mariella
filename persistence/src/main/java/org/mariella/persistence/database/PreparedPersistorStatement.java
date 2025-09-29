@@ -4,7 +4,7 @@ import org.mariella.persistence.persistor.Row;
 
 public interface PreparedPersistorStatement {
 
-    void addBatch(Row parameters);
+    void addBatch(Row parameters, Object entity);
 
     void close();
 

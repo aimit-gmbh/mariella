@@ -37,6 +37,14 @@ object TestEnvironment {
         converterRegistry.registerConverterFactory(
             Types.TIMESTAMP, Instant::class.java, ConverterRegistryImpl.ConverterFactoryImpl(TimestampInstantConverter)
         )
+        converterRegistry.registerConverterFactory(
+            Types.TIMESTAMP_WITH_TIMEZONE,
+            kotlin.time.Instant::class.java,
+            ConverterRegistryImpl.ConverterFactoryImpl(TimestampKotlinInstantConverter)
+        )
+        converterRegistry.registerConverterFactory(
+            Types.TIMESTAMP, kotlin.time.Instant::class.java, ConverterRegistryImpl.ConverterFactoryImpl(TimestampKotlinInstantConverter)
+        )
         registerIntMappedSealedClass(SecurityConcept::class)
         registerIntMappedSealedClass(SystemGroup::class)
         registerStringMappedSealedClass(ResourceType::class)

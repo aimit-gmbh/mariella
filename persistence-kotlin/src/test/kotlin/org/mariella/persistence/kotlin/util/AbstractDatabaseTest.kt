@@ -20,6 +20,7 @@ import org.mariella.persistence.kotlin.entities.*
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import java.time.Instant
+import kotlin.time.toKotlinInstant
 
 val DATABASE_TYPE = if (System.getenv("MARIELLA_TEST_DB") != null) DatabaseType.valueOf(System.getenv("MARIELLA_TEST_DB")) else DatabaseType.H2_MEM
 
@@ -130,7 +131,7 @@ suspend fun AbstractDatabaseTest.createFiles(nrOfFiles: Int = 1, comment: String
             file.comment = "my comment"
             file.owner = user
             file.revision = revision
-            file.createdAt = revision.createdAt
+            file.createdAt = revision.createdAt.toKotlinInstant()
             file.entityId = "entityId$it"
             file
         }.map {

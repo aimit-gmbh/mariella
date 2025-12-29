@@ -12,7 +12,11 @@ import org.mariella.persistence.kotlin.entities.Entity
 import org.mariella.persistence.kotlin.entities.ResourceType
 import org.mariella.persistence.kotlin.entities.SecurityConcept
 import org.mariella.persistence.kotlin.internal.InstantLiteral
-import org.mariella.persistence.kotlin.util.*
+import org.mariella.persistence.kotlin.internal.KotlinInstantLiteral
+import org.mariella.persistence.kotlin.util.AbstractDatabaseTest
+import org.mariella.persistence.kotlin.util.DATABASE_TYPE
+import org.mariella.persistence.kotlin.util.DatabaseType
+import org.mariella.persistence.kotlin.util.createFiles
 import strikt.api.expectThat
 import strikt.api.expectThrows
 import strikt.assertions.hasSize
@@ -22,6 +26,7 @@ import strikt.assertions.isEqualTo
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.time.toKotlinInstant
 
 class MapperTest : AbstractDatabaseTest() {
 
@@ -29,6 +34,12 @@ class MapperTest : AbstractDatabaseTest() {
         val id: UUID,
         val description: String?,
         val lockDate: Instant?
+    )
+
+    data class ClassWithStandardMappingsKotlinInstant(
+        val id: UUID,
+        val description: String?,
+        val lockDate: kotlin.time.Instant?
     )
 
     @JvmInline
@@ -143,6 +154,21 @@ class MapperTest : AbstractDatabaseTest() {
     }
 
     @Test
+    fun `can use kotlin instant as parameter`() {
+        val sql = """
+            select id, 'hello' as description, revision_to_time as lockDate from resource_node_version
+            where revision_to_time = $1
+        """.trimIndent()
+        runTest {
+            createFiles(1)
+            val data = database.read {
+                mapper().select<ClassWithStandardMappingsKotlinInstant>(sql, Entity.MAX_DB_TIMESTAMP_KOTLIN)
+            }
+            expectThat(data.single().lockDate!!.toEpochMilliseconds()).isEqualTo(Entity.MAX_DB_TIMESTAMP_KOTLIN.toEpochMilliseconds())
+        }
+    }
+
+    @Test
     fun `can map byte array`() {
         val sql = """
             select file_hash as arr from file_version
@@ -176,11 +202,38 @@ class MapperTest : AbstractDatabaseTest() {
     }
 
     @Test
+    fun `kotlin instant literal has correct where clause`() {
+        assumeTrue(DATABASE_TYPE == DatabaseType.POSTGRES)
+        runTest {
+            val file = createFiles(1).single()
+            val sql = """
+                select id, 'hello' as description, revision_from_time as lockDate from resource_node_version
+                where revision_to_time = ${buildString { KotlinInstantLiteral(Entity.MAX_DB_TIMESTAMP_KOTLIN).printSql(this) }}
+                and revision_from_time = ${buildString { KotlinInstantLiteral(file.revisionFrom.toKotlinInstant()).printSql(this) }}
+            """.trimIndent()
+            val data = database.read {
+                mapper().select<ClassWithStandardMappings>(sql)
+            }
+            expectThat(data.single().lockDate!!).isEqualTo(file.revisionFrom.truncatedTo(ChronoUnit.MICROS))
+        }
+    }
+
+    @Test
     fun `can get current timestamp from the db`() {
         runTest {
             database.read {
                 val instant = mapper().selectOneExistingPrimitive<Instant>("select current_timestamp")
                 expectThat(instant).isA<Instant>()
+            }
+        }
+    }
+
+    @Test
+    fun `can get current timestamp as kotlin instant from the db`() {
+        runTest {
+            database.read {
+                val instant = mapper().selectOneExistingPrimitive<kotlin.time.Instant>("select current_timestamp")
+                expectThat(instant).isA<kotlin.time.Instant>()
             }
         }
     }

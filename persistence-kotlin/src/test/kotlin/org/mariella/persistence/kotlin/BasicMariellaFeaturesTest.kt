@@ -12,6 +12,7 @@ import strikt.api.expectThrows
 import strikt.assertions.*
 import java.time.Instant
 import java.util.*
+import kotlin.time.toKotlinInstant
 
 class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
 
@@ -35,7 +36,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             file.comment = "my comment"
             file.owner = user
             file.revision = revision
-            file.createdAt = revision.createdAt
+            file.createdAt = revision.createdAt.toKotlinInstant()
             file.entityId = "entityId-1"
 
             val fileVersion = context.create<FileVersion>()
@@ -104,7 +105,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             file.comment = "my comment"
             file.owner = user
             file.revision = revision
-            file.createdAt = revision.createdAt
+            file.createdAt = revision.createdAt.toKotlinInstant()
             file.entityId = "entityId-1"
 
             context.flush()

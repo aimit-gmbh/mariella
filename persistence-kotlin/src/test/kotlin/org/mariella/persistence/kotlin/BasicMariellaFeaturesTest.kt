@@ -13,6 +13,7 @@ import strikt.assertions.*
 import java.time.Instant
 import java.util.*
 import kotlin.time.toKotlinInstant
+import kotlin.uuid.toKotlinUuid
 
 class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
 
@@ -22,7 +23,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             val session = database.connect()
             val context = session.mariella()
 
-            val space = context.addExisting<Space>(TestData.TEST_SPACE)
+            val space = context.addExisting<Space>(TestData.TEST_SPACE.toKotlinUuid())
             val user = context.addExisting<UserEntity>(TestData.USER_SEPPI)
 
             val revision = context.create<Revision> {
@@ -91,7 +92,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             val session = database.connect()
             val context = session.mariella()
 
-            val space = context.addExisting<Space>(TestData.TEST_SPACE)
+            val space = context.addExisting<Space>(TestData.TEST_SPACE.toKotlinUuid())
             val user = context.addExisting<UserEntity>(TestData.USER_SEPPI)
 
             val revision = context.create<Revision> {
@@ -189,6 +190,36 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     }
 
     @Test
+    fun `can delete with kotlin uuid`() {
+        runTest {
+            database.read {
+                expectThat(mariella().loadAll<Space>()).hasSize(2)
+            }
+            database.write {
+                val mariella = mariella()
+                mariella.delete<Space>(TestData.TEST_SPACE.toKotlinUuid())
+                mariella.flush()
+            }
+            database.read {
+                expectThat(mariella().loadAll<Space>()).hasSize(1)
+            }
+        }
+    }
+
+    @Test
+    fun `can modify with kotlin uuid`() {
+        runTest {
+            database.write {
+                val mariella = mariella()
+                mariella.modify<Space>(TestData.TEST_SPACE.toKotlinUuid()) {
+                    it.name = "hansi"
+                }
+                mariella.flush()
+            }
+        }
+    }
+
+    @Test
     fun `can load cluster with conditions`() {
         runTest {
             val file = createFiles(3, null).first()
@@ -200,17 +231,45 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
                 expectThat(mariella().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id)))).hasSize(1)
                 expectThat(mariella().load<FileVersion>("root", "root.space", conditionProvider = LoadByConditionProvider(mapOf("root.id" to UUID.randomUUID())))).hasSize(0)
                 expectThat(mariella().load<FileVersion>("root", conditionProvider = LoadByConditionProvider(mapOf("root.name" to "not existing")))).isEmpty()
-                expectThat(mariella().load<FileVersion>("root", conditionProvider = LoadByConditionProvider(mapOf("root.space" to UUID.randomUUID())))).isEmpty()
+                expectThat(
+                    mariella().load<FileVersion>(
+                        "root",
+                        conditionProvider = LoadByConditionProvider(
+                            mapOf(
+                                "root.space" to UUID.randomUUID().toKotlinUuid()
+                            )
+                        )
+                    )
+                ).isEmpty()
                 expectThat(
                     mariella().load<FileVersion>(
                         "root",
                         "root.space",
-                        conditionProvider = LoadByConditionProvider(mapOf("root.id" to file.id, "root.space" to TestData.TEST_SPACE))
+                        conditionProvider = LoadByConditionProvider(
+                            mapOf(
+                                "root.id" to file.id,
+                                "root.space" to TestData.TEST_SPACE.toKotlinUuid()
+                            )
+                        )
                     )
                 ).hasSize(1)
-                expectThrows<RuntimeException> { LoadByConditionProvider(mapOf("root.id" to file.id, "root.space.id" to UUID.randomUUID())) }.get { message }
+                expectThrows<RuntimeException> {
+                    LoadByConditionProvider(
+                        mapOf(
+                            "root.id" to file.id,
+                            "root.space.id" to UUID.randomUUID().toKotlinUuid()
+                        )
+                    )
+                }.get { message }
                     .isEqualTo("only root properties can be set")
-                expectThrows<RuntimeException> { LoadByConditionProvider(mapOf("root.id" to file.id, "muh.space" to UUID.randomUUID())) }.get { message }.isEqualTo("only root properties can be set")
+                expectThrows<RuntimeException> {
+                    LoadByConditionProvider(
+                        mapOf(
+                            "root.id" to file.id,
+                            "muh.space" to UUID.randomUUID().toKotlinUuid()
+                        )
+                    )
+                }.get { message }.isEqualTo("only root properties can be set")
                 expectThrows<RuntimeException> { LoadByConditionProvider(emptyMap()) }.get { message }.isEqualTo("conditions must not be empty")
             }
         }

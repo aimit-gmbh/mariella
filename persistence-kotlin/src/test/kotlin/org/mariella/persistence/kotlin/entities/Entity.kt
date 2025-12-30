@@ -7,6 +7,7 @@ import org.mariella.persistence.kotlin.TrackingSupport
 import java.time.Instant
 import java.util.*
 import kotlin.time.toKotlinInstant
+import kotlin.uuid.Uuid
 
 @MappedSuperclass
 abstract class Entity : TrackingSupport() {
@@ -19,4 +20,11 @@ abstract class Entity : TrackingSupport() {
     @get:Id
     @get:Column(name = "id")
     var id: UUID by changeSupport(UUID.randomUUID())
+}
+
+@MappedSuperclass
+abstract class KotlinUuidEntity : TrackingSupport() {
+    @get:Id
+    @get:Column(name = "id")
+    var id: Uuid by changeSupport(Uuid.random())
 }

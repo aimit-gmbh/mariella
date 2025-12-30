@@ -8,7 +8,6 @@ import org.mariella.persistence.loader.ModifiableFactory
 import org.mariella.persistence.mapping.SchemaMapping
 import org.mariella.persistence.persistor.ClusterDescription
 import org.mariella.persistence.runtime.ModificationTracker
-import java.util.*
 
 open class ReadOnlyMariella internal constructor(
     protected val sqlClient: SqlClient,
@@ -58,7 +57,7 @@ open class ReadOnlyMariella internal constructor(
     }
 
     suspend inline fun <reified T> loadEntity(
-        id: UUID,
+        id: Any,
         vararg paths: String = arrayOf("root"),
         isUpdate: Boolean = false
     ): T? {
@@ -66,7 +65,7 @@ open class ReadOnlyMariella internal constructor(
     }
 
     suspend fun <T> loadEntity(
-        id: UUID,
+        id: Any,
         vararg paths: String = arrayOf("root"),
         isUpdate: Boolean = false,
         clazz: Class<T>
@@ -76,7 +75,7 @@ open class ReadOnlyMariella internal constructor(
     }
 
     suspend inline fun <reified T> loadEntities(
-        ids: Collection<UUID>,
+        ids: Collection<Any>,
         vararg paths: String = arrayOf("root"),
         isUpdate: Boolean = false,
     ): List<T> {
@@ -84,7 +83,7 @@ open class ReadOnlyMariella internal constructor(
     }
 
     suspend fun <T> loadEntities(
-        ids: Collection<UUID>,
+        ids: Collection<Any>,
         vararg paths: String = arrayOf("root"),
         isUpdate: Boolean = false,
         clazz: Class<T>

@@ -16,6 +16,8 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.time.toJavaInstant
+import kotlin.uuid.Uuid
+import kotlin.uuid.toJavaUuid
 
 class Mapper internal constructor(private val sqlClient: SqlClient, private val converterRegistry: ImmutableConverterRegistry) {
 
@@ -167,6 +169,7 @@ class Mapper internal constructor(private val sqlClient: SqlClient, private val 
                     is kotlin.time.Instant -> OffsetDateTime.ofInstant(actualValue.toJavaInstant(), ZoneId.of("UTC"))
                     is StringMappedSealedClass -> actualValue.value
                     is IntegerMappedSealedClass -> actualValue.value
+                    is Uuid -> actualValue.toJavaUuid()
                     else -> actualValue
                 }
             } else {

@@ -5,7 +5,7 @@ import jakarta.persistence.Table
 
 @jakarta.persistence.Entity
 @Table(name = "space")
-class Space : Entity() {
+class Space : KotlinUuidEntity() {
     @get:Column(name = "name")
     var name: String by changeSupport()
 

@@ -20,5 +20,6 @@ tasks.withType(KotlinCompile::class) {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_21)
         freeCompilerArgs.add("-Xjsr305=strict")
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
     }
 }

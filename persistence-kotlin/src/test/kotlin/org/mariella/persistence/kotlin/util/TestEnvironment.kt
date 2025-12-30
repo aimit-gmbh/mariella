@@ -9,6 +9,7 @@ import org.mariella.persistence.kotlin.entities.UserRole
 import org.mariella.persistence.mapping_builder.ConverterRegistryImpl
 import java.sql.Types
 import java.time.Instant
+import kotlin.uuid.Uuid
 
 object TestEnvironment {
 
@@ -29,6 +30,16 @@ object TestEnvironment {
         databaseConfig.user,
         databaseConfig.password
     ) {
+        converterRegistry.registerConverterFactory(
+            Types.OTHER,
+            Uuid::class.java,
+            ConverterRegistryImpl.ConverterFactoryImpl(KotlinUuidConverter)
+        )
+        converterRegistry.registerConverterFactory(
+            Types.BINARY,
+            Uuid::class.java,
+            ConverterRegistryImpl.ConverterFactoryImpl(KotlinUuidConverter)
+        )
         converterRegistry.registerConverterFactory(
             Types.TIMESTAMP_WITH_TIMEZONE,
             Instant::class.java,

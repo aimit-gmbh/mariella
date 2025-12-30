@@ -27,6 +27,8 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.time.toKotlinInstant
+import kotlin.uuid.Uuid
+import kotlin.uuid.toKotlinUuid
 
 class MapperTest : AbstractDatabaseTest() {
 
@@ -36,8 +38,8 @@ class MapperTest : AbstractDatabaseTest() {
         val lockDate: Instant?
     )
 
-    data class ClassWithStandardMappingsKotlinInstant(
-        val id: UUID,
+    data class ClassWithStandardMappingsKotlin(
+        val id: Uuid,
         val description: String?,
         val lockDate: kotlin.time.Instant?
     )
@@ -162,7 +164,7 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             createFiles(1)
             val data = database.read {
-                mapper().select<ClassWithStandardMappingsKotlinInstant>(sql, Entity.MAX_DB_TIMESTAMP_KOTLIN)
+                mapper().select<ClassWithStandardMappingsKotlin>(sql, Entity.MAX_DB_TIMESTAMP_KOTLIN)
             }
             expectThat(data.single().lockDate!!.toEpochMilliseconds()).isEqualTo(Entity.MAX_DB_TIMESTAMP_KOTLIN.toEpochMilliseconds())
         }
@@ -177,7 +179,7 @@ class MapperTest : AbstractDatabaseTest() {
         runTest {
             val file = createFiles(1).single()
             val data = database.read {
-                mapper().select<ByteArrayWrapper>(sql, file.id)
+                mapper().select<ByteArrayWrapper>(sql, file.id.toKotlinUuid())
             }
             expectThat(data.single().arr).isEqualTo(byteArrayOf(1, 2, 3))
             expectThat(data.single()).isEqualTo(ByteArrayWrapper(byteArrayOf(1, 2, 3)))

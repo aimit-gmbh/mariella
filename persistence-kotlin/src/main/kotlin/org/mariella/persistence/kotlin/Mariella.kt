@@ -3,11 +3,9 @@ package org.mariella.persistence.kotlin
 import io.vertx.sqlclient.SqlClient
 import org.mariella.persistence.kotlin.internal.SchemaAwareModificationTracker
 import org.mariella.persistence.kotlin.internal.VertxPersistor
-import org.mariella.persistence.kotlin.internal.VertxPreparedPersistorStatement
 import org.mariella.persistence.loader.ModifiableFactory
 import org.mariella.persistence.mapping.SchemaMapping
 import org.mariella.persistence.persistor.BatchingPersistorStrategy
-import java.util.*
 
 class Mariella internal constructor(
     sqlClient: SqlClient,
@@ -18,8 +16,13 @@ class Mariella internal constructor(
     private val globalSequences: Map<String, CachedSequence>
 ) : ReadOnlyMariella(sqlClient, modifiableFactory, schemaMapping, mapper, tracker) {
 
-    suspend inline fun <reified T> modify(id: UUID, isUpdate: Boolean = false, vararg paths: String = arrayOf(), block: (T) -> Unit): T {
-        val entity = loadEntity(id, isUpdate = isUpdate, paths = paths, clazz = T::class.java)
+    suspend inline fun <reified T> modify(
+        id: Any,
+        isUpdate: Boolean = false,
+        vararg paths: String = arrayOf(),
+        block: (T) -> Unit
+    ): T {
+        val entity = loadEntity<T>(id, isUpdate = isUpdate, paths = paths)
             ?: error("entity with id $id and type ${T::class.java} does not exist")
         return entity.apply(block)
     }
@@ -34,15 +37,15 @@ class Mariella internal constructor(
         return tracker.createNew()
     }
 
-    inline fun <reified T> addExisting(id: UUID): T {
+    inline fun <reified T> addExisting(id: Any): T {
         return tracker.addExisting(id)
     }
 
-    inline fun <reified T> addExisting(id: UUID, discriminator: String): T {
+    inline fun <reified T> addExisting(id: Any, discriminator: String): T {
         return tracker.addExisting(id, discriminator)
     }
 
-    inline fun <reified T> delete(id: UUID) {
+    inline fun <reified T> delete(id: Any) {
         val entity = tracker.addExisting<T>(id)
         tracker.remove(entity)
     }
@@ -54,7 +57,7 @@ class Mariella internal constructor(
                 VertxPersistor(
                     sqlClient,
                     schemaMapping,
-                    BatchingPersistorStrategy<VertxPreparedPersistorStatement>(),
+                    BatchingPersistorStrategy(),
                     tracker
                 ).persist()
             } catch (e: Exception) {

@@ -21,6 +21,7 @@ import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import java.time.Instant
 import kotlin.time.toKotlinInstant
+import kotlin.uuid.toKotlinUuid
 
 val DATABASE_TYPE = if (System.getenv("MARIELLA_TEST_DB") != null) DatabaseType.valueOf(System.getenv("MARIELLA_TEST_DB")) else DatabaseType.H2_MEM
 
@@ -117,7 +118,7 @@ fun migrateDb(databaseConfig: DatabaseConfig, vararg locations: String) {
 suspend fun AbstractDatabaseTest.createFiles(nrOfFiles: Int = 1, comment: String? = "my comment"): List<FileVersion> {
     val files = database.write {
         val context = mariella()
-        val space = context.addExisting<Space>(TestData.TEST_SPACE)
+        val space = context.addExisting<Space>(TestData.TEST_SPACE.toKotlinUuid())
         val user = context.addExisting<UserEntity>(TestData.USER_SEPPI)
 
         val revision = context.create<Revision>()

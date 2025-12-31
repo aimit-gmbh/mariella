@@ -26,7 +26,7 @@ import strikt.assertions.isEqualTo
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.time.toKotlinInstant
+import kotlin.time.toJavaInstant
 import kotlin.uuid.Uuid
 import kotlin.uuid.toKotlinUuid
 
@@ -194,12 +194,14 @@ class MapperTest : AbstractDatabaseTest() {
             val sql = """
                 select id, 'hello' as description, revision_from_time as lockDate from resource_node_version
                 where revision_to_time = ${buildString { InstantLiteral(Entity.MAX_DB_TIMESTAMP).printSql(this) }}
-                and revision_from_time = ${buildString { InstantLiteral(file.revisionFrom).printSql(this) }}
+                and revision_from_time = ${buildString { InstantLiteral(file.revisionFrom.toJavaInstant()).printSql(this) }}
             """.trimIndent()
             val data = database.read {
                 mapper().select<ClassWithStandardMappings>(sql)
             }
-            expectThat(data.single().lockDate!!).isEqualTo(file.revisionFrom.truncatedTo(ChronoUnit.MICROS))
+            expectThat(data.single().lockDate!!).isEqualTo(
+                file.revisionFrom.toJavaInstant().truncatedTo(ChronoUnit.MICROS)
+            )
         }
     }
 
@@ -211,12 +213,14 @@ class MapperTest : AbstractDatabaseTest() {
             val sql = """
                 select id, 'hello' as description, revision_from_time as lockDate from resource_node_version
                 where revision_to_time = ${buildString { KotlinInstantLiteral(Entity.MAX_DB_TIMESTAMP_KOTLIN).printSql(this) }}
-                and revision_from_time = ${buildString { KotlinInstantLiteral(file.revisionFrom.toKotlinInstant()).printSql(this) }}
+                and revision_from_time = ${buildString { KotlinInstantLiteral(file.revisionFrom).printSql(this) }}
             """.trimIndent()
             val data = database.read {
                 mapper().select<ClassWithStandardMappings>(sql)
             }
-            expectThat(data.single().lockDate!!).isEqualTo(file.revisionFrom.truncatedTo(ChronoUnit.MICROS))
+            expectThat(data.single().lockDate!!).isEqualTo(
+                file.revisionFrom.toJavaInstant().truncatedTo(ChronoUnit.MICROS)
+            )
         }
     }
 

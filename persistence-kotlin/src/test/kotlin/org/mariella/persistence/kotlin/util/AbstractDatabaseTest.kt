@@ -144,7 +144,7 @@ suspend fun AbstractDatabaseTest.createFiles(nrOfFiles: Int = 1, comment: String
             fileVersion.comment = comment
             fileVersion.size = 100
             fileVersion.resource = it
-            fileVersion.revisionFrom = revision.createdAt
+            fileVersion.revisionFrom = revision.createdAt.toKotlinInstant()
             fileVersion.versionId = it.entityId + "-1"
             fileVersion.hash = byteArrayOf(1, 2, 3)
 

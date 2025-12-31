@@ -1,7 +1,7 @@
 package org.mariella.persistence.kotlin.entities
 
 import jakarta.persistence.*
-import java.time.Instant
+import kotlin.time.Instant
 
 @jakarta.persistence.Entity
 @Table(name = "resource_node_version")
@@ -34,7 +34,7 @@ abstract class ResourceVersion : Entity() {
     var revisionFrom: Instant by changeSupport()
 
     @get:Column(name = "revision_to_time")
-    var revisionTo: Instant by changeSupport(MAX_DB_TIMESTAMP)
+    var revisionTo: Instant by changeSupport(MAX_DB_TIMESTAMP_KOTLIN)
 
     @get:Column(name = "entity_version_id")
     var versionId: String by changeSupport()

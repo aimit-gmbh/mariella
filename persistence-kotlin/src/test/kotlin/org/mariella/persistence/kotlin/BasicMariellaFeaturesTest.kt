@@ -47,7 +47,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             fileVersion.revision = revision
             fileVersion.size = 100
             fileVersion.resource = file
-            fileVersion.revisionFrom = revision.createdAt
+            fileVersion.revisionFrom = revision.createdAt.toKotlinInstant()
             fileVersion.versionId = file.entityId + "-1"
 
             context.flush()
@@ -121,7 +121,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             fileVersion.revision = revision
             fileVersion.size = 100
             fileVersion.resource = file
-            fileVersion.revisionFrom = revision.createdAt
+            fileVersion.revisionFrom = revision.createdAt.toKotlinInstant()
             fileVersion.versionId = file.entityId + "-1"
 
             loadedFile.resourceVersions.add(fileVersion)
@@ -138,8 +138,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             fileVersion2.revision = revision
             fileVersion2.size = 100
             fileVersion2.resource = file
-            fileVersion2.revisionFrom = revision.createdAt
-            fileVersion2.revisionTo = Instant.now()
+            fileVersion2.revisionFrom = revision.createdAt.toKotlinInstant()
+            fileVersion2.revisionTo = Instant.now().toKotlinInstant()
             fileVersion2.versionId = file.entityId + "-1"
             newLoadedFile.resourceVersions.add(fileVersion2)
             newestContext.flush()

@@ -39,13 +39,16 @@ dependencies {
     testImplementation("io.strikt:strikt-core:0.35.1")
 }
 
+
+// tests with postgres have 85 coverage because of timestamp handling in h2
+val coverage = if ("POSTGRES" == System.getenv("MARIELLA_TEST_DB")) 85 else 83
+
 kover {
     reports {
         verify {
             rule {
                 bound {
-                    // tests with postgres have 85 coverage because of timestamp handling in h2
-                    minValue = 83
+                    minValue = coverage
                 }
             }
         }

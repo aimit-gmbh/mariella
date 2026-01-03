@@ -2,7 +2,7 @@ package org.mariella.persistence.kotlin.entities
 
 import jakarta.persistence.*
 import org.mariella.persistence.runtime.TrackedList
-import java.time.Instant
+import kotlin.time.Instant
 
 @jakarta.persistence.Entity
 @Table(name = "resource_node")

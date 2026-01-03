@@ -9,6 +9,7 @@ import org.mariella.persistence.kotlin.entities.UserRole
 import org.mariella.persistence.mapping_builder.ConverterRegistryImpl
 import java.sql.Types
 import java.time.Instant
+import kotlin.uuid.Uuid
 
 object TestEnvironment {
 
@@ -30,12 +31,30 @@ object TestEnvironment {
         databaseConfig.password
     ) {
         converterRegistry.registerConverterFactory(
+            Types.OTHER,
+            Uuid::class.java,
+            ConverterRegistryImpl.ConverterFactoryImpl(KotlinUuidConverter)
+        )
+        converterRegistry.registerConverterFactory(
+            Types.BINARY,
+            Uuid::class.java,
+            ConverterRegistryImpl.ConverterFactoryImpl(KotlinUuidConverter)
+        )
+        converterRegistry.registerConverterFactory(
             Types.TIMESTAMP_WITH_TIMEZONE,
             Instant::class.java,
             ConverterRegistryImpl.ConverterFactoryImpl(TimestampInstantConverter)
         )
         converterRegistry.registerConverterFactory(
             Types.TIMESTAMP, Instant::class.java, ConverterRegistryImpl.ConverterFactoryImpl(TimestampInstantConverter)
+        )
+        converterRegistry.registerConverterFactory(
+            Types.TIMESTAMP_WITH_TIMEZONE,
+            kotlin.time.Instant::class.java,
+            ConverterRegistryImpl.ConverterFactoryImpl(TimestampKotlinInstantConverter)
+        )
+        converterRegistry.registerConverterFactory(
+            Types.TIMESTAMP, kotlin.time.Instant::class.java, ConverterRegistryImpl.ConverterFactoryImpl(TimestampKotlinInstantConverter)
         )
         registerIntMappedSealedClass(SecurityConcept::class)
         registerIntMappedSealedClass(SystemGroup::class)

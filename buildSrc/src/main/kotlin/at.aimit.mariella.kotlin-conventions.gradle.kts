@@ -9,7 +9,7 @@ plugins {
 
 dependencies {
     // Align versions of all Kotlin components
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.2.21"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.3.0"))
 
     // Use the Kotlin JDK 8 standard library
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -20,5 +20,6 @@ tasks.withType(KotlinCompile::class) {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_21)
         freeCompilerArgs.add("-Xjsr305=strict")
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
     }
 }

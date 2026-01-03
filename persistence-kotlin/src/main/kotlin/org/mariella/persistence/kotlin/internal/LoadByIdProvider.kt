@@ -7,9 +7,8 @@ import org.mariella.persistence.query.BinaryCondition
 import org.mariella.persistence.query.JoinBuilder
 import org.mariella.persistence.query.QueryBuilder
 import org.mariella.persistence.query.TableReference
-import java.util.*
 
-internal class LoadByIdProvider(private val id: UUID) : ClusterLoaderConditionProvider {
+internal class LoadByIdProvider(private val id: Any) : ClusterLoaderConditionProvider {
     override fun getConditionPathExpressions(): Array<String> {
         return arrayOf("root")
     }
@@ -28,13 +27,12 @@ internal class LoadByIdProvider(private val id: UUID) : ClusterLoaderConditionPr
         tableReference: TableReference
     ) {
         if (pathExpression == "root") {
-            classMapping.primaryKey.columnMappings.forEach {
-                val condition = BinaryCondition.eq(
-                    tableReference.createColumnReference(it.readColumn),
-                    it.readColumn.converter().createLiteral(id)
-                )
-                queryBuilder.and(condition)
-            }
+            val column = classMapping.primaryKey.columnMappings.single().readColumn
+            val condition = BinaryCondition.eq(
+                tableReference.createColumnReference(column),
+                column.converter.createLiteral(id)
+            )
+            queryBuilder.and(condition)
         }
     }
 }

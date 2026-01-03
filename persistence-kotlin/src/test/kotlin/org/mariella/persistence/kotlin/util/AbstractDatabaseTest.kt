@@ -20,6 +20,8 @@ import org.mariella.persistence.kotlin.entities.*
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import java.time.Instant
+import kotlin.time.toKotlinInstant
+import kotlin.uuid.toKotlinUuid
 
 val DATABASE_TYPE = if (System.getenv("MARIELLA_TEST_DB") != null) DatabaseType.valueOf(System.getenv("MARIELLA_TEST_DB")) else DatabaseType.H2_MEM
 
@@ -116,7 +118,7 @@ fun migrateDb(databaseConfig: DatabaseConfig, vararg locations: String) {
 suspend fun AbstractDatabaseTest.createFiles(nrOfFiles: Int = 1, comment: String? = "my comment"): List<FileVersion> {
     val files = database.write {
         val context = mariella()
-        val space = context.addExisting<Space>(TestData.TEST_SPACE)
+        val space = context.addExisting<Space>(TestData.TEST_SPACE.toKotlinUuid())
         val user = context.addExisting<UserEntity>(TestData.USER_SEPPI)
 
         val revision = context.create<Revision>()
@@ -130,7 +132,7 @@ suspend fun AbstractDatabaseTest.createFiles(nrOfFiles: Int = 1, comment: String
             file.comment = "my comment"
             file.owner = user
             file.revision = revision
-            file.createdAt = revision.createdAt
+            file.createdAt = revision.createdAt.toKotlinInstant()
             file.entityId = "entityId$it"
             file
         }.map {
@@ -142,7 +144,7 @@ suspend fun AbstractDatabaseTest.createFiles(nrOfFiles: Int = 1, comment: String
             fileVersion.comment = comment
             fileVersion.size = 100
             fileVersion.resource = it
-            fileVersion.revisionFrom = revision.createdAt
+            fileVersion.revisionFrom = revision.createdAt.toKotlinInstant()
             fileVersion.versionId = it.entityId + "-1"
             fileVersion.hash = byteArrayOf(1, 2, 3)
 

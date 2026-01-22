@@ -1,5 +1,6 @@
 plugins {
     id("at.aimit.mariella.java-conventions")
+    jacoco
 }
 
 dependencies {
@@ -21,5 +22,30 @@ dependencies {
     testImplementation(libs.jakarta.persistence.api)
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.slf4j)
+}
 
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+
+    // Include source directories for which we want the coverage
+    val javaProjects = listOf(
+        project(":persistence"),
+        project(":persistence-mapping"),
+        project(":persistence-jdbc"),
+        project(":persistence-h2"),
+        project(":persistence-postgres"),
+        project(":persistence-oracle")
+    )
+
+    additionalSourceDirs.setFrom(javaProjects.flatMap { it.the<SourceSetContainer>()["main"].allSource.srcDirs })
+    additionalClassDirs.setFrom(javaProjects.map { it.the<SourceSetContainer>()["main"].output })
+
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }

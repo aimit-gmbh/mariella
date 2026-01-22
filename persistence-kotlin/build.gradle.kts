@@ -1,42 +1,40 @@
-import at.aimit.mariella.*
-
 plugins {
     id("at.aimit.mariella.kotlin-conventions")
 }
 
 dependencies {
     api(project(":persistence"))
-    api("io.vertx:vertx-sql-client:$vertxVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+    api(libs.vertx.sql.client)
+    implementation(libs.kotlinx.coroutines.core)
 
     implementation(project(":persistence-mapping"))
-    implementation("io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion")
-    implementation("io.vertx:vertx-core:$vertxVersion")
-    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation(libs.vertx.lang.kotlin.coroutines)
+    implementation(libs.vertx.core)
+    implementation(libs.slf4j)
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${coroutinesVersion}")
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.kotlinx.coroutines.test)
     testRuntimeOnly(project(":persistence-h2"))
     testRuntimeOnly(project(":persistence-postgres"))
-    testImplementation("jakarta.persistence:jakarta.persistence-api:$jakartaVersion")
+    testImplementation(libs.jakarta.persistence.api)
 
-    testRuntimeOnly("ch.qos.logback:logback-classic:$logbackVersion")
+    testRuntimeOnly(libs.logback)
 
     //h2
-    testImplementation("com.h2database:h2:$h2Version")
-    testImplementation("com.zaxxer:HikariCP:$hikariVersion")
-    testImplementation("io.vertx:vertx-jdbc-client:$vertxVersion")
+    testImplementation(libs.h2)
+    testImplementation(libs.hikari.cp)
+    testImplementation(libs.vertx.jdbc.client)
 
     // postgres
-    testRuntimeOnly("org.postgresql:postgresql:$postgresVersion")
-    testRuntimeOnly("com.ongres.scram:scram-client:$scramClientVersion")
-    testImplementation("io.vertx:vertx-pg-client:$vertxVersion")
+    testRuntimeOnly(libs.postgres)
+    testRuntimeOnly(libs.scram.client)
+    testImplementation(libs.vertx.pg.client)
 
     // flyway
-    testImplementation("org.flywaydb:flyway-core:$flywayVersion")
-    testRuntimeOnly("org.flywaydb:flyway-database-postgresql:$flywayVersion")
+    testImplementation(libs.flyway.core)
+    testRuntimeOnly(libs.flyway.database.postgresql)
 
-    testImplementation("io.strikt:strikt-core:0.35.1")
+    testImplementation(libs.strikt.core)
 }
 
 

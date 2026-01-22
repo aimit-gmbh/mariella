@@ -1,0 +1,51 @@
+[versions]
+kotlin = "2.3.0"
+vertx = "5.0.7"
+slf4j = "2.0.17"
+logback = "1.5.25"
+flyway = "11.20.2"
+guava = "33.4.8-jre"
+junit = "6.0.2"
+coroutines = "1.10.2"
+strikt = "0.35.1"
+jakarta = "3.2.0"
+postgres = "42.7.9"
+scramClient = "3.2"
+javaAssist = "3.30.2-GA"
+h2 = "2.3.232"
+hikariCp = "7.0.2"
+
+
+[libraries]
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
+kotlin-stdlib-jdk8 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+
+slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
+javassist = { module = "org.javassist:javassist", version.ref = "javaAssist" }
+
+vertx-core = { module = "io.vertx:vertx-core", version.ref = "vertx" }
+vertx-lang-kotlin-coroutines = { module = "io.vertx:vertx-lang-kotlin-coroutines", version.ref = "vertx" }
+vertx-sql-client = { module = "io.vertx:vertx-sql-client", version.ref = "vertx" }
+vertx-pg-client = { module = "io.vertx:vertx-pg-client", version.ref = "vertx" }
+vertx-jdbc-client = { module = "io.vertx:vertx-jdbc-client", version.ref = "vertx" }
+
+jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-api", version.ref = "jakarta" }
+postgres = { module = "org.postgresql:postgresql", version.ref = "postgres" }
+scram-client = { module = "com.ongres.scram:scram-client", version.ref = "scramClient" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+
+h2 = { module = "com.h2database:h2", version.ref = "h2" }
+hikari-cp = { module = "com.zaxxer:HikariCP", version.ref = "hikariCp" }
+
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+
+# test dependencies
+
+strikt-core = { module = "io.strikt:strikt-core", version.ref = "strikt" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }

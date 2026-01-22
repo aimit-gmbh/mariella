@@ -136,7 +136,6 @@ class SimpleTest extends AbstractSimpleTest {
     private void load() throws Exception {
         // Query Hugo by firstName
         // This query generates too many joins (company join is useless) -> SecondaryTableJoinBuilder
-        logger.info("loading");
         QueryBuilder queryBuilder;
         JdbcQueryExecutor queryExecutor;
 
@@ -156,17 +155,16 @@ class SimpleTest extends AbstractSimpleTest {
         ClusterDescription cd = new ClusterDescription(getClassDescription(Partner.class), "root.collaborators", "root");
         Person hugo = loadById(cd, id, false);
         assertNotNull(hugo);
-        assertEquals(hugo.getFirstName(), "Hugo");
-        assertEquals(hugo.getCollaborators().size(), 1);
-        Company c = (Company) hugo.getCollaborators().get(0);
+        assertEquals("Hugo", hugo.getFirstName());
+        assertEquals(1, hugo.getCollaborators().size());
+        Company c = (Company) hugo.getCollaborators().getFirst();
         assertTrue(c.getName().startsWith("Bellaflora"));
     }
 
 
-    // this fails because it is challenging to determine the alias of the discriminator´s TableReference
+    // this fails because it is challenging to determine the alias of the discriminator's TableReference
     @SuppressWarnings("unused")
     private void problem() throws Exception {
-        logger.info("loading");
         QueryBuilder queryBuilder;
         JdbcQueryExecutor queryExecutor;
 
@@ -191,7 +189,7 @@ class SimpleTest extends AbstractSimpleTest {
 
         queryExecutor = new JdbcQueryExecutor(discriminatorQueryBuilder, createDatabaseAccess());
         String discriminator = (String) queryExecutor.queryforObject();
-        assertEquals(discriminator, "P");
+        assertEquals("P", discriminator);
     }
 
 }

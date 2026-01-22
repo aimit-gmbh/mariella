@@ -1,4 +1,3 @@
-import at.aimit.mariella.junitVersion
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
@@ -19,12 +18,14 @@ tasks.withType(JavaCompile::class) {
     targetCompatibility = "21"
 }
 
+val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")!!
+
 testing {
     suites {
         // Configure the built-in test suite
         @Suppress("UnstableApiUsage", "Unused") val test by getting(JvmTestSuite::class) {
             // Use JUnit Jupiter test framework
-            useJUnitJupiter(junitVersion)
+            useJUnitJupiter(libs.findLibrary("junit-jupiter-api").get().get().version!!)
         }
     }
 }
@@ -79,6 +80,16 @@ mavenPublishing {
         }
         scm {
             url = "https://github.com/aimit-gmbh/mariella"
+        }
+    }
+}
+
+pluginManager.withPlugin("com.autonomousapps.dependency-analysis") {
+    configure<com.autonomousapps.DependencyAnalysisSubExtension> {
+        issues {
+            onUnusedDependencies {
+                exclude("org.junit.jupiter:junit-jupiter")
+            }
         }
     }
 }

@@ -7,13 +7,15 @@ plugins {
     id("at.aimit.mariella.java-conventions")
 }
 
+val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")!!
+
 dependencies {
     // Align versions of all Kotlin components
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.3.0"))
+    implementation(platform(libs.findLibrary("kotlin-bom").get()))
 
     // Use the Kotlin JDK 8 standard library
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation(libs.findLibrary("kotlin-stdlib-jdk8").get())
+    implementation(libs.findLibrary("kotlin-reflect").get())
 }
 
 tasks.withType(KotlinCompile::class) {

@@ -1,5 +1,3 @@
-import at.aimit.mariella.*
-
 plugins {
     id("at.aimit.mariella.java-conventions")
 }
@@ -11,17 +9,17 @@ dependencies {
     testRuntimeOnly(project(":persistence-h2"))
     testRuntimeOnly(project(":persistence-postgres"))
 
-    testRuntimeOnly("ch.qos.logback:logback-classic:$logbackVersion")
+    testRuntimeOnly(libs.postgres)
 
     //h2
-    testImplementation("com.h2database:h2:$h2Version")
+    testImplementation(libs.h2)
 
     // postgres
-    testRuntimeOnly("org.postgresql:postgresql:$postgresVersion")
-    testRuntimeOnly("com.ongres.scram:scram-client:$scramClientVersion")
+    testRuntimeOnly(libs.postgres)
+    testRuntimeOnly(libs.scram.client)
 
-    testImplementation("jakarta.persistence:jakarta.persistence-api:$jakartaVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    testImplementation("org.slf4j:slf4j-api:$slf4jVersion")
+    testImplementation(libs.jakarta.persistence.api)
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.slf4j)
 
 }

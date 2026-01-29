@@ -87,6 +87,17 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     }
 
     @Test
+    fun `produces reasonable errors`() {
+        class NotMapped
+        runTest {
+            database.write {
+                expectThrows<RuntimeException> { mariella().create<NotMapped>() }.get { message!! }.contains("NotMapped")
+                expectThrows<RuntimeException> { mariella().addExisting<NotMapped>(1) }.get { message!! }.contains("NotMapped")
+            }
+        }
+    }
+
+    @Test
     fun `can map one to many`() {
         runTest {
             val session = database.connect()

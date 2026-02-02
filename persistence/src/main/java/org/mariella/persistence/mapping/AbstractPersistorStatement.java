@@ -34,7 +34,11 @@ public abstract class AbstractPersistorStatement implements PersistorStatement {
                 (b, column) -> {
                     @SuppressWarnings("unchecked")
                     Converter<Object> converter = (Converter<Object>) column.converter();
-                    b.append(converter.toString(parameters.getProperty(column)));
+                    if (parameters.getSetColumns().contains(column)) {
+                        b.append(converter.toString(parameters.getProperty(column)));
+                    } else {
+                        b.append(converter.toString(null));
+                    }
                 });
     }
 

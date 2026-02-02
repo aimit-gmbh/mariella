@@ -23,7 +23,7 @@ import java.time.Instant
 import kotlin.time.toKotlinInstant
 import kotlin.uuid.toKotlinUuid
 
-val DATABASE_TYPE = if (System.getenv("MARIELLA_TEST_DB") != null) DatabaseType.valueOf(System.getenv("MARIELLA_TEST_DB")) else DatabaseType.H2_MEM
+val DATABASE_TYPE = if (System.getenv("MARIELLA_TEST_DB") != null) DatabaseType.valueOf(System.getenv("MARIELLA_TEST_DB")) else DatabaseType.POSTGRES
 
 /**
  * to run the tests start postgres with

@@ -8,6 +8,7 @@ import org.mariella.persistence.mapping.JoinedClassMapping;
 import org.mariella.persistence.mapping.PrimaryKeyJoinColumn;
 import org.mariella.persistence.persistor.Persistor;
 import org.mariella.persistence.persistor.Row;
+import org.mariella.persistence.runtime.PersistenceException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,10 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
     public void setParameters(ParameterValues parameterValues, Row row) {
         int index = 1;
         for (Column column : parameters) {
-            column.setObject(parameterValues, index++, row.getProperty(column));
+            Object value = row.getSetColumns().contains(column) ? row.getProperty(column) : null;
+            if (value == null && !column.nullable())
+                throw new PersistenceException("value missing for mandatory column " + classMapping.getJoinUpdateTable().getName() + "." + column.name(), null);
+            column.setObject(parameterValues, index++, value);
         }
     }
 
@@ -41,69 +45,18 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
                     createParameter().print(b);
                     parameters.add(column);
                 });
-
         return persistor.prepareStatement(this, sql);
     }
 
-
     @Override
     protected String getSqlString(BuildCallback buildCallback) {
-        boolean first = true;
-
+        boolean first;
         List<Column> requiredNotSetColumns = new ArrayList<>();
+        List<Column> insertColumns = new ArrayList<>();
         StringBuilder b = new StringBuilder();
-        b.append("MERGE INTO ").append(table.getQualifiedName()).append(" a using (select ");
-        for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
-            if (first)
-                first = false;
-            else
-                b.append(", ");
-            b.append(primaryKeyJoinColumn.getJoinTableColumn().name());
-        }
-        b.append(" from ").append(table.getQualifiedName()).append(" where ");
+        b.append(" INSERT INTO ").append(classMapping.getJoinUpdateTable().getName()).append(" (");
         first = true;
-        for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
-            if (first)
-                first = false;
-            else
-                b.append(" AND ");
-            b.append(primaryKeyJoinColumn.getJoinTableColumn().name());
-            b.append("=");
-            buildCallback.columnValue(b, primaryKeyJoinColumn.getJoinTableColumn());
-        }
-        b.append(") as b on ");
-        first = true;
-        for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
-            if (first)
-                first = false;
-            else
-                b.append(" AND ");
-            b.append("a.");
-            b.append(primaryKeyJoinColumn.getJoinTableColumn().name());
-            b.append(" = b.");
-            b.append(primaryKeyJoinColumn.getJoinTableColumn().name());
-        }
-        b.append(" when matched then UPDATE SET ");
-        first = true;
-        for (Column column : columns) {
-            if (first)
-                first = false;
-            else
-                b.append(", ");
-            b.append(column.name());
-            b.append("=");
-            buildCallback.columnValue(b, column);
-        }
 
-        b.append(" when not matched then insert (");
-        first = true;
-        for (Column column : columns) {
-            if (first)
-                first = false;
-            else
-                b.append(", ");
-            b.append(column.name());
-        }
         for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
             if (!columns.contains(primaryKeyJoinColumn.getJoinTableColumn())) {
                 if (first)
@@ -114,15 +67,30 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
                 requiredNotSetColumns.add(primaryKeyJoinColumn.getJoinTableColumn());
             }
         }
-        b.append(") VALUES (");
-        first = true;
-        for (Column column : columns) {
-            if (first)
-                first = false;
-            else
-                b.append(", ");
-            buildCallback.columnValue(b, column);
+
+        for (Column column : classMapping.getJoinUpdateTable().getColumns()) {
+            if (columns.contains(column)) {
+                if (first)
+                    first = false;
+                else
+                    b.append(", ");
+                b.append(column.name());
+                insertColumns.add(column);
+            } else if (!requiredNotSetColumns.contains(column) && !column.nullable()) {
+                if (first)
+                    first = false;
+                else
+                    b.append(", ");
+                b.append(column.name());
+                insertColumns.add(column);
+            }
         }
+
+
+        b.append(") ");
+
+        b.append(" VALUES (");
+        first = true;
 
         for (Column column : requiredNotSetColumns) {
             if (first)
@@ -132,7 +100,48 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
             buildCallback.columnValue(b, column);
         }
 
-        b.append(")");
+        for (Column column : insertColumns) {
+            if (first)
+                first = false;
+            else
+                b.append(", ");
+            buildCallback.columnValue(b, column);
+        }
+
+
+        b.append(") ON CONFLICT (");
+        first = true;
+        for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
+            if (first)
+                first = false;
+            else
+                b.append(", ");
+            b.append(primaryKeyJoinColumn.getJoinTableColumn().name());
+        }
+        b.append(") DO UPDATE SET ");
+        first = true;
+        for (Column column : columns) {
+            if (first)
+                first = false;
+            else
+                b.append(", ");
+            b.append(column.name());
+            b.append("=");
+            buildCallback.columnValue(b, column);
+        }
+        b.append(" WHERE ");
+        first = true;
+        for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
+            if (first)
+                first = false;
+            else
+                b.append(" AND ");
+            b.append(classMapping.getJoinUpdateTable().getName());
+            b.append(".");
+            b.append(primaryKeyJoinColumn.getJoinTableColumn().name());
+            b.append("=");
+            buildCallback.columnValue(b, primaryKeyJoinColumn.getJoinTableColumn());
+        }
 
         return b.toString();
     }

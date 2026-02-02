@@ -375,6 +375,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
                     it.name = "asdasdasdasdasd"
                     it.hash = byteArrayOf(4, 5, 6)
                 }
+                context.flush()
 
                 val user = context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.Donkey))).single()
                 user.role = UserRole.God

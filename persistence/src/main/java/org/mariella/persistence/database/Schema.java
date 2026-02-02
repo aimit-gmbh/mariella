@@ -2,6 +2,7 @@ package org.mariella.persistence.database;
 
 import org.mariella.persistence.mapping.JoinedClassMapping;
 import org.mariella.persistence.mapping.PersistorStatement;
+import org.mariella.persistence.persistor.ObjectPersistor;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -16,7 +17,7 @@ public abstract class Schema {
 
     private Class<?> parameterClass = JdbcParameter.class;
 
-    public abstract PersistorStatement createJoinedUpsertStatement(JoinedClassMapping joinedClassMapping, List<Column> columns);
+    public abstract PersistorStatement createJoinedUpsertStatement(ObjectPersistor<? extends PreparedPersistorStatement> objectPersistor, JoinedClassMapping joinedClassMapping, List<Column> columns);
 
     public abstract void addBatch(PreparedStatement ps) throws SQLException;
 

@@ -30,7 +30,7 @@ public class Row {
 
     public Object getProperty(Column column) {
         if (!setColumns.contains(column)) {
-            throw new IllegalArgumentException("No value available for column");
+            throw new IllegalArgumentException("No value available for column " + table.getName() + "." + column.name());
         }
         return valueMap.get(column);
     }

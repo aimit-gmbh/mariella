@@ -1,26 +1,32 @@
 package org.mariella.persistence.postgres;
 
-import org.mariella.persistence.database.Column;
-import org.mariella.persistence.database.ParameterValues;
-import org.mariella.persistence.database.PreparedPersistorStatement;
-import org.mariella.persistence.mapping.AbstractPersistorStatement;
-import org.mariella.persistence.mapping.JoinedClassMapping;
-import org.mariella.persistence.mapping.PrimaryKeyJoinColumn;
-import org.mariella.persistence.persistor.Persistor;
-import org.mariella.persistence.persistor.Row;
-import org.mariella.persistence.runtime.PersistenceException;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import org.mariella.persistence.database.Column;
+import org.mariella.persistence.database.Converter;
+import org.mariella.persistence.database.ParameterValues;
+import org.mariella.persistence.database.PreparedPersistorStatement;
+import org.mariella.persistence.mapping.AbstractPersistorStatement;
+import org.mariella.persistence.mapping.ColumnMapping;
+import org.mariella.persistence.mapping.JoinedClassMapping;
+import org.mariella.persistence.mapping.PrimaryKeyJoinColumn;
+import org.mariella.persistence.mapping.PropertyMapping;
+import org.mariella.persistence.persistor.ObjectPersistor;
+import org.mariella.persistence.persistor.Persistor;
+import org.mariella.persistence.persistor.Row;
+import org.mariella.persistence.runtime.ModifiableAccessor;
+
 public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
+	private final ObjectPersistor<? extends PreparedPersistorStatement> objectPersistor;
     private final JoinedClassMapping classMapping;
     private final List<Column> columns;
 
     private List<Column> parameters;
 
-    public PostgresJoinedUpsertStatement(JoinedClassMapping classMapping, List<Column> columns) {
+    public PostgresJoinedUpsertStatement(ObjectPersistor<? extends PreparedPersistorStatement> objectPersistor, JoinedClassMapping classMapping, List<Column> columns) {
         super(classMapping.getSchemaMapping().getSchema(), classMapping.getJoinUpdateTable());
+        this.objectPersistor = objectPersistor;
         this.classMapping = classMapping;
         this.columns = columns;
     }
@@ -29,9 +35,7 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
     public void setParameters(ParameterValues parameterValues, Row row) {
         int index = 1;
         for (Column column : parameters) {
-            Object value = row.getSetColumns().contains(column) ? row.getProperty(column) : null;
-            if (value == null && !column.nullable())
-                throw new PersistenceException("value missing for mandatory column " + classMapping.getJoinUpdateTable().getName() + "." + column.name(), null);
+            Object value = getColumnValue(row, column);
             column.setObject(parameterValues, index++, value);
         }
     }
@@ -48,6 +52,34 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
         return persistor.prepareStatement(this, sql);
     }
 
+    @Override
+    public String getSqlDebugString(Row parameters) {
+        return getSqlString(
+            (b, column) -> {
+                @SuppressWarnings("unchecked")
+                Converter<Object> converter = (Converter<Object>) column.converter();
+                Object value = getColumnValue(parameters, column);
+                b.append(converter.toString(value));
+            });
+    }
+
+    private Object getColumnValue(Row row, Column column) {
+    	if(row.getSetColumns().contains(column)) {
+    		return row.getProperty(column);
+    	} else {
+    		for(PropertyMapping pm : classMapping.getPropertyMappings()) {
+    			if(pm instanceof ColumnMapping) {
+    				ColumnMapping cm = (ColumnMapping)pm;
+    				if(cm.getUpdateColumn() == column) {
+    					return ModifiableAccessor.Singleton.getValue(objectPersistor.getModificationInfo().getObject(), cm.getPropertyDescription());
+    				}
+    			}
+    		}
+    		throw new IllegalArgumentException("No value available for column " + table.getName() + "." + column.name());
+    	}
+    }
+    
+    
     @Override
     protected String getSqlString(BuildCallback buildCallback) {
         boolean first;

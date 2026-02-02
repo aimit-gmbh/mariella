@@ -1,9 +1,11 @@
 package org.mariella.persistence.generic;
 
 import org.mariella.persistence.database.Column;
+import org.mariella.persistence.database.PreparedPersistorStatement;
 import org.mariella.persistence.database.Schema;
 import org.mariella.persistence.mapping.JoinedClassMapping;
 import org.mariella.persistence.mapping.PersistorStatement;
+import org.mariella.persistence.persistor.ObjectPersistor;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -12,7 +14,7 @@ import java.util.List;
 public class GenericSchema extends Schema {
 
     @Override
-    public PersistorStatement createJoinedUpsertStatement(JoinedClassMapping joinedClassMapping, List<Column> columns) {
+    public PersistorStatement createJoinedUpsertStatement(ObjectPersistor<? extends PreparedPersistorStatement> objectPersistor, JoinedClassMapping joinedClassMapping, List<Column> columns) {
         throw new UnsupportedOperationException();
     }
 

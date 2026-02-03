@@ -1,24 +1,20 @@
 package org.mariella.persistence.postgres;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.mariella.persistence.database.Column;
 import org.mariella.persistence.database.Converter;
 import org.mariella.persistence.database.ParameterValues;
 import org.mariella.persistence.database.PreparedPersistorStatement;
-import org.mariella.persistence.mapping.AbstractPersistorStatement;
-import org.mariella.persistence.mapping.ColumnMapping;
-import org.mariella.persistence.mapping.JoinedClassMapping;
-import org.mariella.persistence.mapping.PrimaryKeyJoinColumn;
-import org.mariella.persistence.mapping.PropertyMapping;
+import org.mariella.persistence.mapping.*;
 import org.mariella.persistence.persistor.ObjectPersistor;
 import org.mariella.persistence.persistor.Persistor;
 import org.mariella.persistence.persistor.Row;
 import org.mariella.persistence.runtime.ModifiableAccessor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
-	private final ObjectPersistor<? extends PreparedPersistorStatement> objectPersistor;
+    private final ObjectPersistor<? extends PreparedPersistorStatement> objectPersistor;
     private final JoinedClassMapping classMapping;
     private final List<Column> columns;
 
@@ -55,39 +51,37 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
     @Override
     public String getSqlDebugString(Row parameters) {
         return getSqlString(
-            (b, column) -> {
-                @SuppressWarnings("unchecked")
-                Converter<Object> converter = (Converter<Object>) column.converter();
-                Object value = getColumnValue(parameters, column);
-                b.append(converter.toString(value));
-            });
+                (b, column) -> {
+                    @SuppressWarnings("unchecked")
+                    Converter<Object> converter = (Converter<Object>) column.converter();
+                    Object value = getColumnValue(parameters, column);
+                    b.append(converter.toString(value));
+                });
     }
 
     private Object getColumnValue(Row row, Column column) {
-    	if(row.getSetColumns().contains(column)) {
-    		return row.getProperty(column);
-    	} else {
-    		for(PropertyMapping pm : classMapping.getPropertyMappings()) {
-    			if(pm instanceof ColumnMapping) {
-    				ColumnMapping cm = (ColumnMapping)pm;
-    				if(cm.getUpdateColumn() == column) {
-    					return ModifiableAccessor.Singleton.getValue(objectPersistor.getModificationInfo().getObject(), cm.getPropertyDescription());
-    				}
-    			}
-    		}
-    		throw new IllegalArgumentException("No value available for column " + table.getName() + "." + column.name());
-    	}
+        if (row.getSetColumns().contains(column)) {
+            return row.getProperty(column);
+        } else {
+            for (PropertyMapping pm : classMapping.getPropertyMappings()) {
+                if (pm instanceof ColumnMapping cm) {
+                    if (cm.getUpdateColumn() == column) {
+                        return ModifiableAccessor.Singleton.getValue(objectPersistor.getModificationInfo().getObject(), cm.getPropertyDescription());
+                    }
+                }
+            }
+            throw new IllegalArgumentException("No value available for column " + table.getName() + "." + column.name());
+        }
     }
-    
-    
+
+
     @Override
     protected String getSqlString(BuildCallback buildCallback) {
-        boolean first;
+        boolean first = true;
         List<Column> requiredNotSetColumns = new ArrayList<>();
         List<Column> insertColumns = new ArrayList<>();
         StringBuilder b = new StringBuilder();
         b.append(" INSERT INTO ").append(classMapping.getJoinUpdateTable().getName()).append(" (");
-        first = true;
 
         for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
             if (!columns.contains(primaryKeyJoinColumn.getJoinTableColumn())) {
@@ -152,7 +146,10 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
         }
         b.append(") DO UPDATE SET ");
         first = true;
+        List<Column> cols = classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns().stream().map(PrimaryKeyJoinColumn::getJoinTableColumn).toList();
         for (Column column : columns) {
+            if (cols.contains(column))
+                continue;
             if (first)
                 first = false;
             else
@@ -160,19 +157,6 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
             b.append(column.name());
             b.append("=");
             buildCallback.columnValue(b, column);
-        }
-        b.append(" WHERE ");
-        first = true;
-        for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
-            if (first)
-                first = false;
-            else
-                b.append(" AND ");
-            b.append(classMapping.getJoinUpdateTable().getName());
-            b.append(".");
-            b.append(primaryKeyJoinColumn.getJoinTableColumn().name());
-            b.append("=");
-            buildCallback.columnValue(b, primaryKeyJoinColumn.getJoinTableColumn());
         }
 
         return b.toString();

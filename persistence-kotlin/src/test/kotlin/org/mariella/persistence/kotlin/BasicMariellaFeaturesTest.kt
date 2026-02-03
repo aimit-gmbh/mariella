@@ -491,7 +491,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     @Test
     fun `can modify single properties`() {
         runTest {
-            val fileVersionId = createFiles().single().id
+            val files = createFiles(2)
+            val fileVersionId = files[0].id
 
             val session = database.connect()
             val context = session.mariella()
@@ -507,7 +508,11 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             database.read {
                 val entity = mariella().loadEntity<FileVersion>(fileVersionId)!!
                 expectThat(entity.size).isEqualTo(12)
-                expectThat(fileVersion.path).isEqualTo("hansi")
+                expectThat(entity.path).isEqualTo("hansi")
+
+                val entity1 = mariella().loadEntity<FileVersion>(files[1].id)!!
+                expectThat(entity1.size).isNotEqualTo(12)
+                expectThat(entity1.path).isNotEqualTo("hansi")
             }
         }
     }

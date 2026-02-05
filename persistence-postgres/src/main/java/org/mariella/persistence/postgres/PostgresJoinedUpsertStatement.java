@@ -78,19 +78,20 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
     @Override
     protected String getSqlString(BuildCallback buildCallback) {
         boolean first = true;
+        List<Column> primaryKeyColumns = classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns().stream().map(PrimaryKeyJoinColumn::getJoinTableColumn).toList();
         List<Column> requiredNotSetColumns = new ArrayList<>();
         List<Column> insertColumns = new ArrayList<>();
         StringBuilder b = new StringBuilder();
         b.append(" INSERT INTO ").append(classMapping.getJoinUpdateTable().getName()).append(" (");
 
-        for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
-            if (!columns.contains(primaryKeyJoinColumn.getJoinTableColumn())) {
+        for (Column primaryKeyColumn : primaryKeyColumns) {
+            if (!columns.contains(primaryKeyColumn)) {
                 if (first)
                     first = false;
                 else
                     b.append(", ");
-                b.append(primaryKeyJoinColumn.getJoinTableColumn().name());
-                requiredNotSetColumns.add(primaryKeyJoinColumn.getJoinTableColumn());
+                b.append(primaryKeyColumn.name());
+                requiredNotSetColumns.add(primaryKeyColumn);
             }
         }
 
@@ -137,18 +138,18 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
 
         b.append(") ON CONFLICT (");
         first = true;
-        for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
+        for (Column primaryKeyColumn : primaryKeyColumns) {
             if (first)
                 first = false;
             else
                 b.append(", ");
-            b.append(primaryKeyJoinColumn.getJoinTableColumn().name());
+            b.append(primaryKeyColumn.name());
         }
         b.append(") DO UPDATE SET ");
         first = true;
-        List<Column> cols = classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns().stream().map(PrimaryKeyJoinColumn::getJoinTableColumn).toList();
+
         for (Column column : columns) {
-            if (cols.contains(column))
+            if (primaryKeyColumns.contains(column))
                 continue;
             if (first)
                 first = false;

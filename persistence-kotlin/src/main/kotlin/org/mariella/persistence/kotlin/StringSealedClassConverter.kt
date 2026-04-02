@@ -1,24 +1,17 @@
-package org.mariella.persistence.kotlin.internal
+package org.mariella.persistence.kotlin
 
 import org.mariella.persistence.database.Converter
 import org.mariella.persistence.database.ParameterValues
 import org.mariella.persistence.database.ResultRow
-import org.mariella.persistence.kotlin.IntegerMappedSealedClass
 import org.mariella.persistence.query.Literal
 import kotlin.reflect.KClass
 
-internal class IntSealedClassConverter<T : IntegerMappedSealedClass>(private val clazz: KClass<T>) : Converter<T?> {
-
-    init {
-        if (!clazz.isSealed)
-            error("${clazz.simpleName} needs to be a sealed class")
-    }
-
+class StringSealedClassConverter<T : StringMappedSealedClass>(private val clazz: KClass<T>) : Converter<T?> {
     override fun setObject(pv: ParameterValues, index: Int, value: T?) {
         if (value == null)
-            pv.setInteger(index, null)
+            pv.setString(index, null)
         else
-            pv.setInteger(index, value.value)
+            pv.setString(index, value.value)
     }
 
     override fun toString(value: T?): String {
@@ -26,7 +19,7 @@ internal class IntSealedClassConverter<T : IntegerMappedSealedClass>(private val
     }
 
     override fun getObject(row: ResultRow, index: Int): T? {
-        val value = row.getInteger(index)
+        val value = row.getString(index)
         return if (value == null) null else clazz.sealedSubclasses.single { it.objectInstance!!.value == value }.objectInstance
     }
 
@@ -37,7 +30,7 @@ internal class IntSealedClassConverter<T : IntegerMappedSealedClass>(private val
                 if (casted == null)
                     b.append("null")
                 else {
-                    b.append(casted.value.toString())
+                    b.append("'${casted.value}'")
                 }
             }
         }

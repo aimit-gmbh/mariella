@@ -18,7 +18,7 @@ tasks.withType(JavaCompile::class) {
     targetCompatibility = "21"
 }
 
-val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")!!
+val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 testing {
     suites {
@@ -62,7 +62,7 @@ mavenPublishing {
     coordinates("at.aimit.mariella", project.name, System.getenv("MARIELLA_RELEASE_NAME") ?: "1.0-SNAPSHOT")
     signAllPublications()
     pom {
-        name = "Mariella ${project.name}"
+        name.set("Mariella ${project.name}")
         description = "JPA compliant ORM for Java and data class mapper for Kotlin"
         url = "https://github.com/aimit-gmbh/mariella"
         licenses {

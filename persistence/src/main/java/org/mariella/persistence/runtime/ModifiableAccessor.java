@@ -9,7 +9,7 @@ public class ModifiableAccessor {
         try {
             return propertyDescription.getPropertyDescriptor().getReadMethod().invoke(receiver);
         } catch (Exception e) {
-            throw new PersistenceException("getValue failed for property " + propertyDescription.getPropertyDescriptor().getName() + "for type " + receiver.getClass().getName(), e);
+            throw new PersistenceException("getValue failed for property " + propertyDescription.getPropertyDescriptor().getName() + " for type " + receiver.getClass().getName(), e);
         }
     }
 
@@ -17,7 +17,7 @@ public class ModifiableAccessor {
         try {
             propertyDescription.getPropertyDescriptor().getWriteMethod().invoke(receiver, value);
         } catch (Exception e) {
-            throw new PersistenceException("setValue failed for property " + propertyDescription.getPropertyDescriptor().getName() + "for type " + receiver.getClass().getName()
+            throw new PersistenceException("setValue failed for property " + propertyDescription.getPropertyDescriptor().getName() + " for type " + receiver.getClass().getName()
                     + " and value " + value, e);
         }
     }

@@ -20,7 +20,8 @@ class StringSealedClassConverter<T : StringMappedSealedClass>(private val clazz:
 
     override fun getObject(row: ResultRow, index: Int): T? {
         val value = row.getString(index)
-        return if (value == null) null else clazz.sealedSubclasses.single { it.objectInstance!!.value == value }.objectInstance
+        return if (value == null) null else clazz.sealedSubclasses.singleOrNull { it.objectInstance!!.value == value }?.objectInstance
+            ?: error("Could not convert $value to ${clazz.simpleName}")
     }
 
     override fun createLiteral(value: Any?): Literal<T?> {

@@ -11,7 +11,7 @@ class SchemaAwareModificationTracker internal constructor(val schemaMapping: Sch
     ModificationTracker by ModificationTrackerImpl(schemaMapping.schemaDescription) {
 
     inline fun <reified T> createNew(): T {
-        val classDescription = schemaMapping.schemaDescription.getClassDescription(T::class.java.name)
+        val classDescription = schemaMapping.schemaDescription.getClassDescription(T::class.java.name) ?: error("no class description found for ${T::class.java.name}")
         val instance = factory.createModifiable(classDescription)
         addNewParticipant(instance)
         return instance as T

@@ -7,7 +7,7 @@ plugins {
     id("at.aimit.mariella.java-conventions")
 }
 
-val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")!!
+val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 dependencies {
     // Align versions of all Kotlin components

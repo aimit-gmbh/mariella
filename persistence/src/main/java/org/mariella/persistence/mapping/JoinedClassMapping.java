@@ -183,7 +183,7 @@ public class JoinedClassMapping extends SelectableHierarchyClassMapping {
                 if (objectPersistor.getModificationInfo().getStatus() == ModificationInfo.Status.New) {
                     return new JoinedInsertStatement(this, row.getTable(), row.getSetColumns());
                 } else if (objectPersistor.getModificationInfo().getStatus() == ModificationInfo.Status.Modified) {
-                    return objectPersistor.getClassMapping().getSchemaMapping().getSchema().createJoinedUpsertStatement(this, row.getSetColumns());
+                    return objectPersistor.getClassMapping().getSchemaMapping().getSchema().createJoinedUpsertStatement(objectPersistor, this, row.getSetColumns());
                 } else if (objectPersistor.getModificationInfo().getStatus() == ModificationInfo.Status.Removed) {
                     return new DeleteStatement(schemaMapping.getSchema(), row.getTable(), row.getTable().getPrimaryKey());
                 } else {

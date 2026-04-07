@@ -19,6 +19,8 @@ node_modules/
 target/
 dist/
 
+.claude
+
 # JetBrains IDE
 .idea/
 out/

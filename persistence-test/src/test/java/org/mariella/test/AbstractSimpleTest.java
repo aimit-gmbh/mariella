@@ -63,7 +63,7 @@ public class AbstractSimpleTest extends AbstractTest {
             }
         };
         List<Object> objects = load(cd, isUpdate, cp);
-        return objects != null && !objects.isEmpty() ? (T) objects.get(0) : null;
+        return objects != null && !objects.isEmpty() ? (T) objects.getFirst() : null;
     }
 
     public <T> T loadById(Class<T> entityClass, boolean isUpdate, Object id, String... clusterExpressions) {

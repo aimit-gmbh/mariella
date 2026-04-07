@@ -38,8 +38,8 @@ class ResourceTest extends AbstractSimpleTest {
         file.setId(UUID.randomUUID());
         modificationTracker.addNewParticipant(file);
         file.setParent(folder);
-        assertEquals(folder.getChildren().size(), 1);
-        assertSame(folder.getChildren().get(0), file);
+        assertEquals(1, folder.getChildren().size());
+        assertSame(folder.getChildren().getFirst(), file);
         file.setName("test.txt");
         file.setLastModified(new Timestamp(System.currentTimeMillis()));
         file.setSize(5);
@@ -78,7 +78,7 @@ class ResourceTest extends AbstractSimpleTest {
         r = loadById(cd, id, false);
         assertInstanceOf(File.class, r);
         file = (File) r;
-        assertEquals(file.getSize(), 7);
+        assertEquals(7, file.getSize());
         assertNotNull(file.getParent());
         assertTrue(file.getParent().getChildren().isEmpty());
 
@@ -89,7 +89,7 @@ class ResourceTest extends AbstractSimpleTest {
         r = loadById(cd, id, false);
         assertInstanceOf(File.class, r);
         file = (File) r;
-        assertEquals(file.getSize(), 7);
+        assertEquals(7, file.getSize());
         assertNotNull(file.getParent());
         assertFalse(file.getParent().getChildren().isEmpty());
     }
@@ -119,7 +119,7 @@ class ResourceTest extends AbstractSimpleTest {
 
         queryExecutor = new JdbcQueryExecutor(discriminatorQueryBuilder, createDatabaseAccess());
         String discriminator = (String) queryExecutor.queryforObject();
-        assertEquals(discriminator, "File");
+        assertEquals("File", discriminator);
     }
 
     @Test
@@ -136,8 +136,8 @@ class ResourceTest extends AbstractSimpleTest {
         file.setId(UUID.randomUUID());
         modificationTracker.addNewParticipant(file);
         file.setParent(folder);
-        assertEquals(folder.getChildren().size(), 1);
-        assertSame(folder.getChildren().get(0), file);
+        assertEquals(1, folder.getChildren().size());
+        assertSame(folder.getChildren().getFirst(), file);
         file.setName("test.txt");
         file.setLastModified(new Timestamp(System.currentTimeMillis()));
         file.setSize(5);
@@ -160,7 +160,7 @@ class ResourceTest extends AbstractSimpleTest {
         modificationTracker.addNewParticipant(file);
         file.setParent(folder);
         assertEquals(1, folder.getChildren().size());
-        assertSame(folder.getChildren().get(0), file);
+        assertSame(folder.getChildren().getFirst(), file);
         file.setName("test2.txt");
         file.setLastModified(new Timestamp(System.currentTimeMillis()));
         file.setSize(5);

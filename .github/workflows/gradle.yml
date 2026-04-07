@@ -33,5 +33,5 @@ jobs:
           java-version: 21
       - name: Build with Gradle H2
         run: ./gradlew clean build
-      - name: Build with Gradle Postgres
-        run: MARIELLA_TEST_DB=POSTGRES ./gradlew clean build
+      - name: Test with Gradle Postgres
+        run: MARIELLA_TEST_DB=POSTGRES ./gradlew test

@@ -8,9 +8,9 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("gradle-plugin", "2.3.0"))
-    implementation("com.github.ben-manes:gradle-versions-plugin:0.52.0")
-    implementation("org.jetbrains.kotlinx:kover-gradle-plugin:0.9.4")
-    implementation("com.vanniktech:gradle-maven-publish-plugin:0.34.0")
-    implementation("com.autonomousapps:dependency-analysis-gradle-plugin:3.5.1")
+    implementation(kotlin("gradle-plugin", "2.3.20"))
+    implementation("com.github.ben-manes:gradle-versions-plugin:0.53.0")
+    implementation("org.jetbrains.kotlinx:kover-gradle-plugin:0.9.8")
+    implementation("com.vanniktech:gradle-maven-publish-plugin:0.36.0")
+    implementation("com.autonomousapps:dependency-analysis-gradle-plugin:3.6.1")
 }

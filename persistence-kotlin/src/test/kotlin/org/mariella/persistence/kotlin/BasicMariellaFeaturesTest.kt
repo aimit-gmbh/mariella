@@ -87,6 +87,17 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     }
 
     @Test
+    fun `produces reasonable errors`() {
+        class NotMapped
+        runTest {
+            database.write {
+                expectThrows<RuntimeException> { mariella().create<NotMapped>() }.get { message!! }.contains("NotMapped")
+                expectThrows<RuntimeException> { mariella().addExisting<NotMapped>(1) }.get { message!! }.contains("NotMapped")
+            }
+        }
+    }
+
+    @Test
     fun `can map one to many`() {
         runTest {
             val session = database.connect()
@@ -364,6 +375,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
                     it.name = "asdasdasdasdasd"
                     it.hash = byteArrayOf(4, 5, 6)
                 }
+                context.flush()
 
                 val user = context.load<UserEntity>(conditionProvider = LoadByConditionProvider(mapOf("root.role" to UserRole.Donkey))).single()
                 user.role = UserRole.God
@@ -479,7 +491,8 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     @Test
     fun `can modify single properties`() {
         runTest {
-            val fileVersionId = createFiles().single().id
+            val files = createFiles(2)
+            val fileVersionId = files[0].id
 
             val session = database.connect()
             val context = session.mariella()
@@ -495,7 +508,11 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             database.read {
                 val entity = mariella().loadEntity<FileVersion>(fileVersionId)!!
                 expectThat(entity.size).isEqualTo(12)
-                expectThat(fileVersion.path).isEqualTo("hansi")
+                expectThat(entity.path).isEqualTo("hansi")
+
+                val entity1 = mariella().loadEntity<FileVersion>(files[1].id)!!
+                expectThat(entity1.size).isNotEqualTo(12)
+                expectThat(entity1.path).isNotEqualTo("hansi")
             }
         }
     }

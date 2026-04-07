@@ -33,8 +33,8 @@ class ImmutableConverterRegistry internal constructor(private val converterRegis
         throw UnsupportedOperationException()
     }
 
-    override fun registerConverter(converterName: String?, converter: Converter<*>?) {
-        throw UnsupportedOperationException()
+    override fun registerConverter(converterName: String, converter: Converter<*>) {
+        converterRegistry.registerConverter(converterName, converter)
     }
 
     fun getConverterForColumn(clazz: Class<*>, type: JDBCType): Converter<*> {

@@ -1,5 +1,8 @@
 package org.mariella.persistence.h2;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.mariella.persistence.database.Column;
 import org.mariella.persistence.database.ParameterValues;
 import org.mariella.persistence.database.PreparedPersistorStatement;
@@ -8,9 +11,6 @@ import org.mariella.persistence.mapping.JoinedClassMapping;
 import org.mariella.persistence.mapping.PrimaryKeyJoinColumn;
 import org.mariella.persistence.persistor.Persistor;
 import org.mariella.persistence.persistor.Row;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class H2JoinedUpsertStatement extends AbstractPersistorStatement {
     private final JoinedClassMapping classMapping;
@@ -41,8 +41,7 @@ public class H2JoinedUpsertStatement extends AbstractPersistorStatement {
                     parameters.add(column);
                 });
 
-        int index = 1;
-        return persistor.prepareStatement(this, getSqlString());
+        return persistor.prepareStatement(this, sql);
     }
 
 

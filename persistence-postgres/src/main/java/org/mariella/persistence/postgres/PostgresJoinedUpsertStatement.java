@@ -1,25 +1,28 @@
 package org.mariella.persistence.postgres;
 
 import org.mariella.persistence.database.Column;
+import org.mariella.persistence.database.Converter;
 import org.mariella.persistence.database.ParameterValues;
 import org.mariella.persistence.database.PreparedPersistorStatement;
-import org.mariella.persistence.mapping.AbstractPersistorStatement;
-import org.mariella.persistence.mapping.JoinedClassMapping;
-import org.mariella.persistence.mapping.PrimaryKeyJoinColumn;
+import org.mariella.persistence.mapping.*;
+import org.mariella.persistence.persistor.ObjectPersistor;
 import org.mariella.persistence.persistor.Persistor;
 import org.mariella.persistence.persistor.Row;
+import org.mariella.persistence.runtime.ModifiableAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
+    private final ObjectPersistor<? extends PreparedPersistorStatement> objectPersistor;
     private final JoinedClassMapping classMapping;
     private final List<Column> columns;
 
     private List<Column> parameters;
 
-    public PostgresJoinedUpsertStatement(JoinedClassMapping classMapping, List<Column> columns) {
+    public PostgresJoinedUpsertStatement(ObjectPersistor<? extends PreparedPersistorStatement> objectPersistor, JoinedClassMapping classMapping, List<Column> columns) {
         super(classMapping.getSchemaMapping().getSchema(), classMapping.getJoinUpdateTable());
+        this.objectPersistor = objectPersistor;
         this.classMapping = classMapping;
         this.columns = columns;
     }
@@ -28,7 +31,8 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
     public void setParameters(ParameterValues parameterValues, Row row) {
         int index = 1;
         for (Column column : parameters) {
-            column.setObject(parameterValues, index++, row.getProperty(column));
+            Object value = getColumnValue(row, column);
+            column.setObject(parameterValues, index++, value);
         }
     }
 
@@ -41,88 +45,79 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
                     createParameter().print(b);
                     parameters.add(column);
                 });
-
         return persistor.prepareStatement(this, sql);
+    }
+
+    @Override
+    public String getSqlDebugString(Row parameters) {
+        return getSqlString(
+                (b, column) -> {
+                    @SuppressWarnings("unchecked")
+                    Converter<Object> converter = (Converter<Object>) column.converter();
+                    Object value = getColumnValue(parameters, column);
+                    b.append(converter.toString(value));
+                });
+    }
+
+    private Object getColumnValue(Row row, Column column) {
+        if (row.getSetColumns().contains(column)) {
+            return row.getProperty(column);
+        } else {
+            for (PropertyMapping pm : classMapping.getPropertyMappings()) {
+                if (pm instanceof ColumnMapping cm) {
+                    if (cm.getUpdateColumn() == column) {
+                        return ModifiableAccessor.Singleton.getValue(objectPersistor.getModificationInfo().getObject(), cm.getPropertyDescription());
+                    }
+                }
+            }
+            throw new IllegalArgumentException("No value available for column " + table.getName() + "." + column.name());
+        }
     }
 
 
     @Override
     protected String getSqlString(BuildCallback buildCallback) {
         boolean first = true;
-
+        List<Column> primaryKeyColumns = classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns().stream().map(PrimaryKeyJoinColumn::getJoinTableColumn).toList();
         List<Column> requiredNotSetColumns = new ArrayList<>();
+        List<Column> insertColumns = new ArrayList<>();
         StringBuilder b = new StringBuilder();
-        b.append("MERGE INTO ").append(table.getQualifiedName()).append(" a using (select ");
-        for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
-            if (first)
-                first = false;
-            else
-                b.append(", ");
-            b.append(primaryKeyJoinColumn.getJoinTableColumn().name());
-        }
-        b.append(" from ").append(table.getQualifiedName()).append(" where ");
-        first = true;
-        for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
-            if (first)
-                first = false;
-            else
-                b.append(" AND ");
-            b.append(primaryKeyJoinColumn.getJoinTableColumn().name());
-            b.append("=");
-            buildCallback.columnValue(b, primaryKeyJoinColumn.getJoinTableColumn());
-        }
-        b.append(") as b on ");
-        first = true;
-        for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
-            if (first)
-                first = false;
-            else
-                b.append(" AND ");
-            b.append("a.");
-            b.append(primaryKeyJoinColumn.getJoinTableColumn().name());
-            b.append(" = b.");
-            b.append(primaryKeyJoinColumn.getJoinTableColumn().name());
-        }
-        b.append(" when matched then UPDATE SET ");
-        first = true;
-        for (Column column : columns) {
-            if (first)
-                first = false;
-            else
-                b.append(", ");
-            b.append(column.name());
-            b.append("=");
-            buildCallback.columnValue(b, column);
-        }
+        b.append(" INSERT INTO ").append(classMapping.getJoinUpdateTable().getName()).append(" (");
 
-        b.append(" when not matched then insert (");
-        first = true;
-        for (Column column : columns) {
-            if (first)
-                first = false;
-            else
-                b.append(", ");
-            b.append(column.name());
-        }
-        for (PrimaryKeyJoinColumn primaryKeyJoinColumn : classMapping.getPrimaryKeyJoinColumns().getPrimaryKeyJoinColumns()) {
-            if (!columns.contains(primaryKeyJoinColumn.getJoinTableColumn())) {
+        for (Column primaryKeyColumn : primaryKeyColumns) {
+            if (!columns.contains(primaryKeyColumn)) {
                 if (first)
                     first = false;
                 else
                     b.append(", ");
-                b.append(primaryKeyJoinColumn.getJoinTableColumn().name());
-                requiredNotSetColumns.add(primaryKeyJoinColumn.getJoinTableColumn());
+                b.append(primaryKeyColumn.name());
+                requiredNotSetColumns.add(primaryKeyColumn);
             }
         }
-        b.append(") VALUES (");
-        first = true;
-        for (Column column : columns) {
-            if (first)
-                first = false;
-            else
-                b.append(", ");
-            buildCallback.columnValue(b, column);
+
+        for (Column column : classMapping.getJoinUpdateTable().getColumns()) {
+            if (columns.contains(column)) {
+                if (first)
+                    first = false;
+                else
+                    b.append(", ");
+                b.append(column.name());
+                insertColumns.add(column);
+            } else if (!requiredNotSetColumns.contains(column) && !column.nullable()) {
+                if (first)
+                    first = false;
+                else
+                    b.append(", ");
+                b.append(column.name());
+                insertColumns.add(column);
+            }
         }
+
+
+        b.append(") ");
+
+        b.append(" VALUES (");
+        first = true;
 
         for (Column column : requiredNotSetColumns) {
             if (first)
@@ -132,7 +127,38 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
             buildCallback.columnValue(b, column);
         }
 
-        b.append(")");
+        for (Column column : insertColumns) {
+            if (first)
+                first = false;
+            else
+                b.append(", ");
+            buildCallback.columnValue(b, column);
+        }
+
+
+        b.append(") ON CONFLICT (");
+        first = true;
+        for (Column primaryKeyColumn : primaryKeyColumns) {
+            if (first)
+                first = false;
+            else
+                b.append(", ");
+            b.append(primaryKeyColumn.name());
+        }
+        b.append(") DO UPDATE SET ");
+        first = true;
+
+        for (Column column : columns) {
+            if (primaryKeyColumns.contains(column))
+                continue;
+            if (first)
+                first = false;
+            else
+                b.append(", ");
+            b.append(column.name());
+            b.append("=");
+            buildCallback.columnValue(b, column);
+        }
 
         return b.toString();
     }

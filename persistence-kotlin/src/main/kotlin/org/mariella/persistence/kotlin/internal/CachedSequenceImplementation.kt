@@ -5,7 +5,7 @@ import kotlinx.coroutines.sync.withLock
 import org.mariella.persistence.kotlin.CachedSequence
 import org.mariella.persistence.kotlin.Mapper
 
-private class SequenceCache(private val name: String, private val incrementBy: Int) {
+internal abstract class AbstractSequenceCache(protected val name: String, protected val incrementBy: Int) {
     private var current: Long? = null
     private var nextSelectAt: Long? = null
 
@@ -27,13 +27,22 @@ private class SequenceCache(private val name: String, private val incrementBy: I
         return current!!
     }
 
-    private suspend fun queryForSequence(mapper: Mapper): Long =
+    abstract suspend fun queryForSequence(mapper: Mapper): Long
+}
+
+internal class SequenceCache(name: String, incrementBy: Int) : AbstractSequenceCache(name, incrementBy) {
+    override suspend fun queryForSequence(mapper: Mapper): Long =
         mapper.selectOneExistingPrimitive("select NEXTVAL('$name')")
 }
 
-internal class ThreadSafeCachedSequence(name: String, incrementBy: Int) : CachedSequence {
+internal class PostegresSequenceCache(name: String, incrementBy: Int) : AbstractSequenceCache(name, incrementBy) {
+    override suspend fun queryForSequence(mapper: Mapper): Long =
+        mapper.selectPrimitive<Long>("select NEXTVAL('$name') from generate_series(1,$incrementBy)").first()
+}
+
+internal class ThreadSafeCachedSequence(private val cache: AbstractSequenceCache) : CachedSequence {
     private val mutex = Mutex()
-    private val cache = SequenceCache(name, incrementBy)
+
     override suspend fun next(mapper: Mapper): Long {
         return mutex.withLock {
             cache.next(mapper)

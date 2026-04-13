@@ -45,7 +45,7 @@ abstract class AbstractDatabaseTest {
     private fun createDatabase(databaseConfig: DatabaseConfig): Database {
         optionallyCreatePostgresDbFromTemplate(databaseConfig, vertx)
         migrateDb(databaseConfig, "db")
-        return TestEnvironment.createDatabase(TEST_MARIELLA, createPool(vertx, databaseConfig), mapOf("cached_entity_id_seq" to CachedSequence.of("cached_entity_id_seq", 1000)))
+        return TestEnvironment.createDatabase(TEST_MARIELLA, createPool(vertx, databaseConfig), mapOf("cached_entity_id_seq" to CachedSequence.usingIncrementBy("cached_entity_id_seq", 1000)))
     }
 
     @AfterEach

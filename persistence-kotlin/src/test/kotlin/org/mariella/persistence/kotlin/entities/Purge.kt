@@ -16,4 +16,7 @@ class Purge : Resource() {
     @get:ManyToOne
     @get:JoinColumn(name = "requestor", referencedColumnName = "id")
     var requestor: Member? by changeSupport()
+
+    @get:Column("status")
+    var status: String by changeSupport()
 }

@@ -10,4 +10,6 @@ sealed class ResourceType(override val value: String) : StringMappedSealedClass 
     data object Project : ResourceType("PR")
     data object ProjectVersion : ResourceType("PRV")
     data object Metadata : ResourceType("MD")
+    data object Purge : ResourceType("PU")
+    data object PurgeVersion : ResourceType("PUV")
 }

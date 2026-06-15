@@ -22,6 +22,7 @@ dependencies {
     testImplementation(libs.jakarta.persistence.api)
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.slf4j)
+    testRuntimeOnly(libs.logback)
 }
 
 tasks.test {

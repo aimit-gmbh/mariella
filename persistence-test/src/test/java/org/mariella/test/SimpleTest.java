@@ -18,6 +18,7 @@ import org.mariella.persistence.query.StringLiteral;
 import org.mariella.persistence.query.TableReference;
 import org.mariella.persistence.runtime.ModificationTracker;
 import org.mariella.test.model.Company;
+import org.mariella.test.model.Ngo;
 import org.mariella.test.model.Partner;
 import org.mariella.test.model.Person;
 
@@ -142,6 +143,47 @@ class SimpleTest extends AbstractSimpleTest {
         assertNotNull(p);
         c.setBoss(p);
         persist();
+
+        createModificationTracker();
+        
+        cd = new ClusterDescription(getClassDescription(Company.class), "root", "root.boss");
+        c = loadById(cd, id, false);
+        assertNotNull(c);
+        assertEquals("updated", c.getName());
+        assertNotNull(c.getBoss());
+        assertEquals("wolfi", c.getBoss().getAlias());
+}
+    
+    @Test
+    public void testUpdate3() throws Exception {
+    	create();
+    	createModificationTracker();
+    	
+        UUID id = getNraUUId();
+        assertNotNull(id);
+
+        // load cluster
+        logger.info("loading cluster");
+        ClusterDescription cd = new ClusterDescription(getClassDescription(Ngo.class), "root", "root.head");
+        Ngo n = loadById(cd, id, false);
+        assertNotNull(n);
+        n.setTitle("updated");
+        persist();
+        
+        UUID wolfiId = getPartnerUUId("wolfi");
+        Person p = loadById(new ClusterDescription(getClassDescription(Person.class), "root"), wolfiId, false);
+        assertNotNull(p);
+        n.setHead(p);
+        persist();
+        
+        createModificationTracker();
+        
+        cd = new ClusterDescription(getClassDescription(Ngo.class), "root", "root.head");
+        n = loadById(cd, id, false);
+        assertNotNull(n);
+        assertEquals("updated", n.getTitle());
+        assertNotNull(n.getHead());
+        assertEquals("wolfi", n.getHead().getAlias());
     }
     
     private void create() throws Exception {
@@ -149,34 +191,41 @@ class SimpleTest extends AbstractSimpleTest {
 
         createModificationTracker();
 
-        Person p = new Person();
-        p.setId(UUID.randomUUID());
-        modificationTracker.addNewParticipant(p);
-        p.setAlias("hs");
-        p.setFirstName("Hugo");
-        p.setLastName("Schlonz");
+        Person h = new Person();
+        h.setId(UUID.randomUUID());
+        modificationTracker.addNewParticipant(h);
+        h.setAlias("hs");
+        h.setFirstName("Hugo");
+        h.setLastName("Schlonz");
 
-        p = new Person();
-        p.setId(UUID.randomUUID());
-        modificationTracker.addNewParticipant(p);
-        p.setAlias("wolfi");
-        p.setFirstName("Wolfgan");
-        p.setLastName("Schwarzenbrunner");
+        Person w = new Person();
+        w.setId(UUID.randomUUID());
+        modificationTracker.addNewParticipant(w);
+        w.setAlias("wolfi");
+        w.setFirstName("Wolfgan");
+        w.setLastName("Schwarzenbrunner");
 
         Company c = new Company();
         c.setId(UUID.randomUUID());
         modificationTracker.addNewParticipant(c);
         c.setAlias("Bellaflor");
         c.setName("Bellaflora Blumen GmbH & Co KG");
-        c.setBoss(p);
+        c.setBoss(w);
         
-        p.getCollaborators().add(c);
+        w.getCollaborators().add(c);
+        
+        Ngo n = new Ngo();
+        n.setId(UUID.randomUUID());
+        modificationTracker.addNewParticipant(n);
+        n.setAlias("NRA");
+        n.setTitle("National Rifle Association");
+        n.setHead(h);
 
         persist();
 
         logger.info("updating");
 
-        p.setFirstName("Wolfgang");
+        w.setFirstName("Wolfgang");
         c.setAlias("Bellaflora");
         persist();
     }
@@ -185,7 +234,6 @@ class SimpleTest extends AbstractSimpleTest {
     	QueryBuilder queryBuilder;
         JdbcQueryExecutor queryExecutor;
 
-        createModificationTracker();
         queryBuilder = new QueryBuilder(environment.getSchemaMapping());
         queryBuilder.join(getClassDescription(Partner.class), "root");
         queryBuilder.addSelectItem("root.id");
@@ -200,7 +248,6 @@ class SimpleTest extends AbstractSimpleTest {
     	QueryBuilder queryBuilder;
         JdbcQueryExecutor queryExecutor;
 
-        createModificationTracker();
         queryBuilder = new QueryBuilder(environment.getSchemaMapping());
         queryBuilder.join(getClassDescription(Partner.class), "root");
         queryBuilder.addSelectItem("root.id");
@@ -210,7 +257,21 @@ class SimpleTest extends AbstractSimpleTest {
         UUID id = (UUID) queryExecutor.queryforObject();
         return id;
     }
-    
+
+    private UUID getNraUUId() throws Exception {
+    	QueryBuilder queryBuilder;
+        JdbcQueryExecutor queryExecutor;
+
+        queryBuilder = new QueryBuilder(environment.getSchemaMapping());
+        queryBuilder.join(getClassDescription(Partner.class), "root");
+        queryBuilder.addSelectItem("root.id");
+        queryBuilder.and(BinaryCondition.eq(queryBuilder.createColumnReference("root.alias"), new StringLiteral("NRA")));
+
+        queryExecutor = new JdbcQueryExecutor(queryBuilder, createDatabaseAccess());
+        UUID id = (UUID) queryExecutor.queryforObject();
+        return id;
+    }
+
     private void load() throws Exception {
         UUID id = getPartnerUUId("wolfi");
         assertNotNull(id);

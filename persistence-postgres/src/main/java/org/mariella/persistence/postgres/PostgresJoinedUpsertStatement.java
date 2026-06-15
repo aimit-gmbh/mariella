@@ -68,6 +68,12 @@ public class PostgresJoinedUpsertStatement extends AbstractPersistorStatement {
                     if (cm.getUpdateColumn() == column) {
                         return ModifiableAccessor.Singleton.getValue(objectPersistor.getModificationInfo().getObject(), cm.getPropertyDescription());
                     }
+                } else if(pm instanceof ReferencePropertyMapping rm) {
+                	for(JoinColumn jm : rm.getJoinColumns()) {
+                		if(jm.getMyUpdateColumn() == column) {
+                			System.out.println();
+                		}
+                	}
                 }
             }
             throw new IllegalArgumentException("No value available for column " + table.getName() + "." + column.name());

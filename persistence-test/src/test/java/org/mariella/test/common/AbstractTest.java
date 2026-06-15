@@ -28,7 +28,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class AbstractTest {
-    public final static String PERSISTENCE_UNIT_NAME = "sample/h2";
+    public final static String PERSISTENCE_UNIT_NAME = "sample/postgres";
 
     protected StandaloneEnvironment environment;
     protected ModificationTracker modificationTracker;

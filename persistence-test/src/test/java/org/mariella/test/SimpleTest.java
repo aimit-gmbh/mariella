@@ -1,19 +1,25 @@
 package org.mariella.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.mariella.persistence.database.StandardUUIDConverter;
 import org.mariella.persistence.jdbc.JdbcQueryExecutor;
 import org.mariella.persistence.persistor.BatchingPersistorStrategy;
 import org.mariella.persistence.persistor.ClusterDescription;
-import org.mariella.persistence.query.*;
+import org.mariella.persistence.query.BinaryCondition;
+import org.mariella.persistence.query.Literal;
+import org.mariella.persistence.query.QueryBuilder;
+import org.mariella.persistence.query.StringLiteral;
+import org.mariella.persistence.query.TableReference;
 import org.mariella.persistence.runtime.ModificationTracker;
 import org.mariella.test.model.Company;
 import org.mariella.test.model.Partner;
 import org.mariella.test.model.Person;
-
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SimpleTest extends AbstractSimpleTest {
 
@@ -94,9 +100,50 @@ class SimpleTest extends AbstractSimpleTest {
     @Test
     public void test() throws Exception {
         create();
+        createModificationTracker();
         load();
     }
 
+    @Test
+    public void testUpdate() throws Exception {
+    	create();
+    	createModificationTracker();
+    	
+        UUID id = getPartnerUUId("hs");
+        assertNotNull(id);
+
+        // load cluster
+        logger.info("loading cluster");
+        ClusterDescription cd = new ClusterDescription(getClassDescription(Partner.class), "root.collaborators", "root");
+        Person hugo = loadById(cd, id, false);
+        assertNotNull(hugo);
+        hugo.setFirstName("hugo1");
+        persist();
+    }
+    
+    @Test
+    public void testUpdate2() throws Exception {
+    	create();
+    	createModificationTracker();
+    	
+        UUID id = getBellafloraUUId();
+        assertNotNull(id);
+
+        // load cluster
+        logger.info("loading cluster");
+        ClusterDescription cd = new ClusterDescription(getClassDescription(Company.class), "root", "root.boss");
+        Company c = loadById(cd, id, false);
+        assertNotNull(c);
+        c.setName("updated");
+        persist();
+        
+        UUID wolfiId = getPartnerUUId("wolfi");
+        Person p = loadById(new ClusterDescription(getClassDescription(Person.class), "root"), wolfiId, false);
+        assertNotNull(p);
+        c.setBoss(p);
+        persist();
+    }
+    
     private void create() throws Exception {
         logger.info("inserting");
 
@@ -106,14 +153,14 @@ class SimpleTest extends AbstractSimpleTest {
         p.setId(UUID.randomUUID());
         modificationTracker.addNewParticipant(p);
         p.setAlias("hs");
-        p.setFirstName("Hug");
+        p.setFirstName("Hugo");
         p.setLastName("Schlonz");
 
         p = new Person();
         p.setId(UUID.randomUUID());
         modificationTracker.addNewParticipant(p);
         p.setAlias("wolfi");
-        p.setFirstName("Wolfgang");
+        p.setFirstName("Wolfgan");
         p.setLastName("Schwarzenbrunner");
 
         Company c = new Company();
@@ -121,43 +168,61 @@ class SimpleTest extends AbstractSimpleTest {
         modificationTracker.addNewParticipant(c);
         c.setAlias("Bellaflor");
         c.setName("Bellaflora Blumen GmbH & Co KG");
-
+        c.setBoss(p);
+        
         p.getCollaborators().add(c);
 
         persist();
 
         logger.info("updating");
 
-        p.setFirstName("Hugo");
+        p.setFirstName("Wolfgang");
         c.setAlias("Bellaflora");
         persist();
     }
 
-    private void load() throws Exception {
-        // Query Hugo by firstName
-        // This query generates too many joins (company join is useless) -> SecondaryTableJoinBuilder
-        QueryBuilder queryBuilder;
+    private UUID getPartnerUUId(String alias) throws Exception {
+    	QueryBuilder queryBuilder;
         JdbcQueryExecutor queryExecutor;
 
         createModificationTracker();
         queryBuilder = new QueryBuilder(environment.getSchemaMapping());
         queryBuilder.join(getClassDescription(Partner.class), "root");
         queryBuilder.addSelectItem("root.id");
-        queryBuilder.and(BinaryCondition.eq(queryBuilder.createColumnReference("root.firstName"), new StringLiteral("Hugo")));
+        queryBuilder.and(BinaryCondition.eq(queryBuilder.createColumnReference("root.alias"), new StringLiteral(alias)));
 
         queryExecutor = new JdbcQueryExecutor(queryBuilder, createDatabaseAccess());
         UUID id = (UUID) queryExecutor.queryforObject();
-        assertNotNull(id);
+        return id;
+    }
+    
+    private UUID getBellafloraUUId() throws Exception {
+    	QueryBuilder queryBuilder;
+        JdbcQueryExecutor queryExecutor;
 
+        createModificationTracker();
+        queryBuilder = new QueryBuilder(environment.getSchemaMapping());
+        queryBuilder.join(getClassDescription(Partner.class), "root");
+        queryBuilder.addSelectItem("root.id");
+        queryBuilder.and(BinaryCondition.eq(queryBuilder.createColumnReference("root.alias"), new StringLiteral("Bellaflora")));
+
+        queryExecutor = new JdbcQueryExecutor(queryBuilder, createDatabaseAccess());
+        UUID id = (UUID) queryExecutor.queryforObject();
+        return id;
+    }
+    
+    private void load() throws Exception {
+        UUID id = getPartnerUUId("wolfi");
+        assertNotNull(id);
 
         // load cluster
         logger.info("loading cluster");
         ClusterDescription cd = new ClusterDescription(getClassDescription(Partner.class), "root.collaborators", "root");
-        Person hugo = loadById(cd, id, false);
-        assertNotNull(hugo);
-        assertEquals("Hugo", hugo.getFirstName());
-        assertEquals(1, hugo.getCollaborators().size());
-        Company c = (Company) hugo.getCollaborators().getFirst();
+        Person wolfi = loadById(cd, id, false);
+        assertNotNull(wolfi);
+        assertEquals("Wolfgang", wolfi.getFirstName());
+        assertEquals(1, wolfi.getCollaborators().size());
+        Company c = (Company) wolfi.getCollaborators().getFirst();
         assertTrue(c.getName().startsWith("Bellaflora"));
     }
 

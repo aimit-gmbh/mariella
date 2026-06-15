@@ -386,6 +386,12 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
                 purge.status = "sepperl"
                 context.flush()
             }
+
+            database.read {
+                val context = mariella()
+                val purge = context.loadEntity<Purge>(versionId, "root", "root.requestor")!!
+                expectThat(purge.status).isEqualTo("sepperl")
+            }
         }
     }
 

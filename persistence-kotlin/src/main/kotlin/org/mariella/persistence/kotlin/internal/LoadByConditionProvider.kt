@@ -1,12 +1,14 @@
 package org.mariella.persistence.kotlin.internal
 
-import org.mariella.persistence.loader.ClusterLoaderConditionProvider
+import org.mariella.persistence.loader.ClusterLoader
+import org.mariella.persistence.loader.ClusterLoaderConditionProviderImpl
 import org.mariella.persistence.mapping.ClassMapping
 import org.mariella.persistence.mapping.ReferencePropertyMapping
-import org.mariella.persistence.mapping.RelationshipPropertyMapping
 import org.mariella.persistence.query.*
 
-internal class LoadByConditionProvider(private val conditions: Map<String, Any?>) : ClusterLoaderConditionProvider {
+internal class LoadByConditionProvider(private val conditions: Map<String, Any?>) : ClusterLoaderConditionProviderImpl() {
+    private lateinit var clusterLoader: ClusterLoader
+
     init {
         require(conditions.isNotEmpty()) { "conditions must not be empty" }
         conditions.forEach {
@@ -14,16 +16,12 @@ internal class LoadByConditionProvider(private val conditions: Map<String, Any?>
         }
     }
 
-    override fun getConditionPathExpressions(): Array<out String> {
-        return arrayOf("root")
+    override fun initialize(clusterLoader: ClusterLoader) {
+        this.clusterLoader = clusterLoader
     }
 
-    override fun aboutToJoinRelationship(
-        p0: QueryBuilder?,
-        p1: String?,
-        p2: RelationshipPropertyMapping?,
-        p3: JoinBuilder?
-    ) {
+    override fun getConditionPathExpressions(): Array<out String> {
+        return arrayOf("root")
     }
 
     override fun pathExpressionJoined(
@@ -34,12 +32,15 @@ internal class LoadByConditionProvider(private val conditions: Map<String, Any?>
     ) {
         conditions.forEach {
             val column = getColumnReference(classMapping, queryBuilder, tableReference, it.key)
-            val binaryCondition = BinaryCondition.eq(column, createValueExpression(column, it.value))
-            queryBuilder.and(binaryCondition)
+            if (it.value != null) {
+                val binaryCondition = BinaryCondition.eq(column, queryBuilder.createParameter())
+                queryBuilder.and(binaryCondition)
+                clusterLoader.addParameter(column.column(), it.value)
+            } else {
+                queryBuilder.and(IsNullCondition(column))
+            }
         }
     }
-
-    private fun createValueExpression(column: ColumnReference, value: Any?) = if (value != null) column.column().converter.createLiteral(value) else IsNullCondition(column)
 
     private fun getColumnReference(
         classMapping: ClassMapping,

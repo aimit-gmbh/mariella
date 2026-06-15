@@ -1,23 +1,14 @@
 package org.mariella.persistence.kotlin.internal
 
-import org.mariella.persistence.loader.ClusterLoaderConditionProvider
+import org.mariella.persistence.loader.ClusterLoaderConditionProviderImpl
 import org.mariella.persistence.mapping.ClassMapping
-import org.mariella.persistence.mapping.RelationshipPropertyMapping
 import org.mariella.persistence.query.BinaryCondition
-import org.mariella.persistence.query.JoinBuilder
 import org.mariella.persistence.query.QueryBuilder
 import org.mariella.persistence.query.TableReference
 
-internal class LoadByIdProvider(private val id: Any) : ClusterLoaderConditionProvider {
+internal class LoadByIdProvider(private val id: Any) : ClusterLoaderConditionProviderImpl() {
     override fun getConditionPathExpressions(): Array<String> {
         return arrayOf("root")
-    }
-
-    override fun aboutToJoinRelationship(
-        queryBuilder: QueryBuilder, pathExpression: String,
-        rpm: RelationshipPropertyMapping,
-        joinBuilder: JoinBuilder
-    ) {
     }
 
     override fun pathExpressionJoined(

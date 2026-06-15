@@ -4,6 +4,7 @@ import io.vertx.kotlin.coroutines.coAwait
 import io.vertx.sqlclient.Row
 import io.vertx.sqlclient.RowSet
 import io.vertx.sqlclient.SqlClient
+import io.vertx.sqlclient.Tuple
 import org.mariella.persistence.loader.*
 import org.mariella.persistence.mapping.SchemaMapping
 import org.mariella.persistence.persistor.ClusterDescription
@@ -16,6 +17,14 @@ internal class VertxClusterLoader<T>(schemaMapping: SchemaMapping, clusterDescri
         private val logger: Logger = LoggerFactory.getLogger(VertxClusterLoader::class.java)
     }
 
+    private fun getParameters(): Tuple {
+        val pv = VertxParameterValues()
+        queryParameters.forEach {
+            it.setParameter(pv)
+        }
+        return pv.tuple()
+    }
+
     suspend fun load(
         connection: SqlClient,
         loaderContext: LoaderContext,
@@ -23,10 +32,11 @@ internal class VertxClusterLoader<T>(schemaMapping: SchemaMapping, clusterDescri
     ): List<T> {
         if (logger.isDebugEnabled)
             logger.debug("loading cluster")
-
+        conditionProvider.initialize(this)
         val ms = System.currentTimeMillis()
         loaderContext.startLoading()
         val results = loadingPolicies.map {
+            clearParameters()
             val statementBuilder = LoadingPolicyStatementBuilder(
                 it,
                 loaderContext,
@@ -34,8 +44,11 @@ internal class VertxClusterLoader<T>(schemaMapping: SchemaMapping, clusterDescri
             )
             val sql = statementBuilder.createSelectStatement()
             val currentMillis = System.currentTimeMillis()
+
+            @Suppress("SqlSourceToSinkFlow")
             val res = try {
-                connection.preparedQuery(sql).execute().coAwait()
+                val tuple = getParameters()
+                connection.preparedQuery(sql).execute(tuple).coAwait()
             } catch (e: Throwable) {
                 if (logger.isTraceEnabled)
                     logger.trace("executed statement in " + (System.currentTimeMillis() - currentMillis) + " ms")

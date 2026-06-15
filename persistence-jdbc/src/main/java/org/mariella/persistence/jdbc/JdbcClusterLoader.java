@@ -33,6 +33,9 @@ public class JdbcClusterLoader extends AbstractClusterLoader {
     public List<?> load(DatabaseAccess databaseAccess, final LoaderContext loaderContext,
                         final ClusterLoaderConditionProvider conditionProvider) {
         try {
+        	if(conditionProvider != null) {
+        		conditionProvider.initialize(this);
+        	}
             return (List<?>) databaseAccess.doInConnection(
                     connection -> {
                         if (logger.isDebugEnabled())

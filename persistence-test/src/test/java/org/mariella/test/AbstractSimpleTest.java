@@ -3,6 +3,7 @@ package org.mariella.test;
 import org.mariella.persistence.jdbc.JdbcClusterLoader;
 import org.mariella.persistence.jdbc.JdbcPersistor;
 import org.mariella.persistence.jdbc.JdbcPreparedPersistorStatement;
+import org.mariella.persistence.loader.ClusterLoader;
 import org.mariella.persistence.loader.ClusterLoaderConditionProvider;
 import org.mariella.persistence.loader.ClusterLoaderConditionProviderImpl;
 import org.mariella.persistence.loader.LoaderContext;
@@ -39,7 +40,14 @@ public class AbstractSimpleTest extends AbstractTest {
     @SuppressWarnings("unchecked")
     public <T> T loadById(final ClusterDescription cd, final Object identity, final boolean isUpdate) {
         ClusterLoaderConditionProvider cp = new ClusterLoaderConditionProviderImpl() {
+            ClusterLoader clusterLoader;
+            
             @Override
+            public void initialize(ClusterLoader clusterLoader) {
+            	this.clusterLoader = clusterLoader;
+            }
+        	
+        	@Override
             public String[] getConditionPathExpressions() {
                 return new String[]{"root"};
             }

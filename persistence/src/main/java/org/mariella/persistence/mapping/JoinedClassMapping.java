@@ -46,6 +46,10 @@ public class JoinedClassMapping extends SelectableHierarchyClassMapping {
         this.joinUpdateTable = joinUpdateTable;
     }
 
+    public boolean isUpsertRequired() {
+    	return joinTable.hasMandatoryNonPrimaryKeyColumns();
+    }
+    
     @Override
     public void initialize(InitializationHelper<ClassMapping> initializationHelper) {
         super.initialize(initializationHelper);
@@ -183,7 +187,11 @@ public class JoinedClassMapping extends SelectableHierarchyClassMapping {
                 if (objectPersistor.getModificationInfo().getStatus() == ModificationInfo.Status.New) {
                     return new JoinedInsertStatement(this, row.getTable(), row.getSetColumns());
                 } else if (objectPersistor.getModificationInfo().getStatus() == ModificationInfo.Status.Modified) {
-                    return objectPersistor.getClassMapping().getSchemaMapping().getSchema().createJoinedUpsertStatement(objectPersistor, this, row.getSetColumns());
+                	if(getJoinUpdateTable().hasMandatoryNonPrimaryKeyColumns()) {
+                		return new UpdateStatement(schemaMapping.getSchema(), joinTable, row.getSetColumns());
+                	} else {
+                		return objectPersistor.getClassMapping().getSchemaMapping().getSchema().createJoinedUpsertStatement(objectPersistor, this, row.getSetColumns());                		
+                	}
                 } else if (objectPersistor.getModificationInfo().getStatus() == ModificationInfo.Status.Removed) {
                     return new DeleteStatement(schemaMapping.getSchema(), row.getTable(), row.getTable().getPrimaryKey());
                 } else {

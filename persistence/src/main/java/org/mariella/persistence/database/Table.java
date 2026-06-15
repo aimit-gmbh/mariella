@@ -8,6 +8,8 @@ public class Table {
     private final String catalog;
     private final Map<String, Column> columns = new HashMap<>();
     private final List<Column> primaryKey = new ArrayList<>();
+    
+    private boolean hasMandatoryNonPrimaryKeyColumns = false;
 
     public Table(String catalog, String schema, String name) {
         super();
@@ -42,11 +44,14 @@ public class Table {
 
     public void addColumn(Column column) {
         columns.put(column.name(), column);
+        if(!column.nullable() && !primaryKey.contains(column)) {
+        	hasMandatoryNonPrimaryKeyColumns = true;
+        }
     }
 
     public void addPrimaryKeyColumn(Column column) {
-        addColumn(column);
         primaryKey.add(column);
+        addColumn(column);
     }
 
     public Column getColumn(String name) {
@@ -57,6 +62,10 @@ public class Table {
         return primaryKey;
     }
 
+    public boolean hasMandatoryNonPrimaryKeyColumns() {
+    	return hasMandatoryNonPrimaryKeyColumns;
+    }
+    
     @Override
     public String toString() {
         return name;

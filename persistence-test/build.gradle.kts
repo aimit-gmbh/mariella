@@ -10,8 +10,6 @@ dependencies {
     testRuntimeOnly(project(":persistence-h2"))
     testRuntimeOnly(project(":persistence-postgres"))
 
-    testRuntimeOnly(libs.postgres)
-
     //h2
     testImplementation(libs.h2)
 
@@ -22,6 +20,7 @@ dependencies {
     testImplementation(libs.jakarta.persistence.api)
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.slf4j)
+    testRuntimeOnly(libs.logback)
 }
 
 tasks.test {

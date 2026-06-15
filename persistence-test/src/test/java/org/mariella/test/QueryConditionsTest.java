@@ -1,16 +1,31 @@
 package org.mariella.test;
 
-import org.junit.jupiter.api.Test;
-import org.mariella.persistence.jdbc.JdbcQueryExecutor;
-import org.mariella.persistence.query.*;
-import org.mariella.test.model.Company;
-import org.mariella.test.model.Partner;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.mariella.persistence.jdbc.JdbcQueryExecutor;
+import org.mariella.persistence.query.BinaryCondition;
+import org.mariella.persistence.query.Brackets;
+import org.mariella.persistence.query.Count;
+import org.mariella.persistence.query.Descending;
+import org.mariella.persistence.query.DoubleLiteral;
+import org.mariella.persistence.query.Expression;
+import org.mariella.persistence.query.InCondition;
+import org.mariella.persistence.query.IntegerLiteral;
+import org.mariella.persistence.query.IsNotNullCondition;
+import org.mariella.persistence.query.IsNullCondition;
+import org.mariella.persistence.query.LongLiteral;
+import org.mariella.persistence.query.QueryBuilder;
+import org.mariella.persistence.query.StringLiteral;
+import org.mariella.test.model.Ngo;
+import org.mariella.test.model.Partner;
 
 class QueryConditionsTest extends AbstractSimpleTest {
 
@@ -36,7 +51,7 @@ class QueryConditionsTest extends AbstractSimpleTest {
     public void testIsNullConditionForNullValues() throws Exception {
         createModificationTracker();
 
-        Company c = new Company();
+        Ngo c = new Ngo();
         c.setId(UUID.randomUUID());
         modificationTracker.addNewParticipant(c);
         c.setAlias("noName");
@@ -46,9 +61,9 @@ class QueryConditionsTest extends AbstractSimpleTest {
 
         // Query with IsNull on name
         QueryBuilder queryBuilder = new QueryBuilder(environment.getSchemaMapping());
-        queryBuilder.join(getClassDescription(Company.class), "root");
+        queryBuilder.join(getClassDescription(Ngo.class), "root");
         queryBuilder.addSelectItem("root.id");
-        queryBuilder.and(new IsNullCondition(queryBuilder.createColumnReference("root.name")));
+        queryBuilder.and(new IsNullCondition(queryBuilder.createColumnReference("root.title")));
 
         JdbcQueryExecutor queryExecutor = new JdbcQueryExecutor(queryBuilder, createDatabaseAccess());
         List<Object[]> results = queryExecutor.queryForObjects();

@@ -28,7 +28,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class AbstractTest {
-    public final static String PERSISTENCE_UNIT_NAME = "sample/h2";
+    public static String DATABASE_TYPE = System.getenv("MARIELLA_TEST_DB");
 
     protected StandaloneEnvironment environment;
     protected ModificationTracker modificationTracker;
@@ -36,8 +36,14 @@ public class AbstractTest {
 
     @BeforeEach
     public void beforeEach() throws Exception {
+        String persistenceUnit;
+        if ("postgres".equalsIgnoreCase(DATABASE_TYPE)) {
+            persistenceUnit = "sample/postgres";
+        } else {
+            persistenceUnit = "sample/h2";
+        }
         environment = new StandaloneEnvironment();
-        environment.createUnitInfo(PERSISTENCE_UNIT_NAME, new HashMap<>());
+        environment.createUnitInfo(persistenceUnit, new HashMap<>());
 
         // TODO should be handled somewhere else?
         String jdbcDriverClassName = environment.getUnitInfo().getProperties()

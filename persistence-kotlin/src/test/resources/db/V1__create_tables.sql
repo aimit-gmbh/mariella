@@ -205,3 +205,8 @@ create table hansi.other_schema
     id   UUID         not null,
     name varchar(100) not null
 );
+
+create table tstest
+(
+    revision_time TIMESTAMP WITH TIME ZONE NOT NULL
+);

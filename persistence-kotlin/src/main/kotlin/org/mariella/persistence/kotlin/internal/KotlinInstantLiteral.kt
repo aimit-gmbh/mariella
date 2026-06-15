@@ -25,7 +25,7 @@ internal class KotlinInstantLiteral : Literal<Instant?> {
         if (curVal == null) {
             b.append("NULL")
         } else {
-            val string = OffsetDateTime.ofInstant(curVal.toJavaInstant(), zone).format(formatter)
+            val string = OffsetDateTime.ofInstant(curVal.toJavaInstant().roundUpToMicroSecondsIfNecessary(), zone).format(formatter)
             b.append("TO_TIMESTAMP('")
             b.append(string)
             b.append("','YYYY-MM-DD\"T\"HH24:MI:SS:US\"Z\"')")

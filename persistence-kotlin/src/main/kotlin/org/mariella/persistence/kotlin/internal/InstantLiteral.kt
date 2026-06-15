@@ -23,11 +23,7 @@ internal class InstantLiteral : Literal<Instant?> {
         if (curVal == null) {
             b.append("NULL")
         } else {
-            val nanosAfterMicro = curVal.nano % 1000
-            val rounded = if (nanosAfterMicro > 499) {
-                curVal.plusNanos((1000 - nanosAfterMicro).toLong())
-            } else curVal
-            val string = OffsetDateTime.ofInstant(rounded, zone).format(formatter)
+            val string = OffsetDateTime.ofInstant(curVal.roundUpToMicroSecondsIfNecessary(), zone).format(formatter)
             b.append("TO_TIMESTAMP('")
             b.append(string)
             b.append("','YYYY-MM-DD\"T\"HH24:MI:SS:US\"Z\"')")
@@ -35,3 +31,11 @@ internal class InstantLiteral : Literal<Instant?> {
     }
 }
 
+// this is needed to comply with JDBC and vert.x driver
+// timestamps with nano precision will be rounded up
+internal fun Instant.roundUpToMicroSecondsIfNecessary(): Instant {
+    val nanosAfterMicro = nano % 1000
+    return if (nanosAfterMicro > 499) {
+        plusNanos((1000 - nanosAfterMicro).toLong())
+    } else this
+}

@@ -45,6 +45,14 @@ class InstantLiteralTest {
         }).isEqualTo("TO_TIMESTAMP('2025-02-12T14:31:06:021299Z','YYYY-MM-DD\"T\"HH24:MI:SS:US\"Z\"')")
         expectThat(buildString {
             InstantLiteral(
+                Instant.ofEpochSecond(
+                    1739370666,
+                    21297600
+                )
+            ).printSql(this)
+        }).isEqualTo("TO_TIMESTAMP('2025-02-12T14:31:06:021298Z','YYYY-MM-DD\"T\"HH24:MI:SS:US\"Z\"')")
+        expectThat(buildString {
+            InstantLiteral(
                 Entity.MAX_DB_TIMESTAMP
             ).printSql(this)
         }).isEqualTo("TO_TIMESTAMP('9999-12-31T00:00:00:000000Z','YYYY-MM-DD\"T\"HH24:MI:SS:US\"Z\"')")

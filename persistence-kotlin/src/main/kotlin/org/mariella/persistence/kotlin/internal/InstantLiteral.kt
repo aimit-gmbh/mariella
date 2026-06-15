@@ -23,7 +23,11 @@ internal class InstantLiteral : Literal<Instant?> {
         if (curVal == null) {
             b.append("NULL")
         } else {
-            val string = OffsetDateTime.ofInstant(curVal, zone).format(formatter)
+            val nanosAfterMicro = curVal.nano % 1000
+            val rounded = if (nanosAfterMicro > 499) {
+                curVal.plusNanos((1000 - nanosAfterMicro).toLong())
+            } else curVal
+            val string = OffsetDateTime.ofInstant(rounded, zone).format(formatter)
             b.append("TO_TIMESTAMP('")
             b.append(string)
             b.append("','YYYY-MM-DD\"T\"HH24:MI:SS:US\"Z\"')")

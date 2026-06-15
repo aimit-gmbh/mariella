@@ -24,7 +24,6 @@ import org.mariella.persistence.query.IsNullCondition;
 import org.mariella.persistence.query.LongLiteral;
 import org.mariella.persistence.query.QueryBuilder;
 import org.mariella.persistence.query.StringLiteral;
-import org.mariella.test.model.Company;
 import org.mariella.test.model.Ngo;
 import org.mariella.test.model.Partner;
 

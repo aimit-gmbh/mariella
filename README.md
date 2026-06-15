@@ -17,3 +17,7 @@ IntelliJ Idea
 ## examples
 
 there is a test which shows the full complexity for Kotlin named NoMagicTest
+
+## start postgres docker container for postgres tests
+
+`docker run -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres`

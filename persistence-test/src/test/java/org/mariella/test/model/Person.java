@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 @Table(name = "PERSON")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorValue("P")
-@PrimaryKeyJoinColumn(name = "ID", referencedColumnName = "ID")
+@PrimaryKeyJoinColumn(name = "PARTNER_ID", referencedColumnName = "ID")
 public class Person extends Partner {
     private String firstName;
     private String lastName;

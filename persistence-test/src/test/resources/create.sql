@@ -4,6 +4,8 @@ drop table if exists person;
 
 drop table if exists company;
 
+drop table if exists ngo;
+
 drop table if exists partner;
 
 create table partner
@@ -15,23 +17,29 @@ create table partner
 
 create table person
 (
-    id         uuid primary key,
+    partner_id uuid primary key,
     first_name varchar(32),
     last_name  varchar(32),
-    foreign key (id) references partner (id)
+    foreign key (partner_id) references partner (id)
 );
 
 create table company
 (
-    id   uuid primary key,
-    boss_id uuid,
+    partner_id uuid primary key,
+    boss_id uuid not null,
     name varchar(32),
-    foreign key (id) references partner (id)
+    foreign key (partner_id) references partner (id),
+    foreign key (boss_id) references partner (id)
 );
 
-alter table company
-    add foreign key (id) references partner (id);
-
+create table ngo
+(
+    partner_id uuid primary key,
+    head_id uuid,
+    title varchar(32),
+    foreign key (partner_id) references partner (id),
+    foreign key (head_id) references partner (id)
+);
 create table collaborators
 (
     partner_id      uuid not null,

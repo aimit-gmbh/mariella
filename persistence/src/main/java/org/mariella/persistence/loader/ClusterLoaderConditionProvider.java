@@ -10,10 +10,6 @@ import org.mariella.persistence.query.TableReference;
 
 public interface ClusterLoaderConditionProvider extends QueryBuilderListener {
     ClusterLoaderConditionProvider Default = new ClusterLoaderConditionProvider() {
-    	@Override
-    	public void initialize(ClusterLoader loader) {
-    	}
-    	
         @Override
         public void pathExpressionJoined(QueryBuilder queryBuilder, String pathExpression, ClassMapping classMapping,
                                          TableReference tableReference) {
@@ -31,6 +27,8 @@ public interface ClusterLoaderConditionProvider extends QueryBuilderListener {
     };
 
     String[] getConditionPathExpressions();
-    void initialize(ClusterLoader loader);
+
+    default void initialize(ClusterLoader loader) {
+    }
 
 }

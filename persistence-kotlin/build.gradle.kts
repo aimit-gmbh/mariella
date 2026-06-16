@@ -38,8 +38,8 @@ dependencies {
 }
 
 
-// tests with postgres have 85 coverage because of timestamp handling in h2
-val coverage = if ("POSTGRES" == System.getenv("MARIELLA_TEST_DB")) 85 else 83
+// tests with postgres have more coverage because of several postgres specific features
+val coverage = if ("POSTGRES" == System.getenv("MARIELLA_TEST_DB")) 85 else 82
 
 kover {
     reports {

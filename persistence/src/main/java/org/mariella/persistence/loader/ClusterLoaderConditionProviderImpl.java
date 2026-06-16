@@ -6,10 +6,8 @@ import org.mariella.persistence.query.QueryBuilder;
 
 
 public abstract class ClusterLoaderConditionProviderImpl implements ClusterLoaderConditionProvider {
-
     @Override
     public void aboutToJoinRelationship(QueryBuilder queryBuilder, String pathExpression, RelationshipPropertyMapping rpm,
                                         JoinBuilder joinBuilder) {
     }
-
 }

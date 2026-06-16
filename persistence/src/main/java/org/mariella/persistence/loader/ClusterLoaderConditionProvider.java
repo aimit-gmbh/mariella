@@ -28,4 +28,7 @@ public interface ClusterLoaderConditionProvider extends QueryBuilderListener {
 
     String[] getConditionPathExpressions();
 
+    default void initialize(ClusterLoader loader) {
+    }
+
 }

@@ -13,6 +13,7 @@ import org.mariella.persistence.kotlin.entities.ResourceType
 import org.mariella.persistence.kotlin.entities.SecurityConcept
 import org.mariella.persistence.kotlin.internal.InstantLiteral
 import org.mariella.persistence.kotlin.internal.KotlinInstantLiteral
+import org.mariella.persistence.kotlin.internal.roundUpToMicroSecondsIfNecessary
 import org.mariella.persistence.kotlin.util.AbstractDatabaseTest
 import org.mariella.persistence.kotlin.util.DATABASE_TYPE
 import org.mariella.persistence.kotlin.util.DatabaseType
@@ -199,8 +200,9 @@ class MapperTest : AbstractDatabaseTest() {
             val data = database.read {
                 mapper().select<ClassWithStandardMappings>(sql)
             }
+            println(file.revisionFrom.toJavaInstant().roundUpToMicroSecondsIfNecessary())
             expectThat(data.single().lockDate!!).isEqualTo(
-                file.revisionFrom.toJavaInstant().truncatedTo(ChronoUnit.MICROS)
+                file.revisionFrom.toJavaInstant().roundUpToMicroSecondsIfNecessary().truncatedTo(ChronoUnit.MICROS)
             )
         }
     }
@@ -219,7 +221,7 @@ class MapperTest : AbstractDatabaseTest() {
                 mapper().select<ClassWithStandardMappings>(sql)
             }
             expectThat(data.single().lockDate!!).isEqualTo(
-                file.revisionFrom.toJavaInstant().truncatedTo(ChronoUnit.MICROS)
+                file.revisionFrom.toJavaInstant().roundUpToMicroSecondsIfNecessary().truncatedTo(ChronoUnit.MICROS)
             )
         }
     }

@@ -48,11 +48,13 @@ public class AbstractClusterLoader implements ClusterLoader {
         return loadingPolicies;
     }
 
+    @Override
     public void addParameter(Column column, Object value) {
         int index = queryParameters.size() + 1;
         queryParameters.add(new ClusterLoaderQueryParameter(column, value, index));
     }
 
+    @Override
     public void addParameter(Converter<?> converter, int sqlType, Object value) {
         int index = queryParameters.size() + 1;
         queryParameters.add(new ClusterLoaderQueryParameter(converter, sqlType, value, index));

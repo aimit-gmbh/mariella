@@ -13,7 +13,7 @@ import java.util.List;
         discriminatorType = DiscriminatorType.STRING
 )
 
-public class Partner extends Entity {
+public abstract class Partner extends Entity {
     private String alias;
     private List<Partner> collaborators = new TrackedList<>(propertyChangeSupport, "collaborators");
 

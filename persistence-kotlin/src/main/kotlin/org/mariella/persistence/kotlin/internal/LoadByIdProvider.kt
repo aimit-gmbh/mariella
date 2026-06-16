@@ -1,23 +1,14 @@
 package org.mariella.persistence.kotlin.internal
 
-import org.mariella.persistence.loader.ClusterLoaderConditionProvider
+import org.mariella.persistence.kotlin.ClusterAwareConditionProvider
 import org.mariella.persistence.mapping.ClassMapping
-import org.mariella.persistence.mapping.RelationshipPropertyMapping
 import org.mariella.persistence.query.BinaryCondition
-import org.mariella.persistence.query.JoinBuilder
 import org.mariella.persistence.query.QueryBuilder
 import org.mariella.persistence.query.TableReference
 
-internal class LoadByIdProvider(private val id: Any) : ClusterLoaderConditionProvider {
+internal class LoadByIdProvider(private val id: Any) : ClusterAwareConditionProvider() {
     override fun getConditionPathExpressions(): Array<String> {
         return arrayOf("root")
-    }
-
-    override fun aboutToJoinRelationship(
-        queryBuilder: QueryBuilder, pathExpression: String,
-        rpm: RelationshipPropertyMapping,
-        joinBuilder: JoinBuilder
-    ) {
     }
 
     override fun pathExpressionJoined(
@@ -28,11 +19,10 @@ internal class LoadByIdProvider(private val id: Any) : ClusterLoaderConditionPro
     ) {
         if (pathExpression == "root") {
             val column = classMapping.primaryKey.columnMappings.single().readColumn
-            val condition = BinaryCondition.eq(
-                tableReference.createColumnReference(column),
-                column.converter.createLiteral(id)
-            )
-            queryBuilder.and(condition)
+            val colRef = tableReference.createColumnReference(column)
+            val binaryCondition = BinaryCondition.eq(colRef, queryBuilder.createParameter())
+            queryBuilder.and(binaryCondition)
+            clusterLoader.addParameter(column, id)
         }
     }
 }

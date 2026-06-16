@@ -3,7 +3,9 @@ package org.mariella.test;
 import org.mariella.persistence.jdbc.JdbcClusterLoader;
 import org.mariella.persistence.jdbc.JdbcPersistor;
 import org.mariella.persistence.jdbc.JdbcPreparedPersistorStatement;
+import org.mariella.persistence.loader.ClusterLoader;
 import org.mariella.persistence.loader.ClusterLoaderConditionProvider;
+import org.mariella.persistence.loader.ClusterLoaderConditionProviderImpl;
 import org.mariella.persistence.loader.LoaderContext;
 import org.mariella.persistence.mapping.ClassMapping;
 import org.mariella.persistence.mapping.ColumnMapping;
@@ -37,16 +39,17 @@ public class AbstractSimpleTest extends AbstractTest {
 
     @SuppressWarnings("unchecked")
     public <T> T loadById(final ClusterDescription cd, final Object identity, final boolean isUpdate) {
-        ClusterLoaderConditionProvider cp = new ClusterLoaderConditionProvider() {
+        ClusterLoaderConditionProvider cp = new ClusterLoaderConditionProviderImpl() {
+            ClusterLoader clusterLoader;
+            
             @Override
+            public void initialize(ClusterLoader clusterLoader) {
+            	this.clusterLoader = clusterLoader;
+            }
+        	
+        	@Override
             public String[] getConditionPathExpressions() {
                 return new String[]{"root"};
-            }
-
-            @Override
-            public void aboutToJoinRelationship(QueryBuilder queryBuilder, String pathExpression,
-                                                RelationshipPropertyMapping rpm,
-                                                JoinBuilder joinBuilder) {
             }
 
             public void pathExpressionJoined(QueryBuilder queryBuilder, String pathExpression, final ClassMapping classMapping,
@@ -55,8 +58,10 @@ public class AbstractSimpleTest extends AbstractTest {
                     for (final ColumnMapping columnMapping : classMapping.getPrimaryKey().getColumnMappings()) {
                         Expression condition = BinaryCondition.eq(
                                 tableReference.createColumnReference(columnMapping.getReadColumn()),
-                                columnMapping.getReadColumn().converter().createLiteral(identity)
+                                queryBuilder.createParameter()
                         );
+                        clusterLoader.addParameter(columnMapping.getReadColumn(), identity);
+
                         queryBuilder.and(condition);
                     }
                 }

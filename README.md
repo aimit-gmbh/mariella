@@ -4,7 +4,7 @@ JPA inspired ORM framework for java with a JDBC implementation
 
 # mariella kotlin
 
-more info [here](/persistence-kotlin/README.md)
+more info [here](/persistence-kotlin)
 
 # development
 

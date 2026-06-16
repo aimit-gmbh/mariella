@@ -6,7 +6,8 @@ coroutines based kotlin API for mariella using the vert.x SQL client
 
 examples for mapped classes can be found in [here](/persistence-kotlin/src/test/kotlin/org/mariella/persistence/kotlin/entities)
 
-usage can be found [here](/persistence-kotlin/src/test/kotlin/org/mariella/persistence/kotlin/BasicMariellaFeaturesTest.kt) and [here](/src/test/kotlin/org/mariella/persistence/kotlin/NoMagicTest.kt)
+usage can be found [here](/persistence-kotlin/src/test/kotlin/org/mariella/persistence/kotlin/BasicMariellaFeaturesTest.kt)
+and [here](/persistence-kotlin/src/test/kotlin/org/mariella/persistence/kotlin/NoMagicTest.kt)
 
 ## SQL to data class mapper
 

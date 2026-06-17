@@ -2,6 +2,8 @@
 
 coroutines based kotlin API for mariella using the vert.x SQL client
 
+supports kotlin.uuid.Uuid and kotlin.time.Instant (useful for multiplatform projects)
+
 ## JPA annotated classes
 
 examples for mapped classes can be found in [here](/persistence-kotlin/src/test/kotlin/org/mariella/persistence/kotlin/entities)

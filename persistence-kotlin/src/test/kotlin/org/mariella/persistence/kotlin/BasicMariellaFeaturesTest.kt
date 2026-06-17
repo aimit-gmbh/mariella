@@ -569,7 +569,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
 
             val session = database.connect()
             val context = session.mariella()
-            val fileVersions = context.loadEntities<FileVersion>(fileVersionIds, "root", "root.revision", "root.space")
+            val fileVersions = context.loadEntities<FileVersion>(fileVersionIds.toTypedArray(), "root", "root.revision", "root.space")
 
             expectThat(fileVersions).hasSize(3)
             fileVersions.forEach {
@@ -578,7 +578,7 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
             }
 
             val newContext = session.mariella()
-            val emptyFileVersion = newContext.loadEntities<FileVersion>(fileVersionIds)
+            val emptyFileVersion = newContext.loadEntities<FileVersion>(fileVersionIds.toTypedArray())
             expectThat(emptyFileVersion).hasSize(3)
             emptyFileVersion.forEach {
                 expectThat(it.space).isNull()

@@ -1,4 +1,4 @@
-package org.mariella.persistence.kotlin
+package org.mariella.persistence.kotlin.internal
 
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assumptions

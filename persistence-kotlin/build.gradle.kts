@@ -35,6 +35,7 @@ dependencies {
     testRuntimeOnly(libs.flyway.database.postgresql)
 
     testImplementation(libs.strikt.core)
+    testImplementation(libs.mockk)
 }
 
 

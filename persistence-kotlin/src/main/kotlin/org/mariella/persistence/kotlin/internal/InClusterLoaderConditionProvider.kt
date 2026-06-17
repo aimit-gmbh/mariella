@@ -24,28 +24,30 @@ internal class InClusterLoaderConditionProvider(private val ids: Array<*>) : Clu
             Function("ANY", queryBuilder.createParameter())
         )
         queryBuilder.and(condition)
-        clusterLoader.addParameter(object : Converter<Array<*>> {
-            override fun setObject(pv: ParameterValues?, index: Int, value: Array<*>) {
-                (pv as VertxParameterValues).set(index, value)
-            }
-
-            override fun getObject(row: ResultRow?, index: Int): Array<*>? {
-                throw UnsupportedOperationException()
-            }
-
-            override fun createLiteral(value: Any?): Literal<Array<*>?>? {
-                throw UnsupportedOperationException()
-            }
-
-            override fun createDummy(): Literal<Array<*>?>? {
-                throw UnsupportedOperationException()
-            }
-
-            override fun toString(value: Array<*>?): String? {
-                throw UnsupportedOperationException()
-            }
-
-
-        }, Types.ARRAY, ids)
+        clusterLoader.addParameter(arrayConverter, Types.ARRAY, ids)
     }
+}
+
+internal val arrayConverter = object : Converter<Array<*>> {
+    override fun setObject(pv: ParameterValues, index: Int, value: Array<*>) {
+        (pv as VertxParameterValues).set(index, value)
+    }
+
+    override fun getObject(row: ResultRow?, index: Int): Array<*>? {
+        throw UnsupportedOperationException()
+    }
+
+    override fun createLiteral(value: Any?): Literal<Array<*>?>? {
+        throw UnsupportedOperationException()
+    }
+
+    override fun createDummy(): Literal<Array<*>?>? {
+        throw UnsupportedOperationException()
+    }
+
+    override fun toString(value: Array<*>?): String? {
+        throw UnsupportedOperationException()
+    }
+
+
 }

@@ -1,8 +1,7 @@
-package org.mariella.persistence.kotlin
+package org.mariella.persistence.kotlin.internal
 
 import org.junit.jupiter.api.Test
 import org.mariella.persistence.kotlin.entities.Entity
-import org.mariella.persistence.kotlin.internal.InstantLiteral
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import java.time.Instant

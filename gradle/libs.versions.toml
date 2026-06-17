@@ -12,7 +12,7 @@ jakarta = "3.2.0"
 postgres = "42.7.11"
 scramClient = "3.4"
 javaAssist = "3.31.0-GA"
-h2 = "2.3.232"
+h2 = "2.4.240"
 hikariCp = "7.1.0"
 mockk = "1.14.11"
 

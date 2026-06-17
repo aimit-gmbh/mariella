@@ -14,7 +14,7 @@ internal class VertxParameterValues : ParameterValues {
     private val utcZoneId = ZoneId.of("UTC")
     private val values = mutableListOf<Any?>()
 
-    private fun set(pos: Int, value: Any?) {
+    internal fun set(pos: Int, value: Any?) {
         val p = pos - 1
         // TODO: ensureCapacity does not work. this is an ugly workaround
         for (@Suppress("Unused") i in values.size until p + 1) {

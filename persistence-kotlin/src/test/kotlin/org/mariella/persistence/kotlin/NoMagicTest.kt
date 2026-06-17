@@ -81,7 +81,7 @@ class NoMagicTest {
             val readOnlyConnection = database.connectReadOnly()
             val readOnlyMariella = readOnlyConnection.mariella()
 
-            val people = readOnlyMariella.loadEntities<SimpleEntity>(listOf(bob.id, alice.id))
+            val people = readOnlyMariella.loadEntities<SimpleEntity>(arrayOf(bob.id, alice.id))
             expectThat(people).hasSize(2)
             expectThat(people.single { it.id == bob.id }.age).isEqualTo(60)
             expectThat(people.single { it.id == alice.id }.age).isEqualTo(22)
@@ -93,7 +93,7 @@ class NoMagicTest {
             val mapperAPI = transactionalConnection.mapper()
 
             val allIds = mapperAPI.selectPrimitive<UUID>("select id from simple for update")
-            val all = mariellaAPI.loadEntities<SimpleEntity>(allIds)
+            val all = mariellaAPI.loadEntities<SimpleEntity>(allIds.toTypedArray())
 
             all.forEach {
                 it.age = 100

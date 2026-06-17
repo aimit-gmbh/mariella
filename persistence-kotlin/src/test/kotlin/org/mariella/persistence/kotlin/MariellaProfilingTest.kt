@@ -21,10 +21,11 @@ class MariellaProfilingTest : AbstractDatabaseTest() {
 
             val session = database.connect()
             val modifications = session.mariella()
+            val ids = files.map { it.id }.toTypedArray()
             repeat(100_000) {
                 val versions =
                     modifications.loadEntities<FileVersion>(
-                        files.map { it.id },
+                        ids,
                         "root",
                         "root.resource",
                         "root.parent",

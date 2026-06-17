@@ -75,7 +75,7 @@ open class ReadOnlyMariella internal constructor(
     }
 
     suspend inline fun <reified T> loadEntities(
-        ids: Collection<Any>,
+        ids: Array<*>,
         vararg paths: String = arrayOf("root"),
         isUpdate: Boolean = false,
     ): List<T> {
@@ -83,7 +83,7 @@ open class ReadOnlyMariella internal constructor(
     }
 
     suspend fun <T> loadEntities(
-        ids: Collection<Any>,
+        ids: Array<*>,
         vararg paths: String = arrayOf("root"),
         isUpdate: Boolean = false,
         clazz: Class<T>

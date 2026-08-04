@@ -71,7 +71,7 @@ fun createPool(vertx: Vertx, databaseConfig: DatabaseConfig, autoCommit: Boolean
     }
 }
 
-private fun createJdbcPool(vertx: Vertx, databaseConfig: DatabaseConfig, autoCommit: Boolean = false): Pool {
+fun createJdbcPool(vertx: Vertx, databaseConfig: DatabaseConfig, autoCommit: Boolean = false): Pool {
     val poolConfig = HikariConfig()
     poolConfig.jdbcUrl = databaseConfig.getUrl()
     poolConfig.username = databaseConfig.user

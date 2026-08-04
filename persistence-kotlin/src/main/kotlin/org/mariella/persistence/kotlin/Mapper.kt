@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.flow
 import org.mariella.persistence.annotations.Converter
 import org.mariella.persistence.kotlin.internal.ImmutableConverterRegistry
 import org.mariella.persistence.kotlin.internal.VertxResultRow
+import org.mariella.persistence.mapping_builder.ConverterRegistryImpl
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -20,6 +21,8 @@ import kotlin.uuid.Uuid
 import kotlin.uuid.toJavaUuid
 
 class Mapper internal constructor(private val sqlClient: SqlClient, private val converterRegistry: ImmutableConverterRegistry) {
+
+    constructor(sqlClient: SqlClient, converterRegistry: ConverterRegistryImpl) : this(sqlClient, ImmutableConverterRegistry(converterRegistry))
 
     private data class ConverterAndValueClass(val converter: org.mariella.persistence.database.Converter<*>, val valueClass: KClass<*>?)
 

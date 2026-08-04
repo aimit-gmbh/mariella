@@ -1,5 +1,6 @@
 package org.mariella.persistence.kotlin
 
+import io.vertx.kotlin.coroutines.coAwait
 import io.vertx.pgclient.PgException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
@@ -8,22 +9,23 @@ import org.h2.jdbc.JdbcSQLSyntaxErrorException
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
+import org.mariella.persistence.database.StandardUUIDConverter
 import org.mariella.persistence.kotlin.entities.Entity
 import org.mariella.persistence.kotlin.entities.ResourceType
 import org.mariella.persistence.kotlin.entities.SecurityConcept
 import org.mariella.persistence.kotlin.internal.InstantLiteral
 import org.mariella.persistence.kotlin.internal.KotlinInstantLiteral
 import org.mariella.persistence.kotlin.internal.roundUpToMicroSecondsIfNecessary
-import org.mariella.persistence.kotlin.util.AbstractDatabaseTest
-import org.mariella.persistence.kotlin.util.DATABASE_TYPE
-import org.mariella.persistence.kotlin.util.DatabaseType
-import org.mariella.persistence.kotlin.util.createFiles
+import org.mariella.persistence.kotlin.util.*
+import org.mariella.persistence.mapping_builder.ConverterRegistryImpl
+import org.mariella.persistence.mapping_builder.ConverterRegistryImpl.ConverterFactoryImpl
 import strikt.api.expectThat
 import strikt.api.expectThrows
 import strikt.assertions.hasSize
 import strikt.assertions.isA
 import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
+import java.sql.Types
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -98,6 +100,36 @@ class MapperTest : AbstractDatabaseTest() {
                 listOfNodes.forEach {
                     expectThat(it.description).isEqualTo("hello")
                 }
+            }
+        }
+    }
+
+    @Test
+    fun `can create mapper with sql client`() {
+        runTest {
+            createFiles(3)
+            val sql = "select id, 'hello' as description from resource_node"
+            val pool = createJdbcPool(vertx, dbConfig)
+            val connection = pool.connection.coAwait()
+            val converterRegistry = ConverterRegistryImpl()
+            if (DATABASE_TYPE == DatabaseType.POSTGRES) {
+                converterRegistry.registerConverterFactory(
+                    Types.OTHER, UUID::class.java,
+                    ConverterFactoryImpl(StandardUUIDConverter.Singleton)
+                )
+            } else {
+                converterRegistry.registerConverterFactory(
+                    Types.BINARY, UUID::class.java,
+                    ConverterFactoryImpl(StandardUUIDConverter.Singleton)
+                )
+            }
+            try {
+                val mapper = Mapper(connection, converterRegistry)
+                val listOfNodes = mapper.select<ResourceWithId>(sql)
+                expectThat(listOfNodes).hasSize(3)
+            } finally {
+                connection.close().coAwait()
+                pool.close().coAwait()
             }
         }
     }
@@ -200,7 +232,6 @@ class MapperTest : AbstractDatabaseTest() {
             val data = database.read {
                 mapper().select<ClassWithStandardMappings>(sql)
             }
-            println(file.revisionFrom.toJavaInstant().roundUpToMicroSecondsIfNecessary())
             expectThat(data.single().lockDate!!).isEqualTo(
                 file.revisionFrom.toJavaInstant().roundUpToMicroSecondsIfNecessary().truncatedTo(ChronoUnit.MICROS)
             )

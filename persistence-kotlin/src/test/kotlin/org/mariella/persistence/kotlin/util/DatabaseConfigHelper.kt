@@ -31,7 +31,19 @@ object DatabaseConfigHelper {
                 "postgres",
                 "localhost",
                 5432,
-                persistenceUnit = "repong/h2"
+                persistenceUnit = "repong/postgres"
+            )
+
+            // oracle is not fully supported, this is just for running a single test
+            DatabaseType.ORACLE -> DatabaseConfig(
+                databaseType,
+                "XEPDB1",
+                "hansi",
+                "seppi",
+                "localhost",
+                1521,
+                flywayMigrations = listOf("db_oracle"),
+                persistenceUnit = "repong/oracle"
             )
         }
         return config

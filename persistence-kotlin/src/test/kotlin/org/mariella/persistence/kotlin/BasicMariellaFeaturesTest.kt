@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.mariella.persistence.kotlin.entities.*
 import org.mariella.persistence.kotlin.internal.LoadByConditionProvider
 import org.mariella.persistence.kotlin.internal.LoadByIdProvider
+import org.mariella.persistence.kotlin.postgres.OtherSchema
 import org.mariella.persistence.kotlin.util.*
 import strikt.api.expectThat
 import strikt.api.expectThrows

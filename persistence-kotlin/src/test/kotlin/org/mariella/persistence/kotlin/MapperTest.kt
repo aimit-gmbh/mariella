@@ -19,6 +19,7 @@ import org.mariella.persistence.kotlin.internal.roundUpToMicroSecondsIfNecessary
 import org.mariella.persistence.kotlin.util.*
 import org.mariella.persistence.mapping_builder.ConverterRegistryImpl
 import org.mariella.persistence.mapping_builder.ConverterRegistryImpl.ConverterFactoryImpl
+import org.mariella.persistence.oracle.OracleUUIDConverter
 import strikt.api.expectThat
 import strikt.api.expectThrows
 import strikt.assertions.hasSize
@@ -112,16 +113,27 @@ class MapperTest : AbstractDatabaseTest() {
             val pool = createJdbcPool(vertx, dbConfig)
             val connection = pool.connection.coAwait()
             val converterRegistry = ConverterRegistryImpl()
-            if (DATABASE_TYPE == DatabaseType.POSTGRES) {
-                converterRegistry.registerConverterFactory(
-                    Types.OTHER, UUID::class.java,
-                    ConverterFactoryImpl(StandardUUIDConverter.Singleton)
-                )
-            } else {
-                converterRegistry.registerConverterFactory(
-                    Types.BINARY, UUID::class.java,
-                    ConverterFactoryImpl(StandardUUIDConverter.Singleton)
-                )
+            when (DATABASE_TYPE) {
+                DatabaseType.POSTGRES -> {
+                    converterRegistry.registerConverterFactory(
+                        Types.OTHER, UUID::class.java,
+                        ConverterFactoryImpl(StandardUUIDConverter.Singleton)
+                    )
+                }
+
+                DatabaseType.ORACLE -> {
+                    converterRegistry.registerConverterFactory(
+                        Types.VARBINARY, UUID::class.java,
+                        ConverterFactoryImpl(OracleUUIDConverter.Singleton)
+                    )
+                }
+
+                else -> {
+                    converterRegistry.registerConverterFactory(
+                        Types.BINARY, UUID::class.java,
+                        ConverterFactoryImpl(StandardUUIDConverter.Singleton)
+                    )
+                }
             }
             try {
                 val mapper = Mapper(connection, converterRegistry)

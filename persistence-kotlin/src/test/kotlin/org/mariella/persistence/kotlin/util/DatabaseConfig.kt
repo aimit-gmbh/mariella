@@ -1,7 +1,7 @@
 package org.mariella.persistence.kotlin.util
 
 enum class DatabaseType {
-    H2, H2_MEM, POSTGRES
+    H2, H2_MEM, POSTGRES, ORACLE
 }
 
 data class DatabaseConfig(
@@ -14,13 +14,14 @@ data class DatabaseConfig(
     val urlParams: String = "",
     val poolSize: Int = 10,
     val persistenceUnit: String = "sample/h2",
-    val flywayMigrations: List<String> = listOf("db/core")
+    val flywayMigrations: List<String> = listOf("db")
 ) {
     fun getUrl(): String {
         return when (type) {
             DatabaseType.H2 -> "jdbc:h2:$database$urlParams"
             DatabaseType.H2_MEM -> "jdbc:h2:mem:$database$urlParams"
             DatabaseType.POSTGRES -> "jdbc:postgresql://$host:$port/$database"
+            DatabaseType.ORACLE -> "jdbc:oracle:thin:@//$host:$port/$database"
         }
     }
 }

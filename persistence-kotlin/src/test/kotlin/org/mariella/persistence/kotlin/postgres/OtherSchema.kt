@@ -1,11 +1,12 @@
-package org.mariella.persistence.kotlin.entities
+package org.mariella.persistence.kotlin.postgres
 
 import jakarta.persistence.Column
+import jakarta.persistence.Entity
 import jakarta.persistence.Table
 
-@jakarta.persistence.Entity
+@Entity
 @Table(name = "other_schema", schema = "hansi")
-class OtherSchema : Entity() {
+class OtherSchema : org.mariella.persistence.kotlin.entities.Entity() {
     @get:Column(name = "name")
     var name: String by changeSupport()
 }

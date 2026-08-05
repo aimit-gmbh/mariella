@@ -26,9 +26,13 @@ import kotlin.uuid.toKotlinUuid
 val DATABASE_TYPE = if (System.getenv("MARIELLA_TEST_DB") != null) DatabaseType.valueOf(System.getenv("MARIELLA_TEST_DB")) else DatabaseType.H2_MEM
 
 /**
- * to run the tests start postgres with
+ * to run a single test with oracle change the DATABASE_TYPE = DatabaseType.ORACLE and run
+ * docker run -d -p 1521:1521 -e ORACLE_PASSWORD=admin -e APP_USER=hansi -e APP_USER_PASSWORD=seppi gvenzl/oracle-xe
+ *
+ * to run all the tests with postgres run
  * docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres
  * and set DATABASE_TYPE = DatabaseType.POSTGRES (in the IDE)
+ *
  * you can also run MARIELLA_TEST_DB=POSTGRES ./gradlew clean test
  */
 abstract class AbstractDatabaseTest {
@@ -43,7 +47,7 @@ abstract class AbstractDatabaseTest {
 
     private fun createDatabase(databaseConfig: DatabaseConfig): Database {
         optionallyCreatePostgresDbFromTemplate(databaseConfig, vertx)
-        migrateDb(databaseConfig, "db")
+        migrateDb(databaseConfig, *databaseConfig.flywayMigrations.toTypedArray())
         return TestEnvironment.createDatabase(TEST_MARIELLA, createPool(vertx, databaseConfig), mapOf("cached_entity_id_seq" to CachedSequence.of("cached_entity_id_seq", 1000)))
     }
 
@@ -67,7 +71,7 @@ abstract class AbstractDatabaseTest {
 fun createPool(vertx: Vertx, databaseConfig: DatabaseConfig, autoCommit: Boolean = false): Pool {
     return when (databaseConfig.type) {
         DatabaseType.POSTGRES -> createPostgresPool(vertx, databaseConfig)
-        DatabaseType.H2, DatabaseType.H2_MEM -> createJdbcPool(vertx, databaseConfig, autoCommit)
+        DatabaseType.H2, DatabaseType.H2_MEM, DatabaseType.ORACLE -> createJdbcPool(vertx, databaseConfig, autoCommit)
     }
 }
 
@@ -177,7 +181,7 @@ val PROTOTYPE_POSTGRES_DB: String by lazy {
             throw RuntimeException("postgres not running! start with 'docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres'", e)
         }
     }
-    migrateDb(prototypeConfig, "db")
+    migrateDb(prototypeConfig, *prototypeConfig.flywayMigrations.toTypedArray())
     prototypeConfig.database
 }
 
@@ -186,7 +190,7 @@ val TEST_MARIELLA: MariellaMapping by lazy {
         DatabaseConfigHelper.createDefaultConfig(DatabaseType.POSTGRES).copy(database = PROTOTYPE_POSTGRES_DB)
     } else {
         val c = DatabaseConfigHelper.createDefaultConfig(DATABASE_TYPE)
-        migrateDb(c, "db")
+        migrateDb(c, *c.flywayMigrations.toTypedArray())
         c
     }
     TestEnvironment.createMariella(databaseConfig = config)

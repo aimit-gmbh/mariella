@@ -16,6 +16,8 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testRuntimeOnly(project(":persistence-h2"))
     testRuntimeOnly(project(":persistence-postgres"))
+    testImplementation(project(":persistence-oracle"))
+
     testImplementation(libs.jakarta.persistence.api)
 
     testRuntimeOnly(libs.logback)
@@ -30,9 +32,13 @@ dependencies {
     testRuntimeOnly(libs.scram.client)
     testImplementation(libs.vertx.pg.client)
 
+    // oracle
+    testRuntimeOnly(libs.ojdbc11)
+
     // flyway
     testImplementation(libs.flyway.core)
     testRuntimeOnly(libs.flyway.database.postgresql)
+    testRuntimeOnly(libs.flyway.database.oracle)
 
     testImplementation(libs.strikt.core)
     testImplementation(libs.mockk)

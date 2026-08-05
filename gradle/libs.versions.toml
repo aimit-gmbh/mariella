@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.4.10"
-vertx = "5.1.5"
+vertx = "5.1.6"
 slf4j = "2.0.18"
 logback = "1.6.1"
 flyway = "13.1.0"
@@ -11,6 +11,7 @@ strikt = "0.35.1"
 jakarta = "3.2.0"
 postgres = "42.7.13"
 scramClient = "3.4"
+oracle = "23.2.0.0"
 javaAssist = "3.32.0-GA"
 h2 = "2.4.240"
 hikariCp = "7.1.0"
@@ -38,6 +39,8 @@ postgres = { module = "org.postgresql:postgresql", version.ref = "postgres" }
 scram-client = { module = "com.ongres.scram:scram-client", version.ref = "scramClient" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+flyway-database-oracle = { module = "org.flywaydb:flyway-database-oracle", version.ref = "flyway" }
+ojdbc11 = { module = "com.oracle.database.jdbc:ojdbc11", version.ref = "oracle"}
 
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
 hikari-cp = { module = "com.zaxxer:HikariCP", version.ref = "hikariCp" }

@@ -18,7 +18,7 @@ internal class PersistenceXmlGenerator {
                     name="org.mariella.persistence.mapping_builder.DatabaseMetaDataDatabaseInfoProvider.ignoreCatalog"
                     value="true"/>
             <property name="org.mariella.persistence.parameter_style" value="{parameterStyle}"/>
-            <property name="org.mariella.persistence.db.uppercase" value="false"/>
+            <property name="org.mariella.persistence.db.uppercase" value="{uppercase}"/>
             <property name="org.mariella.persistence.packages" value="{packages}"/>
         </properties>
     </persistence-unit>
@@ -30,19 +30,27 @@ internal class PersistenceXmlGenerator {
         val parameterStyle: String
         val packagesString = packages.joinToString(",")
         val persistenceBuilder: String
+        val upperCase: String
         if (jdbcUrl.contains("jdbc:h2:")) {
             parameterStyle = "jdbc"
             persistenceBuilder = "org.mariella.persistence.h2.H2PersistenceBuilder"
+            upperCase = "false"
         } else if (jdbcUrl.contains("jdbc:postgresql:")) {
             parameterStyle = "indexed"
             persistenceBuilder = "org.mariella.persistence.postgres.PostgresPersistenceBuilder"
+            upperCase = "false"
+        } else if (jdbcUrl.contains("jdbc:oracle:")) {
+            parameterStyle = "jdbc"
+            persistenceBuilder = "org.mariella.persistence.oracle.OraclePersistenceBuilder"
+            upperCase = "true"
         } else {
-            error("only h2 and postgres is supported")
+            error("only h2, oracle and postgres is supported")
         }
         return TEMPLATE
             .replace("{packages}", packagesString)
             .replace("{parameterStyle}", parameterStyle)
             .replace("{persistenceBuilder}", persistenceBuilder)
+            .replace("{uppercase}", upperCase)
     }
 
 }

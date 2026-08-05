@@ -8,7 +8,10 @@ import org.mariella.persistence.bootstrap.J2SEConnectionProvider
 import org.mariella.persistence.database.IndexedParameter
 import org.mariella.persistence.database.JdbcParameter
 import org.mariella.persistence.generic.GenericPersistenceBuilder
-import org.mariella.persistence.kotlin.internal.*
+import org.mariella.persistence.kotlin.internal.ImmutableConverterRegistry
+import org.mariella.persistence.kotlin.internal.PersistenceXmlGenerator
+import org.mariella.persistence.kotlin.internal.VertxDatabase
+import org.mariella.persistence.kotlin.internal.VertxPersistenceUnitParser
 import org.mariella.persistence.loader.ModifiableFactory
 import org.mariella.persistence.loader.ModifiableFactoryImpl
 import org.mariella.persistence.mapping.SchemaMapping
@@ -214,10 +217,11 @@ fun <T : StringMappedSealedClass> PersistenceBuilder.registerStringMappedSealedC
 }
 
 fun <T : IntegerMappedSealedClass> PersistenceBuilder.registerIntMappedSealedClass(
-    kClass: KClass<T>
+    kClass: KClass<T>,
+    type: Int = Types.INTEGER
 ) {
     converterRegistry.registerConverterFactory(
-        Types.INTEGER,
+        type,
         kClass.java,
         ConverterRegistryImpl.ConverterFactoryImpl(IntSealedClassConverter(kClass))
     )

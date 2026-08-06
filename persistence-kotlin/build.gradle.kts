@@ -16,6 +16,8 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testRuntimeOnly(project(":persistence-h2"))
     testRuntimeOnly(project(":persistence-postgres"))
+    testImplementation(project(":persistence-oracle"))
+
     testImplementation(libs.jakarta.persistence.api)
 
     testRuntimeOnly(libs.logback)
@@ -30,9 +32,13 @@ dependencies {
     testRuntimeOnly(libs.scram.client)
     testImplementation(libs.vertx.pg.client)
 
+    // oracle
+    testRuntimeOnly(libs.ojdbc11)
+
     // flyway
     testImplementation(libs.flyway.core)
     testRuntimeOnly(libs.flyway.database.postgresql)
+    testRuntimeOnly(libs.flyway.database.oracle)
 
     testImplementation(libs.strikt.core)
     testImplementation(libs.mockk)
@@ -40,7 +46,7 @@ dependencies {
 
 
 // tests with postgres have more coverage because of several postgres specific features
-val coverage = if ("POSTGRES" == System.getenv("MARIELLA_TEST_DB")) 85 else 82
+val coverage = if ("POSTGRES" == System.getenv("MARIELLA_TEST_DB")) 84 else 81
 
 kover {
     reports {

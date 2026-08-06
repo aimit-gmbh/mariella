@@ -20,11 +20,10 @@ tasks.withType(JavaCompile::class) {
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
+@Suppress("UnstableApiUsage")
 testing {
     suites {
-        // Configure the built-in test suite
-        @Suppress("UnstableApiUsage", "Unused") val test by getting(JvmTestSuite::class) {
-            // Use JUnit Jupiter test framework
+        named<JvmTestSuite>("test") {
             useJUnitJupiter(libs.findLibrary("junit-jupiter-api").get().get().version!!)
         }
     }

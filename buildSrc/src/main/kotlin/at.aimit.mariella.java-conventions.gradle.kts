@@ -5,7 +5,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 plugins {
     `java-library`
     id("com.vanniktech.maven.publish")
-    id("com.github.ben-manes.versions")
+    id("io.github.ben-manes.versions")
     id("com.autonomousapps.dependency-analysis")
 }
 
@@ -40,22 +40,28 @@ tasks.withType(Test::class) {
     }
 }
 
-fun isNonStable(version: String): Boolean {
-    val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
-    val regex = "^[0-9,.v-]+(-r)?$".toRegex()
-    val isStable = stableKeyword || regex.matches(version)
-    return isStable.not()
-}
-
 tasks.named<DependencyUpdatesTask>("dependencyUpdates") {
-    rejectVersionIf {
-        isNonStable(candidate.version)
-    }
     gradleReleaseChannel = "current"
     outputFormatter = "json"
     outputDir = "build/dependencyUpdates"
     reportfileName = "report"
+    checkConstraints = true
+    filterConfigurations = Spec<Configuration> {
+        it.name == "runtimeClasspath" || it.name == "compileClasspath" || it.name == "testRuntimeClasspath" || it.name == "testCompileClasspath"
+    }
+
+    rejectVersionIf {
+        candidate.version.isNonStable()
+    }
 }
+
+fun String.isNonStable(): Boolean {
+    val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { uppercase().contains(it) }
+    val regex = "^[0-9,.v-]+(-r|-jre|-android)?$".toRegex()
+    val isStable = stableKeyword || regex.matches(this)
+    return isStable.not()
+}
+
 
 mavenPublishing {
     coordinates("at.aimit.mariella", project.name, System.getenv("MARIELLA_RELEASE_NAME") ?: "1.0-SNAPSHOT")

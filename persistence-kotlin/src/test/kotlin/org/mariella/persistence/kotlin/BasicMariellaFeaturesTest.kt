@@ -519,6 +519,68 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     }
 
     @Test
+    fun `show how update flag is handled`() {
+        runTest {
+            val createdFileVersion = createFiles().single()
+            val fileVersionId = createdFileVersion.id
+            val revision = createdFileVersion.revision!!
+
+            val session = database.connect()
+            val modifications = session.mariella()
+
+            // load object in first session
+            val fileVersionSession1 = modifications.loadEntity<FileVersion>(fileVersionId, "root.revision")!!
+            expectThat(fileVersionSession1.comment).isEqualTo("my comment")
+            // old revision
+            expectThat(fileVersionSession1.revision!!.id).isEqualTo(revision.id)
+            // resource not loaded
+            expectThat(fileVersionSession1.resource).isNull()
+
+            // open a second connection and modify the object
+            val session2 = database.connect()
+            val modifications2 = session2.mariella()
+            val revision2 = modifications2.create<Revision> {
+                it.space = addExisting(createdFileVersion.space!!.id)
+                it.createdAt = Instant.now()
+                it.creationUser = addExisting(revision.creationUser!!.id)
+            }
+            modifications2.modify<FileVersion>(fileVersionId) {
+                it.comment = "my ultra mega super cool comment"
+                it.revision = revision2
+            }
+            modifications2.flush()
+            session2.commit()
+            session2.close()
+
+            // reload object with isUpdate = false and load the sub objects too
+            val fileVersion = modifications.loadEntity<FileVersion>(
+                fileVersionId,
+                "root.revision",
+                "root.resource",
+                isUpdate = false
+            )!!
+
+            // still the old comment
+            expectThat(fileVersion.comment).isEqualTo("my comment")
+            // but the revision has been updated
+            expectThat(fileVersionSession1.revision!!.id).isEqualTo(revision2.id)
+            // resource has been loaded additionally
+            expectThat(fileVersionSession1.resource).isNotNull()
+
+            // reload object with isUpdate = true but without loading the sub objects
+            val fileVersionUpdate = modifications.loadEntity<FileVersion>(fileVersionId, isUpdate = true)!!
+
+            // updated comment is loaded
+            expectThat(fileVersionUpdate.comment).isEqualTo("my ultra mega super cool comment")
+            // sub objects are still there
+            expectThat(fileVersionUpdate.revision).isNotNull()
+            expectThat(fileVersionUpdate.resource).isNotNull()
+
+            session.close()
+        }
+    }
+
+    @Test
     fun `can load with own provider`() {
         runTest {
             val fileVersionId = createFiles().single().id

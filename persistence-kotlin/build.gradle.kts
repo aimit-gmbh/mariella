@@ -5,7 +5,7 @@ plugins {
 dependencies {
     api(project(":persistence"))
     api(libs.vertx.sql.client)
-    implementation(libs.kotlinx.coroutines.core)
+    api(libs.kotlinx.coroutines.core)
 
     implementation(project(":persistence-mapping"))
     implementation(libs.vertx.lang.kotlin.coroutines)
@@ -42,6 +42,8 @@ dependencies {
 
     testImplementation(libs.strikt.core)
     testImplementation(libs.mockk)
+    testImplementation(libs.mockk.core)
+    testImplementation(libs.mockk.dsl)
 }
 
 

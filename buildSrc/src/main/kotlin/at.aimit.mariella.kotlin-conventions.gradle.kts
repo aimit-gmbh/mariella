@@ -14,7 +14,7 @@ dependencies {
     implementation(platform(libs.findLibrary("kotlin-bom").get()))
 
     // Use the Kotlin JDK 8 standard library
-    implementation(libs.findLibrary("kotlin-stdlib-jdk8").get())
+    api(libs.findLibrary("kotlin-stdlib-jdk8").get())
     implementation(libs.findLibrary("kotlin-reflect").get())
 }
 

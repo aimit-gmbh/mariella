@@ -87,10 +87,15 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
         }
     }
 
+    /**
+     * Both files are put into one insert batch because their modified properties are equal, but the null comment is left
+     * out of the second row. Depending on the column order (which changes from run to run because the property mappings
+     * are kept in a HashMap) JDBC either fails or silently stores the values of the first row, so the stored values are checked.
+     */
     @Test
     fun `can insert new objects in one flush which differ in null values of the same assigned properties`() {
         runTest {
-            database.write {
+            val ids = database.write {
                 val context = mariella()
                 val space = context.addExisting<Space>(TestData.TEST_SPACE.toKotlinUuid())
                 val user = context.addExisting<UserEntity>(TestData.USER_SEPPI)
@@ -109,9 +114,16 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
                     it.comment = comment
                 }
 
-                createFile("entityId-1", "my comment")
-                createFile("entityId-2", null)
+                val withComment = createFile("entityId-1", "my comment")
+                val withoutComment = createFile("entityId-2", null)
                 context.flush()
+                withComment.id to withoutComment.id
+            }
+
+            database.read {
+                val context = mariella()
+                expectThat(context.loadEntity<File>(ids.first)!!.comment).isEqualTo("my comment")
+                expectThat(context.loadEntity<File>(ids.second)!!.comment).isNull()
             }
         }
     }

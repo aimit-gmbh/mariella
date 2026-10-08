@@ -88,6 +88,35 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
     }
 
     @Test
+    fun `can insert new objects in one flush which differ in null values of the same assigned properties`() {
+        runTest {
+            database.write {
+                val context = mariella()
+                val space = context.addExisting<Space>(TestData.TEST_SPACE.toKotlinUuid())
+                val user = context.addExisting<UserEntity>(TestData.USER_SEPPI)
+                val revision = context.create<Revision> {
+                    it.space = space
+                    it.creationUser = user
+                    it.createdAt = Instant.now()
+                }
+
+                fun createFile(entityId: String, comment: String?) = context.create<File> {
+                    it.space = space
+                    it.owner = user
+                    it.revision = revision
+                    it.createdAt = revision.createdAt.toKotlinInstant()
+                    it.entityId = entityId
+                    it.comment = comment
+                }
+
+                createFile("entityId-1", "my comment")
+                createFile("entityId-2", null)
+                context.flush()
+            }
+        }
+    }
+
+    @Test
     fun `produces reasonable errors`() {
         class NotMapped
         runTest {

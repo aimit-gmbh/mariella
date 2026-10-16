@@ -29,7 +29,7 @@ public class BatchingPersistorStrategy<T extends PreparedPersistorStatement> ext
     @Override
     public StrategyResult<T> beginObjectPersistor(ObjectPersistor<T> objectPersistor) {
         if (currentObjectPersistor != null && currentObjectPersistor.getClassMapping() == objectPersistor.getClassMapping() && currentObjectPersistor.getModificationInfo().getStatus() == objectPersistor.getModificationInfo().getStatus()) {
-            if (currentObjectPersistor.getModificationInfo().getStatus() == ModificationInfo.Status.Removed) {
+            if (currentObjectPersistor.getModificationInfo().getStatus() == ModificationInfo.Status.Removed || currentObjectPersistor.getModificationInfo().getStatus() == ModificationInfo.Status.New) {
                 currentObjectPersistor = objectPersistor;
                 return null;
             } else if (currentObjectPersistor.getModificationInfo().getModifiedProperties().equals(objectPersistor.getModificationInfo().getModifiedProperties())) {

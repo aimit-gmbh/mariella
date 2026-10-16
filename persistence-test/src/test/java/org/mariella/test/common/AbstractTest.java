@@ -96,6 +96,20 @@ public class AbstractTest {
         return p;
     }
 
+    protected Person createPerson2(String alias, String lastName, String firstName) {
+        Person p = new Person();
+        p.setId(UUID.randomUUID());
+        modificationTracker.addNewParticipant(p);
+        p.setAlias(alias);
+        if(firstName != null) {
+        	p.setFirstName(firstName);
+        }
+        if(lastName != null) {
+        	p.setLastName(lastName);
+        }
+        return p;
+    }
+
     protected void createModificationTracker() {
         ModificationTrackerImpl m = new ModificationTrackerImpl(environment.getSchemaMapping().getSchemaDescription());
         m.addPersistentListener(new RIListener(m));

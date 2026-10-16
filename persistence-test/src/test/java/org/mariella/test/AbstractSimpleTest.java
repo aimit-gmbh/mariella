@@ -1,5 +1,10 @@
 package org.mariella.test;
 
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+
 import org.mariella.persistence.jdbc.JdbcClusterLoader;
 import org.mariella.persistence.jdbc.JdbcPersistor;
 import org.mariella.persistence.jdbc.JdbcPreparedPersistorStatement;
@@ -9,20 +14,17 @@ import org.mariella.persistence.loader.ClusterLoaderConditionProviderImpl;
 import org.mariella.persistence.loader.LoaderContext;
 import org.mariella.persistence.mapping.ClassMapping;
 import org.mariella.persistence.mapping.ColumnMapping;
-import org.mariella.persistence.mapping.RelationshipPropertyMapping;
 import org.mariella.persistence.persistor.ClusterDescription;
 import org.mariella.persistence.persistor.ConnectionDatabaseAccess;
 import org.mariella.persistence.persistor.PersistorStrategy;
 import org.mariella.persistence.persistor.SimplePersistorStrategy;
-import org.mariella.persistence.query.*;
+import org.mariella.persistence.query.BinaryCondition;
+import org.mariella.persistence.query.Expression;
+import org.mariella.persistence.query.QueryBuilder;
+import org.mariella.persistence.query.TableReference;
 import org.mariella.test.common.AbstractTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
 
 public class AbstractSimpleTest extends AbstractTest {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractSimpleTest.class);

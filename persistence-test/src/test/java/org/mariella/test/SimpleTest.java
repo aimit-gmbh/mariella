@@ -82,7 +82,7 @@ class SimpleTest extends AbstractSimpleTest {
     public void batch2() throws Exception {
         createModificationTracker();
         createTina();
-        createPerson("wolfi", null, "Wolfgang");
+        createPerson2("wolfi", null, "Wolfgang");
 
         persist(new BatchingPersistorStrategy<>());
     }

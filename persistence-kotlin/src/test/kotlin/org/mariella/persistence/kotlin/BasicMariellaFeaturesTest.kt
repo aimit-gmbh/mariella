@@ -87,6 +87,47 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
         }
     }
 
+    /**
+     * Both files are put into one insert batch because their modified properties are equal, but the null comment is left
+     * out of the second row. Depending on the column order (which changes from run to run because the property mappings
+     * are kept in a HashMap) JDBC either fails or silently stores the values of the first row, so the stored values are checked.
+     */
+    @Test
+    fun `can insert new objects in one flush which differ in null values of the same assigned properties`() {
+        runTest {
+            val ids = database.write {
+                val context = mariella()
+                val space = context.addExisting<Space>(TestData.TEST_SPACE.toKotlinUuid())
+                val user = context.addExisting<UserEntity>(TestData.USER_SEPPI)
+                val revision = context.create<Revision> {
+                    it.space = space
+                    it.creationUser = user
+                    it.createdAt = Instant.now()
+                }
+
+                fun createFile(entityId: String, comment: String?) = context.create<File> {
+                    it.space = space
+                    it.owner = user
+                    it.revision = revision
+                    it.createdAt = revision.createdAt.toKotlinInstant()
+                    it.entityId = entityId
+                    it.comment = comment
+                }
+
+                val withComment = createFile("entityId-1", "my comment")
+                val withoutComment = createFile("entityId-2", null)
+                context.flush()
+                withComment.id to withoutComment.id
+            }
+
+            database.read {
+                val context = mariella()
+                expectThat(context.loadEntity<File>(ids.first)!!.comment).isEqualTo("my comment")
+                expectThat(context.loadEntity<File>(ids.second)!!.comment).isNull()
+            }
+        }
+    }
+
     @Test
     fun `produces reasonable errors`() {
         class NotMapped
@@ -513,6 +554,68 @@ class BasicMariellaFeaturesTest : AbstractDatabaseTest() {
 
             expectThat(fileVersion.revision).isNotNull()
             expectThat(fileVersion.resource).isNotNull()
+
+            session.close()
+        }
+    }
+
+    @Test
+    fun `show how update flag is handled`() {
+        runTest {
+            val createdFileVersion = createFiles().single()
+            val fileVersionId = createdFileVersion.id
+            val revision = createdFileVersion.revision!!
+
+            val session = database.connect()
+            val modifications = session.mariella()
+
+            // load object in first session
+            val fileVersionSession1 = modifications.loadEntity<FileVersion>(fileVersionId, "root.revision")!!
+            expectThat(fileVersionSession1.comment).isEqualTo("my comment")
+            // old revision
+            expectThat(fileVersionSession1.revision!!.id).isEqualTo(revision.id)
+            // resource not loaded
+            expectThat(fileVersionSession1.resource).isNull()
+
+            // open a second connection and modify the object
+            val session2 = database.connect()
+            val modifications2 = session2.mariella()
+            val revision2 = modifications2.create<Revision> {
+                it.space = addExisting(createdFileVersion.space!!.id)
+                it.createdAt = Instant.now()
+                it.creationUser = addExisting(revision.creationUser!!.id)
+            }
+            modifications2.modify<FileVersion>(fileVersionId) {
+                it.comment = "my ultra mega super cool comment"
+                it.revision = revision2
+            }
+            modifications2.flush()
+            session2.commit()
+            session2.close()
+
+            // reload object with isUpdate = false and load the sub objects too
+            val fileVersion = modifications.loadEntity<FileVersion>(
+                fileVersionId,
+                "root.revision",
+                "root.resource",
+                isUpdate = false
+            )!!
+
+            // still the old comment
+            expectThat(fileVersion.comment).isEqualTo("my comment")
+            // but the revision has been updated
+            expectThat(fileVersionSession1.revision!!.id).isEqualTo(revision2.id)
+            // resource has been loaded additionally
+            expectThat(fileVersionSession1.resource).isNotNull()
+
+            // reload object with isUpdate = true but without loading the sub objects
+            val fileVersionUpdate = modifications.loadEntity<FileVersion>(fileVersionId, isUpdate = true)!!
+
+            // updated comment is loaded
+            expectThat(fileVersionUpdate.comment).isEqualTo("my ultra mega super cool comment")
+            // sub objects are still there
+            expectThat(fileVersionUpdate.revision).isNotNull()
+            expectThat(fileVersionUpdate.resource).isNotNull()
 
             session.close()
         }

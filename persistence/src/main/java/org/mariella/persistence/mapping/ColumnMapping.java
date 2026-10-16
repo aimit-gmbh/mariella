@@ -67,9 +67,7 @@ public class ColumnMapping extends PhysicalPropertyMapping {
         if (!insertable) {
             throw new IllegalStateException("Not insertable!");
         }
-        if (value != null || (valueGenerator != null && !valueGenerator.isGeneratedByDatabase())) {
-            super.insertPrimary(persistor, value);
-        }
+        super.insertPrimary(persistor, value);
     }
 
     @Override

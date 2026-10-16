@@ -78,6 +78,15 @@ class SimpleTest extends AbstractSimpleTest {
         persist(new BatchingPersistorStrategy<>());
     }
 
+    @Test
+    public void batch2() throws Exception {
+        createModificationTracker();
+        createTina();
+        createPerson("wolfi", null, "Wolfgang");
+
+        persist(new BatchingPersistorStrategy<>());
+    }
+    
     private void checkPerson(UUID id, String alias, String firstName, String lastName) {
         ModificationTracker m = modificationTracker;
         createModificationTracker();
